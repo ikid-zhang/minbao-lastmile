@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>民爆最后一公里 · 演示中心</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #7a0e0e 0%, #a31515 55%, #c0392b 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .wrap { max-width: 720px; width: 100%; }
+  h1 { color: #fff; font-size: 30px; letter-spacing: 2px; text-align: center; margin-bottom: 8px; }
+  .sub { color: rgba(255,255,255,.75); text-align: center; font-size: 14px; margin-bottom: 32px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  a.card {
+    background: rgba(255,255,255,.96); border-radius: 12px; padding: 22px 20px;
+    text-decoration: none; color: #7a0e0e; display: block;
+    transition: transform .15s ease, box-shadow .15s ease;
+    border: 2px solid transparent;
+  }
+  a.card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.25); border-color: #ffd7d7; }
+  .card h2 { font-size: 17px; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: #8a6d6d; line-height: 1.6; }
+  .card .tag { display: inline-block; font-size: 11px; background: #f5e1e1; color: #a31515; border-radius: 999px; padding: 2px 10px; margin-bottom: 10px; }
+  footer { text-align: center; color: rgba(255,255,255,.6); font-size: 12px; margin-top: 28px; }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>民爆最后一公里</h1>
+    <div class="sub">民用爆炸物品全流程监管 · 小程序高保真原型 / 设计文档 / 演示文稿</div>
+    <div class="grid">
+      <a class="card" href="miniprogram-prototype/index.html">
+        <span class="tag">9 角色全流程演示</span>
+        <h2>📱 小程序原型</h2>
+        <p>治安管理员 · 民爆企业 · 公安监管三端，93 项功能在线交互演示（手机模式打开体验最佳）</p>
+      </a>
+      <a class="card" href="民爆最后一公里监管功能设计说明.html">
+        <span class="tag">V1.3 · 公安红排版</span>
+        <h2>📄 设计说明文档</h2>
+        <p>功能架构、状态机、数据模型、角色权限矩阵与全流程说明（93 项功能清单）</p>
+      </a>
+      <a class="card" href="miniprogram-prototype/%E6%B0%91%E7%88%86%E6%9C%80%E5%90%8E%E4%B8%80%E5%85%AC%E9%87%8C%E5%8A%9F%E8%83%BD%E6%B8%85%E5%8D%95.xlsx">
+        <span class="tag">55 行 · 四大板块</span>
+        <h2>📊 功能清单（Excel）</h2>
+        <p>企业侧 29 / 公安侧 8 / 治安管理员 14 / 平台公共 4，一级-二级功能与描述</p>
+      </a>
+      <a class="card" href="ppt/index.html">
+        <span class="tag">17 页 · 公安蓝</span>
+        <h2>🖥️ 汇报 PPT</h2>
+        <p>项目背景、建设思路、功能蓝图与实施路径汇报幻灯片（HTML 版 + PDF/PPTX 源文件）</p>
+      </a>
+    </div>
+    <footer>GitHub Pages · ikid-zhang/minbao-lastmile · 数据本地模拟，仅供演示</footer>
+  </div>
+</body>
+</html>
