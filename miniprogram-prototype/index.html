@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林安码 · 民爆"最后一公里"监管 小程序原型（演示）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar">
+    <span id="clock">9:41</span>
+    <span class="sb-icons">▲ ● ●</span>
+  </div>
+  <div id="appbar"></div>
+  <div id="view"></div>
+  <div id="tabbar"></div>
+  <button type="button" class="demo-chip" onclick="toEntry()">⇄ 切角色</button>
+</div>
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/pages-a.js"></script>
+<script src="js/pages-b.js"></script>
+<script src="js/pages-c.js"></script>
+<script>
+  setInterval(function () {
+    var d = new Date();
+    var el = document.getElementById('clock');
+    if (el) el.textContent = d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
+  }, 10000);
+  var d0 = new Date();
+  document.getElementById('clock').textContent = d0.getHours() + ':' + ('0' + d0.getMinutes()).slice(-2);
+</script>
+</body>
+</html>

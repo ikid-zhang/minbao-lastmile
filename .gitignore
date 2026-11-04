@@ -1,0 +1,13 @@
+# 过程产物（不入库）
+.workbuddy/
+.民爆最后一公里功能清单.ref/
+_verify/
+_shots/
+ui-design-runs/
+
+# macOS 元数据
+._*
+.DS_Store
+
+# 临时副本
+*copy.et
