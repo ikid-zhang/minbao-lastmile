@@ -11,3 +11,7 @@ ui-design-runs/
 
 # 临时副本
 *copy.et
+
+# 本地过程产物（不入库）
+output/
+*.docx

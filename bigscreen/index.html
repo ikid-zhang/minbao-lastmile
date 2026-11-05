@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>民爆最后一公里 · 俯瞰大屏（自建 · 系统建设内容）</title>
+<style>
+  :root{
+    --bg:#0a1930; --panel:#0f2547; --panel2:#122c54; --line:#1d3d6e;
+    --cyan:#00e0ff; --ok:#00e676; --warn:#ffb300; --bad:#ff4d4d;
+    --txt:#dce9ff; --sub:#7fa3d8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;overflow:hidden}
+  .screen{width:100vw;height:100vh;display:flex;flex-direction:column}
+  /* ---------- 顶部 ---------- */
+  .top{height:76px;display:flex;align-items:center;padding:0 24px;position:relative;
+    background:linear-gradient(180deg,#0d2a52 0%,rgba(13,42,82,0) 100%);border-bottom:1px solid var(--line)}
+  .top h1{font-size:26px;letter-spacing:6px;font-weight:700;color:#fff;text-align:center;flex:1;
+    text-shadow:0 0 18px rgba(0,224,255,.45)}
+  .top .corner{font-size:12px;color:var(--sub);width:220px}
+  .top .corner.r{text-align:right}
+  .kpis{position:absolute;left:50%;transform:translateX(-50%);top:64px;display:flex;gap:14px;z-index:20}
+  .kpi{min-width:128px;padding:8px 18px;border:1px solid var(--line);border-radius:8px;text-align:center;
+    background:rgba(15,37,71,.92);box-shadow:0 4px 18px rgba(0,0,0,.35)}
+  .kpi b{display:block;font-size:24px;font-family:"DIN Alternate","Bahnschrift",sans-serif;color:var(--cyan)}
+  .kpi i{font-style:normal;font-size:11px;color:var(--sub)}
+  .kpi.bad b{color:var(--bad);animation:breath 1.6s ease-in-out infinite}
+  .kpi.ok b{color:var(--ok)}
+  /* ---------- 主体三栏 ---------- */
+  .main{flex:1;display:flex;gap:14px;padding:14px 20px 8px;min-height:0}
+  .col-l,.col-r{width:336px;display:flex;flex-direction:column;gap:14px;min-height:0}
+  .col-c{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .panel h3{font-size:14px;letter-spacing:2px;padding:10px 14px;border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg,rgba(0,224,255,.12),transparent);color:#fff}
+  .panel h3 em{font-style:normal;color:var(--cyan);font-size:11px;margin-left:8px;letter-spacing:0}
+  .panel .bd{flex:1;overflow:auto;padding:10px 12px;min-height:0}
+  .bd::-webkit-scrollbar{width:4px}.bd::-webkit-scrollbar-thumb{background:var(--line)}
+  /* 左侧：作业点列表 */
+  .site{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;margin-bottom:8px;background:var(--panel2);border:1px solid transparent;cursor:pointer}
+  .site:hover{border-color:var(--cyan)}
+  .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .dot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .dot.warn{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+  .dot.bad{background:var(--bad);box-shadow:0 0 8px var(--bad);animation:breath 1.2s infinite}
+  .site .nm{flex:1;min-width:0}.site .nm b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .site .nm i{font-style:normal;font-size:11px;color:var(--sub)}
+  .site .st{font-size:11px;padding:2px 8px;border-radius:999px;flex:none}
+  .st.ok{color:var(--ok);border:1px solid rgba(0,230,118,.4)}
+  .st.warn{color:var(--warn);border:1px solid rgba(255,179,0,.4)}
+  .st.bad{color:var(--bad);border:1px solid rgba(255,77,77,.5)}
+  /* 左侧：库存 */
+  table.stock{width:100%;border-collapse:collapse;font-size:12px}
+  table.stock th{color:var(--sub);font-weight:400;text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
+  table.stock td{padding:6px 4px;border-bottom:1px dashed rgba(29,61,110,.6)}
+  table.stock td b{color:var(--cyan);font-weight:600}
+  /* ---------- 中央地图 ---------- */
+  .mapwrap{flex:1;position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#081426;min-height:0}
+  svg.map{width:100%;height:100%;display:block}
+  .map-title{position:absolute;top:10px;left:14px;font-size:13px;color:var(--sub);letter-spacing:1px;z-index:5}
+  .legend{position:absolute;bottom:12px;left:14px;display:flex;gap:16px;font-size:12px;color:var(--sub);z-index:5;
+    background:rgba(10,25,48,.8);padding:8px 14px;border-radius:8px;border:1px solid var(--line)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .lg{width:10px;height:10px;border-radius:50%}
+  .mapctl{position:absolute;top:10px;right:14px;display:flex;gap:8px;z-index:5}
+  .mapctl button{background:var(--panel);border:1px solid var(--line);color:var(--sub);font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer}
+  .mapctl button.on{color:var(--cyan);border-color:var(--cyan)}
+  /* 抽屉 */
+  .drawer{position:absolute;top:0;right:0;width:330px;height:100%;background:rgba(13,32,62,.97);border-left:1px solid var(--cyan);
+    transform:translateX(105%);transition:transform .3s;z-index:30;display:flex;flex-direction:column}
+  .drawer.open{transform:none}
+  .drawer .dh{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700}
+  .drawer .dh a{color:var(--sub);cursor:pointer;text-decoration:none;font-size:18px;line-height:1}
+  .tl{position:relative;margin:14px 0 0 10px;padding-left:20px;flex:1;overflow:auto}
+  .tl::before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .tn{position:relative;margin-bottom:16px}
+  .tn::before{content:"";position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--panel);border:2px solid var(--sub)}
+  .tn.done::before{background:var(--ok);border-color:var(--ok)}
+  .tn.miss::before{border-color:var(--bad);background:var(--bad)}
+  .tn b{font-size:13px}.tn i{display:block;font-style:normal;font-size:11px;color:var(--sub);margin-top:2px}
+  .tn .tm{float:right;font-size:11px;color:var(--cyan)}
+  /* 右侧：事件墙 */
+  .evt{padding:9px 10px;border-radius:8px;background:var(--panel2);margin-bottom:8px;border-left:3px solid var(--warn);cursor:pointer}
+  .evt.bad{border-left-color:var(--bad)}
+  .evt .et{display:flex;justify-content:space-between;font-size:12px}
+  .evt .et b{color:#fff}
+  .evt .et span{color:var(--sub);font-size:11px}
+  .evt p{font-size:11px;color:var(--sub);margin-top:3px}
+  .evt.fresh{animation:slidein .5s ease}
+  /* 底部趋势 */
+  .trend{height:170px}
+  /* 动画 */
+  @keyframes breath{0%,100%{opacity:1}50%{opacity:.45}}
+  @keyframes slidein{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes ripple{from{r:6;opacity:.9}to{r:26;opacity:0}}
+  @keyframes dash{to{stroke-dashoffset:-40}}
+  .ripple{animation:ripple 1.8s ease-out infinite}
+  .flow{stroke-dasharray:8 6;animation:dash 1.6s linear infinite}
+  /* 时钟 */
+  .clock{font-family:"DIN Alternate",sans-serif;font-size:16px;color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="top">
+    <div class="corner">民警远程核验 · 分级检查 · 全链留痕</div>
+    <h1>民爆“最后一公里”监管 · 俯瞰大屏</h1>
+    <div class="corner r"><span class="clock" id="clk">--:--:--</span><br>乐山市中区 · 值班模式</div>
+    <div class="kpis">
+      <div class="kpi"><b>18</b><i>今日计划</i></div>
+      <div class="kpi"><b>6.42<i style="font-size:12px">t</i></b><i>出库总量</i></div>
+      <div class="kpi"><b>7</b><i>在途车辆</i></div>
+      <div class="kpi ok"><b>94%</b><i>闭环率</i></div>
+      <div class="kpi bad"><b>3</b><i>异常事件</i></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- 左列 -->
+    <div class="col-l">
+      <div class="panel" style="flex:1.4">
+        <h3>作业点列表<em>点击定位地图</em></h3>
+        <div class="bd" id="siteList"></div>
+      </div>
+      <div class="panel" style="flex:1">
+        <h3>库房库存概览<em>kg / 发</em></h3>
+        <div class="bd">
+          <table class="stock">
+            <tr><th>库房</th><th>炸药</th><th>雷管</th><th>导爆索</th></tr>
+            <tr><td>民安销售库</td><td><b>4,200</b></td><td><b>1,350</b></td><td><b>2,800</b></td></tr>
+            <tr><td>岷江销售库</td><td><b>2,650</b></td><td><b>860</b></td><td><b>1,900</b></td></tr>
+            <tr><td>兴盛使用库</td><td><b>380</b></td><td><b>120</b></td><td><b>300</b></td></tr>
+            <tr><td>竹根使用库</td><td><b>150</b></td><td><b>60</b></td><td><b>140</b></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 中央地图 -->
+    <div class="col-c">
+      <div class="mapwrap">
+        <div class="map-title">全域一张图 · 作业点 / 库房 / 在途车辆（GIS 图层同源 /bb/overview/map）</div>
+        <div class="mapctl"><button class="on">图层：作业点</button><button>库房</button><button>车辆</button><button>围栏</button></div>
+        <svg class="map" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid slice">
+          <!-- 底图：抽象水系/路网/区县 -->
+          <defs>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#00e0ff" stop-opacity=".18"/><stop offset="100%" stop-color="#00e0ff" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="1000" height="640" fill="#081426"/>
+          <ellipse cx="500" cy="330" rx="470" ry="300" fill="url(#glow)"/>
+          <!-- 区县边界 -->
+          <path d="M120,150 L340,90 L560,110 L780,80 L920,190 L900,400 L760,560 L480,600 L220,540 L100,360 Z"
+                fill="rgba(18,44,84,.35)" stroke="#1d3d6e" stroke-width="2"/>
+          <path d="M340,90 L400,300 L360,540 M560,110 L520,330 L560,580 M780,80 L740,300 L760,560"
+                stroke="#152f5a" stroke-width="1" fill="none"/>
+          <text x="170" y="200" fill="#3a5d96" font-size="16">棉竹镇</text>
+          <text x="620" y="150" fill="#3a5d96" font-size="16">全福镇</text>
+          <text x="700" y="470" fill="#3a5d96" font-size="16">安谷镇</text>
+          <text x="200" y="470" fill="#3a5d96" font-size="16">水口镇</text>
+          <!-- 江河 -->
+          <path d="M60,420 C240,380 360,440 520,400 C680,360 800,420 960,380"
+                stroke="#134a74" stroke-width="16" fill="none" opacity=".8" stroke-linecap="round"/>
+          <path d="M430,60 C440,180 380,300 420,430" stroke="#134a74" stroke-width="9" fill="none" opacity=".7"/>
+          <text x="70" y="398" fill="#2e6ea8" font-size="13">大渡河</text>
+          <!-- 道路 -->
+          <path d="M140,180 C300,240 420,220 560,260 C700,300 820,280 900,340" stroke="#1d3d6e" stroke-width="5" fill="none"/>
+          <path d="M200,520 C360,470 520,500 700,440 C800,410 880,430 940,470" stroke="#1d3d6e" stroke-width="5" fill="none"/>
+          <path d="M480,120 L520,620" stroke="#1d3d6e" stroke-width="4" fill="none"/>
+          <!-- 电子围栏（虚线圆） -->
+          <circle cx="300" cy="300" r="52" fill="rgba(0,230,118,.05)" stroke="#00e676" stroke-width="1.5" stroke-dasharray="6 5" opacity=".8"/>
+          <circle cx="700" cy="230" r="48" fill="rgba(255,179,0,.06)" stroke="#ffb300" stroke-width="1.5" stroke-dasharray="6 5" opacity=".85"/>
+          <circle cx="560" cy="470" r="50" fill="rgba(255,77,77,.07)" stroke="#ff4d4d" stroke-width="1.8" stroke-dasharray="6 5"/>
+          <!-- 库房（堡垒方块） -->
+          <g font-size="11" fill="#7fa3d8">
+            <rect x="216" y="150" width="18" height="14" fill="none" stroke="#00e0ff" stroke-width="1.6"/><text x="206" y="182">民安销售库</text>
+            <rect x="620" y="330" width="18" height="14" fill="none" stroke="#00e0ff" stroke-width="1.6"/><text x="610" y="362">岷江销售库</text>
+          </g>
+          <!-- 作业点：正常 -->
+          <g>
+            <circle class="ripple" cx="300" cy="300" r="6" fill="none" stroke="#00e676" stroke-width="2"/>
+            <circle cx="300" cy="300" r="6" fill="#00e676"/><circle cx="300" cy="300" r="2.5" fill="#062"/>
+          </g>
+          <g>
+            <circle class="ripple" cx="430" cy="210" r="6" fill="none" stroke="#00e676" stroke-width="2"/>
+            <circle cx="430" cy="210" r="6" fill="#00e676"/>
+          </g>
+          <!-- 作业点：预警（琥珀） -->
+          <g>
+            <circle class="ripple" cx="700" cy="230" r="6" fill="none" stroke="#ffb300" stroke-width="2"/>
+            <circle cx="700" cy="230" r="6" fill="#ffb300"/>
+          </g>
+          <!-- 作业点：异常（红，告警呼吸） -->
+          <g>
+            <circle class="ripple" cx="560" cy="470" r="6" fill="none" stroke="#ff4d4d" stroke-width="2" style="animation-duration:1.1s"/>
+            <circle cx="560" cy="470" r="6.5" fill="#ff4d4d"/>
+            <text x="578" y="466" fill="#ff8b8b" font-size="12">数量不符 · 待处置</text>
+          </g>
+          <g><circle cx="820" cy="180" r="5.5" fill="#00e676"/></g>
+          <g><circle cx="180" cy="360" r="5.5" fill="#00e676"/></g>
+          <!-- 在途路线 + 车辆动画 -->
+          <path id="rt1" d="M234,158 C280,240 320,300 300,300" stroke="#00e0ff" stroke-width="2.5" fill="none" class="flow" opacity=".9"/>
+          <path id="rt2" d="M629,338 C660,300 700,270 700,230" stroke="#ffb300" stroke-width="2.5" fill="none" class="flow" opacity=".9"/>
+          <path id="rt3" d="M629,338 C560,400 580,440 560,470" stroke="#ff4d4d" stroke-width="2.5" fill="none" class="flow" opacity=".9"/>
+          <!-- 车标（沿轨迹运动） -->
+          <g><rect width="16" height="9" x="-8" y="-4.5" rx="2" fill="#00e0ff"/><animateMotion dur="6s" repeatCount="indefinite" rotate="auto"><mpath href="#rt1"/></animateMotion></g>
+          <g><rect width="16" height="9" x="-8" y="-4.5" rx="2" fill="#ffb300"/><animateMotion dur="8s" repeatCount="indefinite" rotate="auto"><mpath href="#rt2"/></animateMotion></g>
+          <g><rect width="16" height="9" x="-8" y="-4.5" rx="2" fill="#ff4d4d"/><animateMotion dur="7s" repeatCount="indefinite" rotate="auto"><mpath href="#rt3"/></animateMotion></g>
+          <!-- 偏航段红色高亮示例 -->
+          <path d="M660,318 C640,340 620,356 600,372" stroke="#ff4d4d" stroke-width="3.5" fill="none" stroke-dasharray="2 4" opacity=".95"/>
+          <text x="646" y="352" fill="#ff8b8b" font-size="11">偏航 620m</text>
+        </svg>
+        <div class="legend">
+          <span><i class="lg" style="background:var(--ok)"></i>正常作业点</span>
+          <span><i class="lg" style="background:var(--warn)"></i>预警</span>
+          <span><i class="lg" style="background:var(--bad)"></i>异常/告警</span>
+          <span><i class="lg" style="border:2px solid var(--cyan);background:none"></i>库房</span>
+          <span><i class="lg" style="border:1.5px dashed var(--ok);border-radius:3px;background:none"></i>电子围栏</span>
+        </div>
+        <!-- 下钻抽屉 -->
+        <div class="drawer" id="drawer">
+          <div class="dh"><span id="drTitle">作业点详情</span><a onclick="drawer.classList.remove('open')">✕</a></div>
+          <div style="padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--sub)">
+            出库单 BBCK20261105003 · 一单多点（3 个卸货点） · 双人双锁已签<br>
+            押运员：李强 / 川L·8D527 · 核定载重 3.2t
+          </div>
+          <div class="tl">
+            <div class="tn done"><span class="tm">昨日 21:40</span><b>计划上报</b><i>三级上报完成 · 项目负责人审核通过</i></div>
+            <div class="tn done"><span class="tm">07:12</span><b>出库登记</b><i>双人双锁 · 登记签名→复核签名（R12）</i></div>
+            <div class="tn done"><span class="tm">07:35</span><b>押运发车</b><i>卸货点序列已确认 · 沿途打卡 4 处</i></div>
+            <div class="tn done"><span class="tm">08:47</span><b>到场接收</b><i>逐点核量一致（R14）· 围栏命中 GEOFENCE</i></div>
+            <div class="tn miss"><span class="tm">--</span><b>爆破登记</b><i>未提交 · 安全员差异单未闭环（阻塞）</i></div>
+            <div class="tn"><span class="tm">--</span><b>民警核验</b><i>待爆破完成后发起（远程核验）</i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右列 -->
+    <div class="col-r">
+      <div class="panel" style="flex:1.5">
+        <h3>异常预警事件墙<em>五类异常 · 实时推送</em></h3>
+        <div class="bd" id="evtList"></div>
+      </div>
+      <div class="panel trend">
+        <h3>近 7 日趋势<em>计划 / 闭环率 / 异常</em></h3>
+        <div class="bd" style="padding:6px 8px">
+          <svg viewBox="0 0 320 110" width="100%" height="100%">
+            <g stroke="#1d3d6e" stroke-width="1">
+              <line x1="30" y1="15" x2="310" y2="15"/><line x1="30" y1="55" x2="310" y2="55"/><line x1="30" y1="95" x2="310" y2="95"/>
+            </g>
+            <g fill="#7fa3d8" font-size="9">
+              <text x="4" y="18">20</text><text x="4" y="58">10</text><text x="8" y="98">0</text>
+              <text x="30" y="108">10-29</text><text x="84" y="108">10-30</text><text x="138" y="108">10-31</text>
+              <text x="192" y="108">11-01</text><text x="246" y="108">11-02</text><text x="296" y="108">11-03</text>
+            </g>
+            <polyline points="30,55 82,42 134,48 186,35 238,40 284,30" fill="none" stroke="#00e0ff" stroke-width="2"/>
+            <polyline points="30,75 82,60 134,66 186,58 238,62 284,52" fill="none" stroke="#00e676" stroke-width="2"/>
+            <polyline points="30,95 82,90 134,92 186,84 238,88 284,78" fill="none" stroke="#ff4d4d" stroke-width="2"/>
+            <circle cx="284" cy="30" r="3" fill="#00e0ff"/><circle cx="284" cy="52" r="3" fill="#00e676"/><circle cx="284" cy="78" r="3" fill="#ff4d4d"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const clk = document.getElementById('clk');
+  setInterval(()=>{ clk.textContent = new Date().toLocaleTimeString('zh-CN',{hour12:false}); },1000);
+  clk.textContent = new Date().toLocaleTimeString('zh-CN',{hour12:false});
+
+  const sites = [
+    ['兴盛砂石项目部 1# 采区','出库 2.4t · 在途','ok','st ok'],
+    ['岷江航电 3# 围堰','即将到场','ok','st ok'],
+    ['竹根滩整治作业点','安全监理登记中','ok','st ok'],
+    ['安谷镇道路工程 K12','距计划超时 25min','warn','st warn'],
+    ['水口镇土地整理 2# 点','数量差异 · 异常单挂起','bad','st bad'],
+    ['棉竹采石场 5# 掌子面','待出库（已审核）','ok','st ok'],
+  ];
+  document.getElementById('siteList').innerHTML = sites.map(s=>
+    `<div class="site" onclick="show('${s[0]}')"><span class="dot ${s[2]}"></span>
+     <div class="nm"><b>${s[0]}</b><i>${s[1]}</i></div><span class="${s[3]}">详情</span></div>`).join('');
+
+  const evts = [
+    ['数量不符','水口镇土地整理 2# 点','实收 240kg / 实发 245kg · 已生成异常单','bad','09:12'],
+    ['偏移路线','川L·8D527','偏离规划路线 620m×3 点 · 已推送民警','bad','09:05'],
+    ['超时未到场','安谷镇道路工程 K12','超出计划时间 25 分钟未进围栏','warn','08:55'],
+    ['未核验','兴盛砂石项目部（昨日）','超 20h 未远程核验 · 进督办','warn','08:00'],
+    ['越界预警','川L·77Q31','途经打卡点缺卡 1 处（R15 标注）','warn','07:52'],
+  ];
+  const evtList = document.getElementById('evtList');
+  evtList.innerHTML = evts.map(e=>
+    `<div class="evt ${e[3]}"><div class="et"><b>${e[0]} · ${e[1]}</b><span>${e[4]}</span></div><p>${e[2]}</p></div>`).join('');
+
+  function show(name){
+    document.getElementById('drTitle').textContent = name;
+    document.getElementById('drawer').classList.add('open');
+  }
+  // 模拟事件推送
+  const pool = [['偏离路线','川L·3F909','偏离规划路线 540m×3 点','bad'],['超时未到场','棉竹采石场 5#','超出计划 18 分钟未进围栏','warn']];
+  let pi = 0;
+  setInterval(()=>{
+    const e = pool[pi++ % pool.length];
+    const div = document.createElement('div');
+    div.className = 'evt fresh ' + e[3];
+    div.innerHTML = `<div class="et"><b>${e[0]} · ${e[1]}</b><span>刚刚</span></div><p>${e[2]}</p>`;
+    evtList.prepend(div);
+  }, 15000);
+</script>
+</body>
+</html>

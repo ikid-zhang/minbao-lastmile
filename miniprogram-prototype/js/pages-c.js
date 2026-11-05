@@ -385,7 +385,7 @@ Object.assign(PAGES, {
       const excList = DB.exceptions.filter(e => !scoped || !e.plan || planInMyArea(planById(e.plan)));
       const met = (label, v, unit, good) => `<div class="metric ${good ? 'good' : ''}"><b>${v}<i>${unit}</i></b><span>${label}</span></div>`;
       return `
-      <div class="page-title">监管统计（I06/K08 · 与第三方大屏同源）<span class="page-sub">${scoped ? esc(curArea().name) + ' · ' + esc(curPolice().name) : '全域口径（治安管理员）'}</span></div>
+      <div class="page-title">监管统计（I06/K08 · 与俯瞰大屏同源）<span class="page-sub">${scoped ? esc(curArea().name) + ' · ' + esc(curPolice().name) : '全域口径（治安管理员）'}</span></div>
       <div class="metric-grid">
         ${met('链路闭环率', s.closedRate, '%', s.closedRate >= 95)}
         ${met('民警核验覆盖率', s.verifyRate, '%', s.verifyRate >= 100)}
@@ -403,7 +403,7 @@ Object.assign(PAGES, {
         <div class="kv"><span>检查任务</span><b>${s.checks} 单 · 完成 ${s.checksDone}</b></div>
         <div class="kv ${s.exceptions ? 'warn' : ''}"><span>异常/预警</span><b>${s.exceptions} 条</b></div>
       </div>
-      <div class="sec-title">异常看板（G05 · 同步第三方大屏）</div>
+      <div class="sec-title">异常看板（G05 · 同步俯瞰大屏事件墙）</div>
       ${excList.length ? excList.map(e => `<div class="card warn-card sm">
         <div class="kv"><span>${esc(e.type)} · ${timeAgo(e.time)}</span><b>${statusPill(e.status)}</b></div>
         <p class="f-note">${esc(e.desc)}</p>

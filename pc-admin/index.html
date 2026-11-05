@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>民爆最后一公里 · PC 管理后台（L 模块原型）</title>
+<style>
+  :root{
+    --red:#a31515; --red2:#c0392b; --bg:#f4f6fa; --card:#fff; --line:#e4e8f0;
+    --txt:#26334d; --sub:#8a94a8; --ok:#1a9e5c; --warn:#d98600; --bad:#d43030;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:14px}
+  .app{display:flex;height:100vh;min-width:1100px}
+  /* 侧边 */
+  .side{width:220px;background:linear-gradient(180deg,#8f1010,#a31515);color:#fff;display:flex;flex-direction:column;flex:none}
+  .logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.15)}
+  .logo b{font-size:16px;letter-spacing:1px}
+  .logo i{display:block;font-style:normal;font-size:11px;opacity:.7;margin-top:3px}
+  .nav{flex:1;padding:10px 0;overflow:auto}
+  .ni{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;color:rgba(255,255,255,.82);border-left:3px solid transparent;font-size:14px}
+  .ni:hover{background:rgba(255,255,255,.08)}
+  .ni.on{background:rgba(255,255,255,.14);border-left-color:#ffd7d7;color:#fff;font-weight:600}
+  .ni .em{width:20px;text-align:center;opacity:.9}
+  .foot-user{padding:14px 18px;border-top:1px solid rgba(255,255,255,.15);font-size:12px;opacity:.85}
+  /* 主区 */
+  .m{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{height:52px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:14px;flex:none}
+  .topbar .crumb{color:var(--sub);font-size:13px}
+  .topbar .sp{flex:1}
+  .badge{position:relative;font-size:15px;cursor:pointer}
+  .badge::after{content:"5";position:absolute;top:-6px;right:-8px;background:var(--bad);color:#fff;font-size:10px;border-radius:999px;padding:1px 5px}
+  .av{width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .content{flex:1;overflow:auto;padding:18px 20px}
+  .page{display:none}.page.on{display:block}
+  h2.pg{font-size:17px;margin-bottom:4px}
+  .desc{color:var(--sub);font-size:12px;margin-bottom:14px}
+  /* 卡片 */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  .kc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .kc b{font-size:26px;font-family:"DIN Alternate",sans-serif}
+  .kc i{display:block;font-style:normal;color:var(--sub);font-size:12px;margin-top:2px}
+  .kc.red b{color:var(--bad)} .kc.green b{color:var(--ok)} .kc.blue b{color:#1668dc}
+  .kc .tr{font-size:11px;float:right}
+  .up{color:var(--ok)}.dn{color:var(--bad)}
+  .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .card h4{font-size:14px;margin-bottom:10px}
+  .card h4 a{float:right;font-size:12px;color:var(--red);text-decoration:none;font-weight:400}
+  /* 表格 */
+  table.tb{width:100%;border-collapse:collapse;font-size:13px}
+  .tb th{background:#f7f9fc;text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);color:var(--sub);font-weight:500;white-space:nowrap}
+  .tb td{padding:9px 10px;border-bottom:1px solid #f0f3f8;vertical-align:middle}
+  .tb tr:hover td{background:#fafcff}
+  .tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .tag.ok{background:#e6f7ef;color:var(--ok)}
+  .tag.warn{background:#fdf3e3;color:var(--warn)}
+  .tag.bad{background:#fdeaea;color:var(--bad)}
+  .tag.gray{background:#eef1f6;color:var(--sub)}
+  .tag.red{background:#fbe9e9;color:var(--red)}
+  .op{color:var(--red);cursor:pointer;font-size:12px;white-space:nowrap}
+  .op.gray{color:var(--sub)}
+  /* 工具条 */
+  .tools{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+  .btn{background:var(--red);color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:13px}
+  .btn.ghost{background:#fff;color:var(--txt);border:1px solid var(--line)}
+  .inp,select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:13px;background:#fff;min-width:150px}
+  .tools .sp{flex:1}
+  .pager{display:flex;justify-content:flex-end;gap:6px;margin-top:12px;color:var(--sub);font-size:12px}
+  .pager span{border:1px solid var(--line);border-radius:5px;padding:4px 10px;background:#fff}
+  .pager span.on{background:var(--red);color:#fff;border-color:var(--red)}
+  /* 待办 */
+  .todo{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed #f0f3f8;font-size:13px}
+  .todo b{flex:1;font-weight:500}
+  .todo .t{color:var(--sub);font-size:12px}
+  .lv{width:8px;height:8px;border-radius:50%;flex:none}
+  /* 图表（CSS 条形） */
+  .bars{display:flex;flex-direction:column;gap:10px}
+  .bar{display:flex;align-items:center;gap:10px;font-size:12px}
+  .bar .lb{width:110px;color:var(--sub);flex:none}
+  .bar .tk{flex:1;height:12px;background:#eef1f6;border-radius:6px;overflow:hidden}
+  .bar .fl{height:100%;border-radius:6px;background:linear-gradient(90deg,#c0392b,#a31515)}
+  .bar .vl{width:52px;text-align:right;font-weight:600}
+  /* 系统管理 */
+  .sysgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed #f0f3f8;font-size:13px}
+  .kv span{color:var(--sub)}
+  .switch{width:36px;height:20px;border-radius:999px;background:var(--ok);position:relative;cursor:pointer;flex:none}
+  .switch::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;right:2px}
+  .switch.off{background:#cdd4e0}.switch.off::after{right:auto;left:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><b>民爆最后一公里</b><i>PC 管理后台 · 治安管理员</i></div>
+    <nav class="nav" id="nav">
+      <div class="ni on" data-p="work"><span class="em">🏠</span>工作台（L01）</div>
+      <div class="ni" data-p="master"><span class="em">🗂️</span>主数据管理（L02）</div>
+      <div class="ni" data-p="audit"><span class="em">✅</span>主数据审核（L03）</div>
+      <div class="ni" data-p="check"><span class="em">🧾</span>检查配置（L04）</div>
+      <div class="ni" data-p="stat"><span class="em">📈</span>监管统计报表（L05）</div>
+      <div class="ni" data-p="archive"><span class="em">🗄️</span>一作业点一档（L06）</div>
+      <div class="ni" data-p="sys"><span class="em">⚙️</span>系统管理（L07）</div>
+      <div class="ni" data-p="log"><span class="em">📜</span>日志与大屏配置（L08）</div>
+    </nav>
+    <div class="foot-user">👮 王警官 · 治安大队<br>全域数据权限 · 2026-11-05</div>
+  </aside>
+
+  <main class="m">
+    <div class="topbar">
+      <span class="crumb" id="crumb">工作台</span><span class="sp"></span>
+      <span class="badge">🔔</span><div class="av">王</div>
+    </div>
+    <div class="content">
+
+      <!-- L01 工作台 -->
+      <section class="page on" id="p-work">
+        <h2 class="pg">工作台</h2>
+        <div class="desc">今日概览与待办直达（与小程序端、俯瞰大屏同源）</div>
+        <div class="cards">
+          <div class="kc blue"><span class="tr up">▲ 12%</span><b>18</b><i>今日作业计划</i></div>
+          <div class="kc"><b>6.42 t</b><i>今日出库总量</i></div>
+          <div class="kc green"><b>94%</b><i>链路闭环率（目标≥95%）</i></div>
+          <div class="kc red"><span class="tr dn">+2</span><b>3</b><i>未闭环异常</i></div>
+        </div>
+        <div class="row2">
+          <div class="card">
+            <h4>待办事项<a>全部 →</a></h4>
+            <div class="todo"><span class="lv" style="background:var(--bad)"></span><b>计划审核：兴盛砂石项目部（2.8t，须治安大队知悉）</b><span class="t">08:40</span><span class="op">处理</span></div>
+            <div class="todo"><span class="lv" style="background:var(--bad)"></span><b>差异单 DX-1105-02：水口镇 2# 点 实收差 5kg</b><span class="t">09:12</span><span class="op">处理</span></div>
+            <div class="todo"><span class="lv" style="background:var(--warn)"></span><b>整改单 ZG-1104-07：安谷 K12 警戒距离不足（今日到期）</b><span class="t">昨日</span><span class="op">催办</span></div>
+            <div class="todo"><span class="lv" style="background:var(--warn)"></span><b>资质临期：押运员 李强 从业资格证 11-20 到期</b><span class="t">自动</span><span class="op gray">查看</span></div>
+            <div class="todo"><span class="lv" style="background:#cdd4e0"></span><b>退库预警 T+2：BBCK20261103001 尚余 120kg 未退</b><span class="t">自动</span><span class="op gray">查看</span></div>
+          </div>
+          <div class="card">
+            <h4>今日关键指标</h4>
+            <div class="bars">
+              <div class="bar"><span class="lb">节点完整率</span><div class="tk"><div class="fl" style="width:98%"></div></div><span class="vl">98%</span></div>
+              <div class="bar"><span class="lb">提前6h填报率</span><div class="tk"><div class="fl" style="width:92%"></div></div><span class="vl">92%</span></div>
+              <div class="bar"><span class="lb">民警核验覆盖</span><div class="tk"><div class="fl" style="width:88%"></div></div><span class="vl">88%</span></div>
+              <div class="bar"><span class="lb">分级到场执行</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
+              <div class="bar"><span class="lb">主数据完整率</span><div class="tk"><div class="fl" style="width:97%"></div></div><span class="vl">97%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h4>在途运输实时监控<a onclick="alert('跳转俯瞰大屏（G 模块）')">俯瞰大屏 →</a></h4>
+          <table class="tb">
+            <thead><tr><th>运输单</th><th>车辆/押运员</th><th>卸货点</th><th>出发</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>BBYS20261105003</td><td>川L·8D527 / 李强</td><td>3 个（第 2 点在途）</td><td>07:35</td><td><span class="tag warn">部分到达</span></td><td class="op">轨迹 · 联单</td></tr>
+              <tr><td>BBYS20261105004</td><td>川L·3F909 / 周斌</td><td>1 个</td><td>08:10</td><td><span class="tag bad">偏航告警</span></td><td class="op">轨迹 · 处置</td></tr>
+              <tr><td>BBYS20261105005</td><td>川L·77Q31 / 郑海</td><td>2 个</td><td>08:42</td><td><span class="tag ok">运输中</span></td><td class="op">轨迹</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- L02 主数据管理 -->
+      <section class="page" id="p-master">
+        <h2 class="pg">主数据管理（8 类）</h2>
+        <div class="desc">民爆公司 / 点位 / 库房 / 四大员 / 项目备案 / 项目负责人 / 车辆 / 路线 —— 与小程序端（J12）同源留痕，字段对照《民爆管理表单.et》</div>
+        <div class="tools">
+          <button class="btn">＋ 新增</button>
+          <button class="btn ghost">批量导入</button>
+          <button class="btn ghost">导出 Excel</button>
+          <span class="sp"></span>
+          <select><option>全部类型（8 类）</option><option>民爆公司</option><option>点位</option><option>库房</option><option>四大员</option><option>项目备案</option><option>项目负责人</option><option>车辆</option><option>路线</option></select>
+          <select><option>全部状态</option><option>生效</option><option>停用</option></select>
+          <input class="inp" placeholder="搜索名称 / 证号 / 车牌">
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>类型</th><th>名称 / 编号</th><th>关键信息</th><th>来源</th><th>状态</th><th>最近维护</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>民爆公司</td><td>乐山民安爆破工程有限公司</td><td>法人 陈国安 · 爆破许可 川爆安许〔2024〕08 号</td><td><span class="tag gray">对接·本地修正</span></td><td><span class="tag ok">生效</span></td><td>11-04 张警官</td><td class="op">编辑 · 停用 · 留痕</td></tr>
+              <tr><td>点位</td><td>兴盛砂石项目部 1# 采区</td><td>围栏 300m · 所属 兴盛砂石项目</td><td><span class="tag gray">对接</span></td><td><span class="tag ok">生效</span></td><td>11-02 系统</td><td class="op">编辑 · 停用</td></tr>
+              <tr><td>库房</td><td>民安销售库</td><td>销售库 · 库管员 2 名（双人双锁）</td><td><span class="tag gray">对接</span></td><td><span class="tag ok">生效</span></td><td>10-30 张警官</td><td class="op">编辑 · 停用</td></tr>
+              <tr><td>四大员</td><td>李强（押运员）</td><td>作业证 510102********0011 · 有效期至 2026-11-20</td><td><span class="tag gray">对接</span></td><td><span class="tag warn">证照临期</span></td><td>11-01 系统</td><td class="op">编辑 · 停用</td></tr>
+              <tr><td>项目备案</td><td>岷江航电 3# 围堰爆破</td><td>工区 岷江东岸 · 有效期至 2026-12-31</td><td><span class="tag gray">对接</span></td><td><span class="tag ok">生效</span></td><td>10-28 企业申报</td><td class="op">编辑 · 停用</td></tr>
+              <tr><td>车辆</td><td>川L·8D527</td><td>危货运输车 · 核定载重 3.2t · 承运 乐山交运</td><td><span class="tag red">自录</span></td><td><span class="tag ok">生效</span></td><td>11-03 张警官</td><td class="op">编辑 · 停用</td></tr>
+              <tr><td>路线</td><td>民安销售库→兴盛 1# 采区</td><td>途经 省道104 · 23km · 打卡点 4 处</td><td><span class="tag red">自录</span></td><td><span class="tag ok">启用</span></td><td>11-04 张警官</td><td class="op">编辑 · 停用</td></tr>
+              <tr><td>路线</td><td>岷江销售库→水口 2# 点</td><td>途经 岷河大道 · 15km · 打卡点 3 处</td><td><span class="tag red">自录</span></td><td><span class="tag gray">停用</span></td><td>10-25 张警官</td><td class="op">恢复 · 留痕</td></tr>
+            </tbody>
+          </table>
+          <div class="pager"><span>«</span><span class="on">1</span><span>2</span><span>3</span><span>»</span></div>
+        </div>
+      </section>
+
+      <!-- L03 审核 -->
+      <section class="page" id="p-audit">
+        <h2 class="pg">主数据审核生效（J09）</h2>
+        <div class="desc">企业申报的新增 / 变更主数据，审核生效后方可被作业节点引用（未生效拦截）</div>
+        <div class="tools">
+          <button class="btn">✔ 批量通过</button>
+          <button class="btn ghost">✕ 驳回（须填原因）</button><span class="sp"></span>
+          <input type="checkbox" id="ck" style="accent-color:#a31515"><label for="ck" style="color:var(--sub)">全选</label>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th style="width:36px"></th><th>类型</th><th>申报内容</th><th>申报单位</th><th>申报时间</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td><input type="checkbox" style="accent-color:#a31515"></td><td>四大员</td><td>新增 安全员 刘志明（乐山民安）</td><td>乐山民安爆破</td><td>11-05 09:20</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#a31515"></td><td>车辆</td><td>变更 川L·77Q31 核定载重 2.5t→3.0t</td><td>乐山交运</td><td>11-05 08:52</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#a31515"></td><td>项目备案</td><td>新增 竹根滩整治工程（有效期 1 年）</td><td>岷江工程公司</td><td>11-04 17:30</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#a31515"></td><td>点位</td><td>新增 棉竹采石场 5# 掌子面（围栏 400m）</td><td>乐山民安爆破</td><td>11-04 15:02</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- L04 检查配置 -->
+      <section class="page" id="p-check">
+        <h2 class="pg">检查配置（K02 / K04）</h2>
+        <div class="desc">检查项模板按环节自定义、字典化可复用；分级阈值规则变更留痕</div>
+        <div class="sysgrid">
+          <div class="card">
+            <h4>分级阈值与到场规则</h4>
+            <div class="kv"><span>单次作业量 &lt; 600kg</span><b>公安抽查</b></div>
+            <div class="kv"><span>600–1200kg</span><b>工区警务室到场</b></div>
+            <div class="kv"><span>&gt; 1200kg</span><b>治安大队到场</b></div>
+            <div class="kv"><span>雷管 TNT 当量折算系数</span><b>0.86（可配）</b></div>
+            <div class="kv"><span>每次检查强制拍照</span><div class="switch"></div></div>
+          </div>
+          <div class="card">
+            <h4>检查项模板（按环节）</h4>
+            <div class="kv"><span>出库环节</span><b>三联单 · 双人双锁 · 批次台账（3 项）</b></div>
+            <div class="kv"><span>运输环节</span><b>路线一致 · 打卡完整 · 车辆资质（4 项）</b></div>
+            <div class="kv"><span>爆破环节</span><b>警戒距离 · 盲炮处置 · 共核验签名（3 项）</b></div>
+            <div class="kv"><span>库房环节</span><b>台账一致 · 双锁 · 温湿度（3 项）</b></div>
+            <div class="kv"><span>模板变更</span><span class="op">新增模板 · 变更留痕</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- L05 统计报表 -->
+      <section class="page" id="p-stat">
+        <h2 class="pg">监管统计报表（I06 / K08）</h2>
+        <div class="desc">按辖区 / 时段钻取，Excel 导出；可推送俯瞰大屏指标看板</div>
+        <div class="tools">
+          <select><option>全域</option><option>市中区</option><option>五通桥区</option></select>
+          <select><option>近 7 日</option><option>近 30 日</option><option>本月</option></select>
+          <button class="btn ghost">导出 Excel</button>
+        </div>
+        <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+          <div class="card"><h4>链路闭环率（近 7 日）</h4><div class="bars">
+            <div class="bar"><span class="lb">本周</span><div class="tk"><div class="fl" style="width:94%"></div></div><span class="vl">94%</span></div>
+            <div class="bar"><span class="lb">上周</span><div class="tk"><div class="fl" style="width:91%"></div></div><span class="vl">91%</span></div>
+          </div></div>
+          <div class="card"><h4>公安检查覆盖率</h4><div class="bars">
+            <div class="bar"><span class="lb">应检 42 环节</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
+            <div class="bar"><span class="lb">分级到场 9 次</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
+          </div></div>
+          <div class="card"><h4>数量差异率 / 退库执行率</h4><div class="bars">
+            <div class="bar"><span class="lb">差异率</span><div class="tk"><div class="fl" style="width:6%;background:var(--warn)"></div></div><span class="vl">1.2%</span></div>
+            <div class="bar"><span class="lb">退库执行</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
+          </div></div>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>辖区</th><th>计划数</th><th>闭环率</th><th>核验覆盖</th><th>差异单</th><th>异常未闭环</th><th>平均在途</th></tr></thead>
+            <tbody>
+              <tr><td>市中区</td><td>18</td><td><b style="color:var(--ok)">94%</b></td><td>88%</td><td>2</td><td><span class="tag bad">3</span></td><td>1h 12m</td></tr>
+              <tr><td>五通桥区</td><td>9</td><td><b style="color:var(--ok)">100%</b></td><td>100%</td><td>0</td><td><span class="tag ok">0</span></td><td>0h 58m</td></tr>
+              <tr><td>沙湾区</td><td>6</td><td><b style="color:var(--warn)">83%</b></td><td>67%</td><td>1</td><td><span class="tag warn">1</span></td><td>1h 30m</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- L06 一档 -->
+      <section class="page" id="p-archive">
+        <h2 class="pg">一作业点一档（F07）</h2>
+        <div class="desc">六类单据 + 检查史 + 全链日志按作业点归档，PDF 在线预览与批量下载</div>
+        <div class="tools">
+          <select><option>全部状态</option><option>已完成</option><option>进行中</option><option>异常</option></select>
+          <input class="inp" placeholder="作业点 / 计划单号">
+          <button class="btn">查询</button>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>计划单号</th><th>作业点</th><th>作业量</th><th>状态</th><th>单据完整度</th><th>检查史</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>BBJH20261105003</td><td>兴盛砂石 1# 采区</td><td>2.4t</td><td><span class="tag warn">部分到达</span></td><td>4/6 节点</td><td>1 次</td><td class="op">档案 · 轨迹 · 日志</td></tr>
+              <tr><td>BBJH20261104011</td><td>岷江航电 3# 围堰</td><td>1.8t</td><td><span class="tag ok">已完成</span></td><td>6/6 节点</td><td>2 次</td><td class="op">档案 · PDF 下载</td></tr>
+              <tr><td>BBJH20261104008</td><td>水口镇土地整理 2#</td><td>980kg</td><td><span class="tag bad">差异挂起</span></td><td>4/6 节点</td><td>1 次</td><td class="op">档案 · 异常单</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- L07 系统管理 -->
+      <section class="page" id="p-sys">
+        <h2 class="pg">系统管理</h2>
+        <div class="desc">用户 / 角色 / 权限（RBAC + 辖区数据权限）、字典与业务参数</div>
+        <div class="sysgrid">
+          <div class="card"><h4>用户与角色</h4>
+            <table class="tb"><thead><tr><th>用户</th><th>角色</th><th>数据权限</th><th>状态</th></tr></thead>
+              <tbody>
+                <tr><td>王警官</td><td>治安管理员</td><td>全域</td><td><span class="tag ok">启用</span></td></tr>
+                <tr><td>张警官（张警长）</td><td>治安管理员</td><td>市中区</td><td><span class="tag ok">启用</span></td></tr>
+                <tr><td>各派出所民警 ×26</td><td>辖区民警</td><td>本辖区</td><td><span class="tag ok">启用</span></td></tr>
+                <tr><td>警务室 ×8</td><td>警务室到场</td><td>本工区</td><td><span class="tag ok">启用</span></td></tr>
+              </tbody></table>
+          </div>
+          <div class="card"><h4>业务参数（sys_config）</h4>
+            <div class="kv"><span>计划民警审核开关 plan_audit_enable</span><div class="switch"></div></div>
+            <div class="kv"><span>提前 6h 强制填报（R9）</span><div class="switch"></div></div>
+            <div class="kv"><span>作业点围栏默认半径</span><b>300 m</b></div>
+            <div class="kv"><span>跨日退库预警 T+N</span><b>T+3</b></div>
+            <div class="kv"><span>出库超量容差（R3）</span><b>5%</b></div>
+            <div class="kv"><span>行政区划字典（12 位编码）</span><span class="op gray">640 条 · sys_dict_item</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- L08 日志与大屏配置 -->
+      <section class="page" id="p-log">
+        <h2 class="pg">操作日志与大屏配置（I04 / G07）</h2>
+        <div class="desc">全量操作日志按月分表；俯瞰大屏轮播与展示配置</div>
+        <div class="sysgrid">
+          <div class="card"><h4>操作日志检索</h4>
+            <div class="tools">
+              <select><option>全部动作</option><option>审核</option><option>停用/恢复</option><option>导出</option><option>核验</option></select>
+              <input class="inp" placeholder="操作人 / 单号 / 时间段">
+              <button class="btn">查询</button>
+            </div>
+            <table class="tb"><thead><tr><th>时间</th><th>操作人</th><th>动作</th><th>对象</th></tr></thead>
+              <tbody>
+                <tr><td>11-05 09:41</td><td>王警官</td><td>导出监管报表</td><td>市中区 · 近7日</td></tr>
+                <tr><td>11-05 09:12</td><td>系统</td><td>生成差异异常单</td><td>DX-1105-02</td></tr>
+                <tr><td>11-04 16:20</td><td>张警官</td><td>路线新增（自录生效）</td><td>民安库→兴盛1#</td></tr>
+                <tr><td>11-04 15:02</td><td>企业申报</td><td>主数据提交审核</td><td>棉竹 5# 掌子面</td></tr>
+              </tbody></table>
+          </div>
+          <div class="card"><h4>俯瞰大屏配置</h4>
+            <div class="kv"><span>轮播辖区</span><b>市中区 / 五通桥区 / 沙湾区</b></div>
+            <div class="kv"><span>轮播间隔</span><b>30 s</b></div>
+            <div class="kv"><span>告警声音</span><div class="switch off"></div></div>
+            <div class="kv"><span>KPI 口径</span><b>当日 · 全域</b></div>
+            <div class="kv"><span>地图底图</span><b>政务内网离线瓦片</b></div>
+            <div class="kv"><span>预览</span><span class="op" onclick="window.open('../bigscreen/index.html')">打开俯瞰大屏 →</span></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+<script>
+  const names = {work:'工作台', master:'主数据管理（L02）', audit:'主数据审核（L03）', check:'检查配置（L04）',
+    stat:'监管统计报表（L05）', archive:'一作业点一档（L06）', sys:'系统管理（L07）', log:'日志与大屏配置（L08）'};
+  document.getElementById('nav').addEventListener('click', e=>{
+    const ni = e.target.closest('.ni'); if(!ni) return;
+    document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
+    ni.classList.add('on');
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+    document.getElementById('p-'+ni.dataset.p).classList.add('on');
+    document.getElementById('crumb').textContent = names[ni.dataset.p];
+  });
+</script>
+</body>
+</html>

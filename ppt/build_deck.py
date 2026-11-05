@@ -379,12 +379,12 @@ VERIFY = """
         <div class="anim" style="text-align:center;color:var(--accent);font-size:calc(var(--sc)*18px)">↕</div>
         <div class="card tint anim" style="text-align:center;padding:calc(var(--sc)*18px)"><div class="ct">统一接口</div><div class="cb mono">/bb/overview/{planId}</div></div>
         <div class="anim" style="text-align:center;color:var(--accent);font-size:calc(var(--sc)*18px)">↕</div>
-        <div class="card anim" style="text-align:center;padding:calc(var(--sc)*18px)"><div class="ct">俯瞰大屏</div><div class="cb">消费同一份 JSON</div></div>
+        <div class="card anim" style="text-align:center;padding:calc(var(--sc)*18px)"><div class="ct">俯瞰大屏（自建）</div><div class="cb">GIS 一张图 · 事件墙 · 同一份 JSON</div></div>
       </div>
     </div>
     <div class="foot"><span>超 24 小时未核验进督办列表</span><span class="pg"></span></div>
   </div>
-  <div class="notes">大屏是第三方的，我们不做大屏。我们保证：大屏点开一个作业点，看到的数据和民警手机上一样。</div>
+  <div class="notes">俯瞰大屏由我们建设（系统建设内容）：中央地图一张图，作业点、库房、在途车辆三层图层，异常事件墙实时滚动。我们保证：大屏点开一个作业点，看到的数据和民警手机上一样——同一份 JSON，同源同口径。</div>
 </section>
 """
 
