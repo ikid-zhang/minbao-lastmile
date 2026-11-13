@@ -612,7 +612,7 @@
         </div>
         <div class="card" style="padding:6px 12px 12px">
           <table class="tb">
-            <thead><tr><th style="width:52px">编号</th><th style="width:172px;white-space:nowrap">公司名称</th><th style="width:176px">注册地址</th><th style="width:84px;white-space:nowrap">法定代表人</th><th style="width:106px;white-space:nowrap">从业人员</th><th style="width:152px;white-space:nowrap">许可证号</th><th style="width:106px;white-space:nowrap">许可证有效期</th><th style="width:140px">已关联</th><th style="width:62px">状态</th><th style="width:120px;white-space:nowrap">操作</th></tr></thead>
+            <thead><tr><th style="width:44px">编号</th><th style="width:150px;white-space:nowrap">公司名称</th><th style="width:140px">注册地址</th><th style="width:76px;white-space:nowrap">法定代表人</th><th style="width:128px;white-space:nowrap">从业人员</th><th style="width:142px;white-space:nowrap">许可证号</th><th style="width:96px;white-space:nowrap">许可证有效期</th><th style="width:116px">已关联</th><th style="width:52px">状态</th><th style="width:112px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="tb-companies"><tr><td colspan="10" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
@@ -1443,11 +1443,13 @@
         const ps = (REF_CACHE.persons || []).filter(p => p.company === x.id).length;
         const vs = (REF_CACHE.vehicles || []).filter(v => v.company === x.id).length;
         return row('<td>' + x.id + '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b>' + (x.name || '') + '</b></td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.addr || '') + '">' + (x.addr || '-') + '</td><td style="white-space:nowrap">' + (x.legal || '-') +
-          '</td><td><a class="op" style="font-size:13px" onclick="gotoCompanyPersons(\'' + x.id + '\')" title="查看本公司从业人员（点击进入人员列表）">' + ps + ' 人</a>' +
-          (Number(x.staff) ? '<br><span style="color:var(--sub);font-size:12px;white-space:nowrap">备案 ' + x.staff + ' 人</span>' : '') +
+          '</td><td><a class="op" style="font-size:13px' + ((Number(x.staff) && ps > Number(x.staff)) ? ';color:var(--bad);font-weight:600' : '') + '" onclick="gotoCompanyPersons(\'' + x.id + '\')" title="查看本公司从业人员（点击进入人员列表）">' + ps + ' 人</a>' +
+          (Number(x.staff) ? '<br><span style="color:var(--sub);font-size:12px;white-space:nowrap">备案 ' + x.staff +
+            (ps > Number(x.staff) ? ' · <span style="color:var(--bad);font-weight:600">超编 ' + (ps - Number(x.staff)) + '</span>'
+                                  : ' · 未建档 ' + (Number(x.staff) - ps)) + '</span>' : '') +
           '</td><td style="white-space:nowrap">' + (x.licence || '-') + '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">' + (x.licenceExpire || '-') + '</td>' +
-          '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">项目 ' + prs + ' · 人员 ' + ps + ' · 车辆 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
-          '<td class="op"><a onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">停用/恢复</a></td>');
+          '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">项目 ' + prs + ' · 人 ' + ps + ' · 车 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
+          '<td class="op"><a onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">' + (x.status === '生效' ? '停用' : '恢复') + '</a></td>');
       }).join('');
     } else if (type === 'sites') {
       tb.innerHTML = list.map(x => {
@@ -1625,8 +1627,23 @@
       REF_CACHE[cfg.type] = null;
       await loadSub(subKey);
       if (subKey === 'm-workareas' || subKey === 'm-sites') await loadWorkareas();
-      alert((id ? '已更新' : '已新增') + cfg.label + '，已写入服务端并留痕（小程序端即时可见）');
+      let okMsg = (id ? '已更新' : '已新增') + cfg.label + '，已写入服务端并留痕（小程序端即时可见）';
+      if (subKey === 'm-persons') okMsg += staffOverflowMsg(body.company);
+      alert(okMsg);
     } catch (e) { alert('请求失败，请确认后端服务已启动：' + e); }
+  }
+
+  /* 建档人数超出许可证备案人数时的告警文案（不阻断保存，保存后提示） */
+  function staffOverflowMsg(cid) {
+    if (!cid) return '';
+    const co = (SUB_CACHE['m-companies'] || []).find(function(c){ return c.id === cid; }) ||
+               (REF_CACHE.companies || []).find(function(c){ return c.id === cid; });
+    if (!co || !Number(co.staff)) return '';
+    const plist = (SUB_CACHE['m-persons'] && SUB_CACHE['m-persons'].length) ? SUB_CACHE['m-persons'] : (REF_CACHE.persons || []);
+    const n = plist.filter(function(p){ return p.company === cid; }).length;
+    const over = n - Number(co.staff);
+    if (over <= 0) return '';
+    return '\n\n⚠️ 超编告警：' + (co.name || cid) + ' 已建档 ' + n + ' 人，超过许可证备案 ' + co.staff + ' 人（超 ' + over + ' 人）。请核对人员档案，或先变更备案人数。';
   }
 
   async function toggleRec(subKey, id) {
