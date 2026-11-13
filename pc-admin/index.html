@@ -8,18 +8,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <title>民爆最后一公里 · PC 管理后台（L 模块原型）</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600&display=swap');
   :root{
-    --dp-ground:#E8EEF7; --dp-ink:#0E1A3C; --dp-ink2:#5A6A88; --dp-muted:#DCE5F4;
-    --dp-rule:#C3D4F0; --dp-accent:#1E5EFF; --dp-field:#E4EAF5; --dp-panel:#EDF1F9;
-    --dp-on-field:#0E1A3C; --dp-on-field2:#5A6A88;
-    --red:var(--dp-accent); --red2:#2E6BFF; --bg:var(--dp-ground); --card:var(--dp-panel);
+    --dp-ground:#fbfaf4; --dp-ink:#000000; --dp-ink2:#414141; --dp-muted:#f2f1ec;
+    --dp-rule:#dcdbd5; --dp-accent:#1e40af; --dp-field:#f2f1ec; --dp-panel:#f2f1ec;
+    --dp-on-field:#000000; --dp-on-field2:#595858;
+    --red:var(--dp-accent); --red2:#2a4fc0; --bg:var(--dp-ground); --card:var(--dp-panel);
     --line:var(--dp-rule); --txt:var(--dp-ink); --sub:var(--dp-ink2);
-    --ok:#12784A; --warn:#B26A00; --bad:#C0392B;
+    --ok:#1f6b45; --warn:#8a5a12; --bad:#a3382c;
     --font-display:"Host Grotesk","Instrument Sans",-apple-system,"PingFang SC",sans-serif;
-    --font-body:"Instrument Sans",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    --font-body:"Host Grotesk","Instrument Sans",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:linear-gradient(160deg,#E8EEF7 0%,#D6E0F0 100%);color:var(--txt);font-family:var(--font-body);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  body{background:#fbfaf4;color:var(--txt);font-family:var(--font-body);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
   .app{display:flex;height:100vh;min-width:1100px}
   /* 侧边 */
   .side{width:224px;background:var(--dp-field);color:var(--dp-on-field);display:flex;flex-direction:column;flex:none;border-right:1px solid var(--dp-rule)}
@@ -189,6 +190,65 @@
     border-color: var(--dp-accent);
     box-shadow: 0 0 0 2px rgba(37, 99, 235, .12);
   }
+
+  /* ===== 品牌规范落地：米白底 / 深蓝强调 / hairline 细线 / 8px 圆角 / 无渐变 ===== */
+  .side{background:#f2f1ec;border-right:1px solid #dcdbd5}
+  .logo{border-bottom:1px solid #dcdbd5}
+  .logo b{font-weight:600;letter-spacing:.01em}
+  .ni:hover{background:rgba(30,64,175,.06)}
+  .nav .ni.on{background:#1e40af;color:#fcfcfd}
+  .foot-user{border-top:1px solid #dcdbd5;color:#595858}
+  .topbar{background:#f2f1ec;border-bottom:1px solid #dcdbd5}
+  .topbar .crumb{color:#595858}
+  .av{background:#1e40af;color:#fcfcfd}
+  .content{background:#fbfaf4}
+  .kc,.card{background:#f2f1ec;border:1px solid #dcdbd5;border-radius:8px;box-shadow:none}
+  .kc b{font-weight:600;letter-spacing:-.01em}
+  .btn{background:#1e40af;color:#fcfcfd;border-radius:8px;box-shadow:none}
+  .btn:hover{background:#183a9e;filter:none}
+  .btn:active{background:#142f83;filter:none}
+  .btn.ghost{background:#fcfcfd;color:#000;border:1px solid #dcdbd5}
+  .btn.ghost:hover{background:#f2f1ec;border-color:#c9c8c1}
+  .inp,select{background:#fcfcfd;border:1px solid #dcdbd5;border-radius:8px;color:#000}
+  .inp:hover,select:hover{border-color:#1e40af}
+  .inp:focus,select:focus{border-color:#1e40af;box-shadow:0 0 0 2px rgba(30,64,175,.12)}
+  .tb th{background:#f2f1ec;color:#414141;border-bottom:1px solid #dcdbd5;font-weight:500}
+  .tb td{border-bottom:1px solid #dcdbd5}
+  .tb tr:hover td{background:#f7f6f0}
+  .tb tr.qrow:hover td{background:#f7f6f0}
+  .bar .tk{background:#e6e4dc;border-radius:4px}
+  .bar .fl{background:#1e40af;border-radius:4px}
+  .pcb{border:1px solid #dcdbd5;background:#f2f1ec;border-radius:8px}
+  .pcb a,.lnk,.op{color:#1e40af}
+  .tag{border-radius:4px}
+  .tag.red{background:#eaeefb;color:#1e40af}
+  .tag.gray{background:#eae8e0;color:#595858}
+  .switch{background:#1e40af}
+  .drawer{background:#fcfcfd;box-shadow:-6px 0 18px rgba(0,0,0,.08)}
+  .dw-head,.dw-foot{border-color:#dcdbd5}
+  .dw-foot{background:#f2f1ec}
+  .dw-sec h5::before{background:#1e40af}
+  .dw-close{background:#fcfcfd;border-color:#dcdbd5}
+  .confirm-box{background:#f2f1ec;border-color:#dcdbd5;color:#000;border-radius:8px}
+  .landed-box{background:#f2f1ec;border-color:#dcdbd5;color:#000;border-radius:8px}
+  .rec-modal{background:rgba(20,19,20,.42)}
+  .rec-modal .rm{background:#fcfcfd;border:1px solid #dcdbd5;border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.12)}
+  .rm-row input,.rm-row select,.rm-row textarea{background:#fcfcfd;border-color:#dcdbd5;border-radius:8px}
+  .pager span{background:#fcfcfd;border-color:#dcdbd5;border-radius:6px}
+  .pager span.on{background:#1e40af;border-color:#1e40af;color:#fcfcfd}
+  .todo,.kv,.dw-item{border-bottom-color:#e8e6de}
+  .dw-item .k{background:#eae8e0;border-radius:4px}
+  .row2,.cards{gap:16px}
+  h2.pg{font-weight:600;letter-spacing:-.01em}
+  a{text-underline-offset:3px}
+  :focus-visible{outline:2px solid #1e40af;outline-offset:2px}
+  .dw-foot textarea:focus{outline:2px solid rgba(30,64,175,.35);border-color:#1e40af}
+  /* 分隔线统一为实线 hairline（Ruled），数值列等宽数字对齐 */
+  .todo,.kv,.dw-item{border-bottom-style:solid}
+  .tb td,.kc b,.kc i{font-variant-numeric:tabular-nums}
+  .content{background:#fbfaf4}
+  .desc{color:#595858}
+  .rm-row{border-bottom-style:solid;border-bottom-color:#e8e6de}
 </style>
 <script src="demo-data.js"></script>
 </head>
@@ -1469,7 +1529,7 @@
       const v = fd.get ? fd.get(rec) : (rec[fd.k] != null ? rec[fd.k] : (id ? '' : (fd.sel ? fd.sel[0] : '')));
       let input;
       if (fd.ro) {
-        input = '<input id="rf_' + fd.k + '" value="' + (v == null ? '' : v) + '" readonly placeholder="' + (fd.ph || '') + '" style="background:#f3f6fb;color:#5b6b82;cursor:not-allowed">';
+        input = '<input id="rf_' + fd.k + '" value="' + (v == null ? '' : v) + '" readonly placeholder="' + (fd.ph || '') + '" style="background:#f2f1ec;color:#595858;cursor:not-allowed">';
       } else if (fd.ref && fd.multi) {
         const cur = Array.isArray(v) ? v : (v ? String(v).split(/[,，]/).map(x => x.trim()).filter(Boolean) : []);
         const opts = (refs[fd.ref] || []).map(o => '<option value="' + o.id + '"' + (cur.indexOf(o.id) >= 0 ? ' selected' : '') + '>' + (o.name || o.id) + (o.id ? '（' + o.id + '）' : '') + '</option>').join('');
@@ -1657,7 +1717,7 @@
     mask.className = 'rec-modal';
     mask.innerHTML = '<div class="rm"><div class="rm-h"><b>把作业点位归入工区</b><button onclick="this.closest(\'.rec-modal\').remove()">✕</button></div>' +
       '<div class="rm-b"><div class="rm-row"><label>所属工区</label><select id="asg-wa"><option value="">请选择工区</option>' + opts + '</select></div>' +
-      '<div class="rm-row"><label>点位</label><input value="' + siteId + '" readonly style="background:#f3f6fb;color:#5b6b82"></div></div>' +
+      '<div class="rm-row"><label>点位</label><input value="' + siteId + '" readonly style="background:#f2f1ec;color:#595858"></div></div>' +
       '<div class="rm-f"><button class="btn ghost" onclick="this.closest(\'.rec-modal\').remove()">取消</button>' +
       '<button class="btn" onclick="saveAssignWorkarea(\'' + siteId + '\',this)">保存并生效</button></div></div>';
     document.body.appendChild(mask);
