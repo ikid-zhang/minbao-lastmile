@@ -1,0 +1,17 @@
+{
+  "name": "minbao-lastmile-server",
+  "version": "1.0.0",
+  "description": "民爆最后一公里全流程监管平台 - 后端业务API服务",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --experimental-sqlite server.js",
+    "dev": "node --experimental-sqlite --watch server.js",
+    "start:json": "node server.js",
+    "test": "node --experimental-sqlite test-api.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4"
+  }
+}

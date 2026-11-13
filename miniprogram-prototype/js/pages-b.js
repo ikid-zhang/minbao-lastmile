@@ -1,6 +1,11 @@
 /* ============================================================
  * pages-b.js — 押运员 / 安全员 / 安全监理
  * ============================================================ */
+/* 当前登录的押运员：默认演示账号 P5 孙立冬 */
+function escortMe() { return (DB && DB.escortId) || 'P5'; }
+/* 计划上的押运安排（项目负责人上报时确定） */
+function planTp(o) { const pl = planById(o.plan); return (pl && pl.transPlan) || {}; }
+
 Object.assign(PAGES, {
 
   /* ================= 押运员：首页 ================= */
@@ -9,17 +14,32 @@ Object.assign(PAGES, {
     tabs: () => roleTabs('escort-home', 0),
     render(p) {
       const f = p.f || 'sign';
-      const unsigned = DB.outbounds.filter(o => !o.signed && o.status === '待签收');
+      const me = escortMe();
+      const scans = (DB.escortScans || []).filter(s => s.by === me).map(s => s.out);
+      /* 一单多点：出库单内任一计划指派给本人，整张单都算「指派给我」（与扫码后的押运单保持一致） */
+      const outMine = o => outGroups(o).some(g => { const q = planById(g.plan) || {}; return !!(q.transPlan && q.transPlan.escort === me); });
+      const unsigned = DB.outbounds.filter(o => !o.signed && o.status === '待签收')
+        .map(o => ({ o, mine: outMine(o), scanned: scans.includes(o.id) }))
+        .filter(x => x.mine || x.scanned)
+        .sort((a, b) => (b.mine - a.mine));
       const onroad = DB.transports.filter(t => t.direction === 'GO' && ['待发车', '运输中'].includes(t.status));
-      const rets = DB.returns.filter(r => ['待押送', '押送中'].includes(r.status));
+      const retMine = r => !!(r.escortScan && r.escortScan.by === me);
+      const rets = DB.returns.filter(r => ['待押送', '押送中'].includes(r.status) && (retMine(r) || r.status === '押送中'));
+      const retOpen = DB.returns.filter(r => r.status === '待押送' && !retMine(r));
       let body = '';
-      if (f === 'sign') body = unsigned.length ? unsigned.map(o => {
+      if (f === 'sign') body = unsigned.length ? unsigned.map(({ o, mine, scanned }) => {
         const pl = planById(o.plan);
+        const tp = planTp(o);
         const dest = outGroups(o).length > 1 ? `${outGroups(o).length} 个作业点（${outGroups(o).map(g => site(g.site).name).join('、')}）` : site(pl.site).name;
+        const noTp = !tp.escort;
+        const who = tp.escort ? person(tp.escort).name : '未安排';
+        const tag = mine ? `<span class="pill s-done">指派给我</span>`
+          : `<span class="pill s-run">扫码接管</span>`;
         return `<div class="card plan-card" onclick="nav.push('escort-sign',{id:'${o.id}'})">
-          <div class="pc-top"><span class="pc-no">${esc(o.outNo)}</span>${statusPill(o.status)}</div>
+          <div class="pc-top"><span class="pc-no">${esc(o.outNo)}</span>${tag}</div>
           <div class="pc-name">扫码签收 → ${esc(dest)}</div>
-          <div class="pc-sub">出库 ${fmtTime(o.outTime)} · 合计 ${Math.round(planKg(o.items))}kg · 长按联单二维码可扫</div></div>`;
+          <div class="pc-sub">出库 ${fmtTime(o.outTime)} · 合计 ${Math.round(planKg(o.items))}kg · 车辆 ${esc(tp.vehicle ? vehicle(tp.vehicle).plate : '-')}${tp.route ? ' · 路线 ' + esc((MASTER.routes.find(r => r.id === tp.route) || {}).name || tp.route) : ''}</div>
+          <div class="pc-sub">${mine ? '已指派给本人，无需扫码，直接核对签收（无需补办手续）' : (noTp ? '已扫码绑定：负责人未安排押运员，由本人直接押运（自动留痕）' : `已扫码绑定：计划押运员 ${esc(who)}，签收前须办理变更押运员手续`)}</div></div>`;
       }).join('') : EMPTY('暂无待签收出库单');
       if (f === 'road') body = onroad.length ? onroad.map(t => {
         const pl = planById(t.plan);
@@ -32,17 +52,48 @@ Object.assign(PAGES, {
         const pl = planById(r.plan);
         return `<div class="card plan-card" onclick="nav.push('escort-return',{id:'${r.id}'})">
           <div class="pc-top"><span class="pc-no">${esc(r.retNo)}</span>${statusPill(r.status)}</div>
-          <div class="pc-name">反向押送：${esc(site(pl.site).name)} → 城西销售库</div>
-          <div class="pc-sub">${r.items.map(i => goodsName(i.goods) + ' ' + i.qty + GOODS[i.goods].unit).join('、')}</div></div>`;
-      }).join('') : EMPTY('暂无返程押送任务');
+          <div class="pc-name">反向押送：${esc(site(pl.site).name)} → ${esc(r.targetName || storage(r.target || 'S1').name)}</div>
+          <div class="pc-sub">${r.items.map(i => goodsName(i.goods) + ' ' + i.qty + GOODS[i.goods].unit).join('、')}</div>
+          <div class="pc-sub">${r.escortScan ? `已扫码接单 ${fmtTime(r.escortScan.time)} · 接单人 ${esc(person(r.escortScan.by).name)}` : '押运中'}</div></div>`;
+      }).join('') : EMPTY(`暂无已接单的返程押送任务${retOpen.length ? '（有 ' + retOpen.length + ' 张退库单待扫码接单，点右上角「扫码」）' : ''}`);
       return `
-      <div class="page-title">押运运输（C 模块）<span class="page-sub">签收 → 人车路线 → 发车打点 → 在途轨迹</span></div>
+      <div class="page-title" style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div>押运运输（C 模块）<span class="page-sub">签收 → 人车路线 → 发车打点 → 在途轨迹</span></div>
+        <button class="btn ghost sm" type="button" style="white-space:nowrap" onclick="scanSheet()">扫码</button>
+      </div>
       <div class="seg">
         <button type="button" class="seg-i ${f === 'sign' ? 'on' : ''}" onclick="nav.reset('escort-home',{f:'sign'})">待签收 ${unsigned.length || ''}</button>
         <button type="button" class="seg-i ${f === 'road' ? 'on' : ''}" onclick="nav.reset('escort-home',{f:'road'})">在途 ${onroad.length || ''}</button>
         <button type="button" class="seg-i ${f === 'ret' ? 'on' : ''}" onclick="nav.reset('escort-home',{f:'ret'})">返程押送 ${rets.length || ''}</button>
       </div>
       ${body}`;
+    }
+  },
+
+  /* ================= 押运员：扫码页（直接扫码，不列清单）================= */
+  'escort-scan': {
+    title: '扫码',
+    render() {
+      const me = escortMe();
+      return `
+      <div class="page-title">扫码接单<span class="page-sub">对准联单二维码，识别后按单号自动绑定</span></div>
+      <div class="card">
+        <div class="scan-box">
+          <video id="scan-video" playsinline muted></video>
+          <div class="scan-line"></div>
+          <span class="scan-ph" id="scan-ph">正在启用摄像头…</span>
+        </div>
+        <div class="f-note" id="scan-hint" style="text-align:center;margin-top:12px">出库单扫码后直接进入「押运签收」页，退库单扫码后进入「返程押送」</div>
+      </div>
+      <div class="card sm">
+        <div class="kv"><span>当前扫码人</span><b>${esc(person(me).name)} · ${esc(person(me).cert || '-')}</b></div>
+        <input class="inp" id="scan-code" placeholder="输入二维码内容（单号）" style="margin-top:10px;display:block;width:100%;box-sizing:border-box" onkeydown="if(event.key==='Enter')submitScanCode()">
+        <button class="btn ghost" type="button" style="width:100%;margin-top:10px" onclick="submitScanCode()">确认单号</button>
+      </div>`;
+    },
+    after() {
+      window.__scanDone = false;
+      initScanCamera();
     }
   },
 
@@ -53,28 +104,101 @@ Object.assign(PAGES, {
       const o = outboundById(p.id);
       const groups = outGroups(o);
       const kg = Math.round(planKg(o.items));
-      window._formState = { sign: false };
+      window._formState = { sign: false, tpCheck: {} };
       const ordered = groups.slice().sort((a, b) => MASTER.sites.findIndex(s => s.id === a.site) - MASTER.sites.findIndex(s => s.id === b.site));
-      return `
-      <div class="card qr-card sm">
-        <div class="scan-btn" onclick="this.textContent='✓ 已扫码（${esc(o.outNo)}）';this.classList.add('ok')">
-          <svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 4h6M20 4h-4M4 20v-6M20 20h-6M4 8v4h4M20 8v4h-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
-          <span>模拟扫联单二维码（C01）</span>
+      const pl0 = planById(o.plan) || {};
+      /* 路线与计划绑定：单点直接用计划路线；一单多点则按每个卸货点匹配「起运库房=出库库房、到达=该点位」的在册路线分段 */
+      const planRid0 = (pl0.transPlan && pl0.transPlan.route) || pl0.route || '';
+      const planRt0 = MASTER.routes.find(r => r.id === planRid0) || null;
+      const segs = ordered.map((g, i) => {
+        const gp = planById(g.plan) || {};
+        const gt = gp.transPlan || {};
+        const rid = gt.route || gp.route || '';
+        const rt = MASTER.routes.find(r => r.id === rid) || null;
+        const fit = MASTER.routes.find(r => (r.status || '启用') !== '停用' && r.from === o.storage && r.to === g.site) || null;
+        const useRt = (rt && rt.from === o.storage && rt.to === g.site) ? rt : (fit || rt);
+        const ok = !!(useRt && useRt.from === o.storage && useRt.to === g.site);
+        return { idx: i + 1, planNo: gp.planNo || '', site: g.site, rid: (useRt && useRt.id) || '', rt: useRt, exact: ok, planned: rt };
+      });
+      window._rvSegs = segs;
+      // 项目负责人在核实上报时已安排运输车辆与押运员，押运员签收时须逐项核实
+      const tp = (planById(o.plan) || {}).transPlan || null;
+      const tv = tp ? vehicle(tp.vehicle) : null;
+      const te = tp ? person(tp.escort) : null;
+      const tpCard = tp ? `<div class="card tp-card">
+        <div class="tp-head"><b>项目负责人运输安排 · 待押运员核实</b><span class="pill s-pend">待核实</span></div>
+        <div class="kv"><span>运输车辆</span><b>${esc(tv.plate)} · ${esc(tv.model)}</b></div>
+        <div class="kv"><span>核定载重 / 本次合计</span><b>${tv.load}kg / ${kg}kg ${tv.load >= kg ? '<em class="ok">载重足够</em>' : '<em class="bad">载重不足</em>'}</b></div>
+        <div class="kv"><span>运输许可证</span><b>${esc(tv.transLicence || '-')}</b></div>
+        <div class="kv"><span>运输证载明</span><b>${esc(tv.transGoods || '-')} · 路线 ${esc(tv.transRange || '按审批路线')}</b></div>
+        <div class="kv"><span>押运员</span><b>${esc(te.name)} · ${esc(te.cert || '-')}（有效期 ${esc(te.certExpire || '-')}）</b></div>
+        <div class="kv"><span>安排人 / 时间</span><b>${esc(person(tp.by).name)} · ${fmtTime(tp.arrangedAt)}</b></div>
+        <div class="tp-checks">
+          <label class="ck-line"><input type="checkbox" data-tpcheck="1" onchange="tpCheck(this)"><span>现场车辆与安排一致（车牌、车型相符）</span></label>
+          <label class="ck-line"><input type="checkbox" data-tpcheck="1" onchange="tpCheck(this)"><span>运输许可证与实车一致（证号、路线、物品、运输量）</span></label>
+          <label class="ck-line"><input type="checkbox" data-tpcheck="1" onchange="tpCheck(this)"><span>装载量未超核定载重，满足本次 ${kg}kg</span></label>
         </div>
-        <div class="qr-tip">签收人实名绑定：孙立冬 138****1205</div>
-      </div>
+        <div class="f-note">三项核实通过后方可签收发车；发现不一致请驳回并说明，或申请变更车辆（留痕）。</div>
+        <div class="tp-ops">
+          <button class="btn ghost sm" type="button" onclick="rejectTransport('${o.id}')">上报不一致</button>
+          <button class="btn ghost sm" type="button" onclick="pickVehicle(${kg}, true)">申请变更车辆</button>
+        </div>
+      </div>` : `<div class="card warn-card sm"><div class="f-note">项目负责人尚未安排运输车辆与押运员，本次由押运员现场选定（建议负责人核实环节先行安排）。</div></div>`;
+      const me = escortMe();
+      /* 一单多点：本单任一点位的计划押运员是本人，即视为「指派给我」，免扫直签 */
+      const assigned = outGroups(o).some(g => { const q = planById(g.plan) || {}; return !!(q.transPlan && q.transPlan.escort === me); });
+      const mine = assigned;
+      const chg = !assigned && !!tp && !!tp.escort && tp.escort !== me;
+      const chgCard = chg ? `<div class="card warn-card sm">
+        <div class="fc-title">押运员变更手续（本人非计划押运员）</div>
+        <div class="kv"><span>计划押运员（主计划）</span><b>${esc(person(tp.escort).name)} · ${esc(person(tp.escort).cert || '-')}</b></div>
+        <div class="kv"><span>当前扫码人</span><b>${esc(person(me).name)} · ${esc(person(me).cert || '-')}</b></div>
+        <div class="f-row"><label>变更原因</label><input id="ec_reason" class="f-sel w" placeholder="如：原押运员临时调班，现场由本人押运"></div>
+        <div class="f-note">计划押运员正常扫码无需补办任何手续；人换了才需办理本变更手续，办理后由本人完成签收，全程留痕并通知项目负责人。</div>
+        <button class="btn ghost block" type="button" onclick="doEscortChange('${o.id}')">办理变更押运员手续</button>
+      </div>` : (tp && tp.escort ? `<div class="card sm"><div class="f-note">计划押运员即本人（${esc(person(me).name)}），本单已指派给你，无需扫码，核对运输安排后直接签收（无需补办押运员手续）。</div></div>` : `<div class="card sm"><div class="f-note">负责人未安排押运员，本次由现场押运员 ${esc(person(me).name)} 直接押运，签收记录自动留痕。</div></div>`);
+      // 指派给我的单不出现扫码步骤；只有扫码接管（本人非计划押运员）才需扫联单二维码
+      const qrCard = assigned ? `
+      <div class="card sm">
+        <div class="kv"><span>本单来源</span><b>负责人指派 · 无需扫码（免扫直签）</b></div>
+        <div class="kv"><span>签收人</span><b>${esc(person(me).name)} · ${esc((person(me).phone || '').replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2'))}</b></div>
+      </div>` : `
+      <div class="card qr-card sm">
+        <div class="scan-btn" onclick="window.__scanDone=false;nav.push('escort-scan')">
+          <svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 4h6M20 4h-4M4 20v-6M20 20h-6M4 8v4h4M20 8v4h-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+          <span>打开摄像头扫码接单（C01）</span>
+        </div>
+        <div class="qr-tip">签收人实名绑定：${esc(person(escortMe()).name)} ${esc((person(escortMe()).phone || '').replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2'))}</div>
+      </div>`;
+      return `${wizBar(1, 3, ['运输安排', '数量与车辆', '路线与打卡'])}
+      <div data-wst="1">${tpCard}${chgCard}</div>
+      <div data-wst="2">${qrCard}</div>
+      <div data-wst="2">` + `
       <div class="form-card">
         <div class="fc-title">逐品种核对数量（${groups.length > 1 ? '一单多点 · 合计 ' + kg + 'kg' : '单点 · ' + kg + 'kg'}）</div>
         ${groups.map(g => `<div class="fc-title" style="margin-top:6px">${esc(site(g.site).name)} · ${esc(planById(g.plan).planNo)}</div>` + g.items.map(it => `<div class="kv"><span>${esc(goodsName(it.goods))} · ${esc(it.spec)}<i class="batch">${esc(it.batch)}</i></span><b>${it.qty} ${esc(GOODS[it.goods].unit)} <em class="ok">✓</em></b></div>`).join('')).join('')}
-        ${groups.length > 1 ? `<div class="f-note">合并总重 ${kg}kg，车辆选择时将校验载重（载重不足的车辆不可选）。</div>` : ''}
       </div>
       <div class="form-card">
         <div class="fc-title">驾驶员 / 车辆（C02）· 累计重量 ${kg}kg · 载重不足车辆不可选</div>
         <div class="f-row"><label>驾驶员</label><div class="f-select" id="e_driver" data-v="D1" onclick="pickDriver()">王 强 · 从业资格证 JZ-3301</div></div>
-        <div class="f-row"><label>车辆</label><div class="f-select" id="e_vehicle" data-v="V1" onclick="pickVehicle(${kg})">${vehicleFor(kg)} · 载重合适</div></div>
-        <div class="f-row"><label>路线快选</label><div class="f-select" id="e_route" data-v="" onclick="pickRoute('${o.storage}')">从治安大队维护的路线中选择（可跳过）</div></div>
-        <div class="f-row"><label>途经路线</label><input id="e_via" class="f-sel w" value="G318 国道 → 青龙山专线"></div>
-        <div class="f-note">起运点 ${esc(storage(o.storage).name)} → 卸货点 ${groups.length} 处（自动带出，C03）</div>
+        <div class="f-row"><label>车辆</label><div class="f-select" id="e_vehicle" data-v="${tp ? tp.vehicle : 'V1'}" onclick="pickVehicle(${kg}, true)">${tp ? esc(tv.plate) + ' · 载重 ' + tv.load + 'kg（负责人安排）' : vehicleFor(kg) + ' · 载重合适'}</div></div>
+      </div>
+      </div>
+      <div data-wst="3">
+      <div class="form-card">
+        <div class="fc-title">运输路线（与计划绑定 · 不可自行改线）</div>
+        <div class="kv"><span>起运库房</span><b>${esc(storage(o.storage).name)}</b></div>
+        ${segs.map(s => {
+          const okTag = (s.planned && s.rt && s.planned.id === s.rt.id) ? '计划绑定' : '按库房+点位匹配';
+          const tagTxt = s.exact ? okTag : (s.rt ? '计划路线起运点与本次不符' : '无在册路线，需在 PC 路线维护补录');
+          const tagStyle = s.exact ? 'color:#2F7D4F' : 'color:#C0392B';
+          return `<div class="kv" style="align-items:flex-start"><span>第 ${s.idx} 段 → ${esc(site(s.site).name)}</span>
+            <div style="text-align:right;max-width:62%"><b>${s.rt ? esc(s.rt.name) : '——'}</b>
+            <div class="f-note" style="margin:2px 0 0;text-align:right">${s.rt ? (s.rt.km || 0) + 'km' : ''}${s.planNo ? ' · ' + esc(s.planNo) : ''} · <span style="${tagStyle}">${tagTxt}</span></div></div>
+          </div>`;
+        }).join('')}
+        <div class="f-row"><label>途经路线</label><input id="e_via" class="f-sel w" readonly value="${esc(segs.map(s => s.rt ? s.rt.name : '待补录').join(' → '))}"></div>
+        <div class="f-note">${segs.length > 1 ? '一单多点：共 ' + segs.length + ' 段路线，按卸货顺序逐段行驶；每段均取自 PC 端路线维护，押运员不改线。' : '单点位：直接使用项目负责人核实上报时绑定的计划路线。'}${planRt0 ? ' 计划路线：' + esc(planRt0.name) + '。' : ''}</div>
       </div>
       <div class="form-card">
         <div class="fc-title">卸货点顺序（可调整 · 调整留痕）</div>
@@ -96,10 +220,161 @@ Object.assign(PAGES, {
         <button class="btn ghost sm" onclick="addCpLine()">＋ 添加打卡点</button>
         <div class="f-note">发车后每到一个打卡点须扫码并上传现场照片；全部打卡点记录时间与定位。</div>
       </div>
-      <button class="btn primary block" onclick="doSign('${o.id}')">确认签收 · 生成运输单</button>`;
-    }
+      <button class="btn primary block" onclick="doSign('${o.id}')">确认签收 · 生成运输单</button>
+      </div>
+      ${wizNav(1, 3)}`;
+    },
+    after() { wizApply(1); }
   }
 });
+/* 扫码绑定出库单：非指派给我的单默认不可见，现场扫码后才进入「我的押运任务」 */
+function scanOutSheet() {
+  const me = escortMe();
+  const scans = (DB.escortScans || []).filter(s => s.by === me).map(s => s.out);
+  const cand = DB.outbounds.filter(o => !o.signed && o.status === '待签收' && planTp(o).escort !== me && !scans.includes(o.id));
+  if (!cand.length) return toast('暂无其他可扫码绑定的出库单', false);
+  const rows = cand.map(o => {
+    const pl = planById(o.plan);
+    const tp = planTp(o);
+    return `<label class="ck-line"><input type="radio" name="scan_out" value="${o.id}" style="margin-top:3px">
+      <span style="flex:1">${esc(o.outNo)} · ${esc(pl ? site(pl.site).name : '-')} · 计划押运员 ${esc(tp.escort ? person(tp.escort).name : '未安排')}</span></label>`;
+  }).join('');
+  formSheet('扫联单二维码 · 绑定出库单',
+    `<div class="f-note">用本人账号扫现场出库单联单二维码（演示：从下方选择要绑定的出库单）。绑定后该单才会出现在「我的押运任务」；若本人非计划押运员，签收前还须办理变更押运员手续。</div>${rows}`,
+    mask => {
+      const r = mask.querySelector('input[name=scan_out]:checked');
+      if (!r) return toast('请选择要扫的出库单', false);
+      closeSheet(mask);
+      bindEscortOut(r.value);
+    }, '扫码绑定');
+}
+/* 扫码接单（统一入口）：出库单签收 + 退库单反向押送 */
+/* 扫码入口：直接进入扫码页，不再弹出待扫单据清单 */
+function scanSheet() {
+  const me = escortMe();
+  const scans = (DB.escortScans || []).filter(s => s.by === me).map(s => s.out);
+  const outs = DB.outbounds.filter(o => !o.signed && o.status === '待签收' && planTp(o).escort !== me && !scans.includes(o.id));
+  const rets = DB.returns.filter(r => r.status === '待押送' && !(r.escortScan && r.escortScan.by === me));
+  if (!outs.length && !rets.length) toast('当前没有待接单据，可直接扫码校验单号', false);
+  nav.push('escort-scan', {});
+}
+
+/* 摄像头扫码：优先 BarcodeDetector 自动识别；无摄像头/不支持时降级为手动输入单号 */
+function stopScanCamera() {
+  if (window.__scanStream) {
+    try { window.__scanStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    window.__scanStream = null;
+  }
+}
+
+async function initScanCamera() {
+  const video = document.getElementById('scan-video');
+  const ph = document.getElementById('scan-ph');
+  const hint = document.getElementById('scan-hint');
+  if (!video) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (video) video.style.display = 'none';
+    if (ph) ph.textContent = '当前环境不支持摄像头';
+    if (hint) hint.textContent = '请在下方输入二维码内容（单号）完成接单';
+    return;
+  }
+  setTimeout(() => {
+    if (!window.__scanStream) {
+      if (video) video.style.display = 'none';
+      if (ph) ph.textContent = '未检测到可用摄像头';
+    }
+  }, 6000);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    window.__scanStream = stream;
+    video.style.display = 'block';
+    video.srcObject = stream;
+    await video.play();
+    if (ph) ph.style.display = 'none';
+    if ('BarcodeDetector' in window) {
+      const det = new window.BarcodeDetector({ formats: ['qr_code'] });
+      if (hint) hint.textContent = '对准二维码，识别成功即自动接单';
+      const loop = async () => {
+        if (!window.__scanStream || window.__scanDone) return;
+        try {
+          const codes = await det.detect(video);
+          if (codes && codes.length && codes[0].rawValue) return handleScanCode(codes[0].rawValue);
+        } catch (e) { /* 单帧识别失败继续下一帧 */ }
+        requestAnimationFrame(loop);
+      };
+      loop();
+    } else if (hint) {
+      hint.textContent = '当前浏览器不支持自动识别，请在下方输入二维码内容（单号）';
+    }
+  } catch (e) {
+    if (video) video.style.display = 'none';
+    if (ph) ph.textContent = '未检测到可用摄像头';
+    if (hint) hint.textContent = '请在下方输入二维码内容（单号）完成接单';
+  }
+}
+
+function submitScanCode() {
+  const el = document.getElementById('scan-code');
+  handleScanCode(el ? el.value : '');
+}
+
+/* 按二维码内容（单号）精确匹配出库单 / 退库单，校验状态后绑定 */
+function handleScanCode(raw) {
+  if (window.__scanDone) return;
+  const me = escortMe();
+  const code = String(raw || '').trim().toUpperCase();
+  if (!code) return toast('请扫描二维码或输入单号', false);
+
+  const o = DB.outbounds.find(x => String(x.outNo || '').toUpperCase() === code);
+  if (o) {
+    if (o.signed || o.status !== '待签收') return toast('出库单 ' + o.outNo + ' 当前状态为「' + o.status + '」，无需接管', false);
+    if (planTp(o).escort === me) return toast('出库单 ' + o.outNo + ' 已指派给你，无需扫码，直接在待签收列表核对签收', false);
+    window.__scanDone = true;
+    stopScanCamera();
+    return bindEscortOut(o.id);
+  }
+
+  const r = DB.returns.find(x => String(x.retNo || '').toUpperCase() === code);
+  if (r) {
+    if (r.status !== '待押送') return toast('退库单 ' + r.retNo + ' 当前状态为「' + r.status + '」，无需接单', false);
+    if (r.escortScan && r.escortScan.by && r.escortScan.by !== me) return toast('退库单 ' + r.retNo + ' 已被其他押运员接单', false);
+    window.__scanDone = true;
+    stopScanCamera();
+    return bindEscortReturn(r.id);
+  }
+
+  toast('未匹配到单号「' + code + '」，请确认扫描的是出库单 / 退库单二维码', false);
+}
+/* 退库单接单：一单一位押运员，接单后方可在「返程押送」看到并押送 */
+function bindEscortReturn(rtId) {
+  const me = escortMe();
+  const rt = byId(DB.returns, rtId);
+  if (!rt) return toast('退库单不存在', false);
+  if (rt.escortScan && rt.escortScan.by && rt.escortScan.by !== me) return toast('该退库单已被其他押运员接单', false);
+  rt.escortScan = { by: me, time: Date.now() };
+  const pl = planById(rt.plan);
+  if (pl) addLog(pl, '退库', `押运员扫码接单 ${rt.retNo}（反向押送 ${site(pl.site).name} → ${rt.targetName || '原库'}）`, person(me).name);
+  saveDB();
+  toast(`已接单 ${rt.retNo}，请核对退库量后安排人车发车`, true);
+  nav.reset('escort-home', { f: 'ret' });
+  nav.push('escort-return', { id: rt.id });
+}
+function bindEscortOut(outId) {
+  const me = escortMe();
+  const o = outboundById(outId);
+  if (!o) return toast('出库单不存在', false);
+  DB.escortScans = DB.escortScans || [];
+  if (!DB.escortScans.some(s => s.out === outId && s.by === me)) {
+    DB.escortScans.push({ out: outId, by: me, time: Date.now() });
+  }
+  const pl = planById(o.plan);
+  if (pl) addLog(pl, '运输', `押运员扫码绑定出库单 ${o.outNo}（本人接管本次押运）`, person(me).name);
+  saveDB();
+  toast(`已绑定出库单 ${o.outNo}，请核对后签收`, true);
+  /* 扫码接收后直接进入押运签收页 */
+  nav.reset('escort-sign', { id: outId });
+}
+
 function vehicleFor(kg) {
   const v = MASTER.vehicles.find(x => x.load >= kg) || MASTER.vehicles[0];
   return `${esc(v.plate)} · 载重 ${v.load}kg`;
@@ -116,7 +391,7 @@ function addCpLine() {
   $('#cp-list').appendChild(tmp.querySelector('.ck-line'));
 }
 function pickDriver() {
-  sheet('选择驾驶员', MASTER.drivers.map(d => ({ label: `${d.name} · ${d.cert}`, id: d.id })), x => {
+  sheet('选择驾驶员', MASTER.drivers.map(d => ({ label: `${d.name} · ${d.cert || '证书未维护'}`, id: d.id })), x => {
     $('#e_driver').textContent = x.label.split(' · ')[0] + ' · ' + x.label.split(' · ')[1];
     $('#e_driver').dataset.v = x.id;
   });
@@ -134,23 +409,90 @@ function pickRoute(fromId) {
     toast(`已套用路线「${r.name}」，途经与打卡点已填充`, true);
   });
 }
-function pickVehicle(kg) {
-  sheet('选择车辆（累计 ' + kg + 'kg）', MASTER.vehicles.map(v => ({ label: `${v.plate} · ${v.model} · 载重 ${v.load}kg${v.load < kg ? '（载重不足，不可选）' : ''}`, id: v.id, ok: v.load >= kg })), x => {
+function pickVehicle(kg, isChange) {
+  sheet('选择车辆（累计 ' + kg + 'kg）', MASTER.vehicles.filter(v => (v.status || '在用') !== '停用').map(v => ({ label: `${v.plate} · ${v.model} · 载重 ${v.load}kg${v.load < kg ? '（载重不足，不可选）' : ''}`, id: v.id, ok: v.load >= kg, load: v.load, plate: v.plate })), x => {
     if (!x.ok) return toast(`车辆 ${x.label.split(' · ')[0]} 载重不足 ${kg}kg，不可选`, false);
-    $('#e_vehicle').textContent = x.label.split(' · ')[0] + ' · 载重 ' + (x.label.match(/载重 (\d+)kg/) || [])[1] + 'kg';
-    $('#e_vehicle').dataset.v = x.id;
+    const el = $('#e_vehicle');
+    el.textContent = x.plate + ' · 载重 ' + x.load + 'kg' + (isChange ? '（押运员申请变更）' : '');
+    el.dataset.v = x.id;
+    if (isChange) {
+      el.dataset.changed = '1';
+      toast(`已申请变更车辆为 ${x.plate}，变更原因需在发车前说明并留痕`, true);
+    }
   });
+}
+function tpCheck() {
+  // 三项勾选由 doSign 直接读取 checkbox 状态；这里仅提示还需几项
+  const list = [...document.querySelectorAll('[data-tpcheck]')];
+  const left = list.filter(x => !x.checked).length;
+  if (!left) toast('三项核实已完成，可以签收发车', true);
+}
+/* 变更押运员手续：计划押运员 ≠ 现场扫码人时，由现场押运员补办（留痕 + 通知负责人） */
+function doEscortChange(outId) {
+  const o = outboundById(outId);
+  const pl = planById(o.plan);
+  const tp = (pl && pl.transPlan) || {};
+  const me = escortMe();
+  const reason = (val('ec_reason') || '').trim();
+  if (!reason) return toast('请填写变更押运员的原因', false);
+  if (!tp.escort) return toast('本单未安排计划押运员，无需变更', false);
+  const no = 'BBBG' + String(Date.now()).slice(-8);
+  pl.escortChange = { no, from: tp.escort, to: me, reason, time: Date.now(), done: true };
+  pl.escort = me;
+  tp.escort = me;
+  if (!DB.escortChanges) DB.escortChanges = [];
+  DB.escortChanges.push({ id: no, plan: pl.id, outbound: o.id, from: pl.escortChange.from, to: me, reason, time: Date.now() });
+  addLog(pl, '运输', `变更押运员手续 ${no}：${person(pl.escortChange.from).name} → ${person(me).name}，原因：${reason}`, person(me).name);
+  pushMsg('项目负责人', `计划 ${pl.planNo} 押运员已变更为 ${person(me).name}（原 ${person(pl.escortChange.from).name}），变更单 ${no}，原因：${reason}。`);
+  saveDB();
+  toast(`变更押运员手续 ${no} 已完成，现可确认签收`, true);
+  nav.reset('escort-sign', { id: outId, _t: Date.now() });
+}
+function rejectTransport(outId) {
+  formSheet('上报运输安排不一致', `<div class="f-row"><label>不一致项</label><div class="f-select">车辆 / 运输证 / 载重 / 押运员</div></div>
+    <div class="f-row"><label>说明</label><textarea class="f-ta" id="rj_note" placeholder="如：现场车辆为川L·XXXX，与安排的川L·10295 不符"></textarea></div>
+    <div class="f-note">提交后推送项目负责人与安全监管，本次不予发车，须重新安排。</div>`, () => {
+    const note = val('rj_note').trim();
+    if (!note) return toast('请填写不一致说明', false);
+    const o = outboundById(outId);
+    const pl = planById(o.plan);
+    if (pl) {
+      pl.transPlanReject = { note, by: 'P5', time: Date.now() };
+      addLog(pl, '运输', `押运员核实运输安排不一致：${note}，已退回项目负责人重新安排`, person('P5').name);
+      pushMsg('项目负责人', `计划 ${pl.planNo} 的运输安排被押运员驳回：${note}，请重新安排车辆与押运员。`);
+      saveDB();
+    }
+    toast('已上报不一致，已推送项目负责人重新安排', true);
+    nav.reset('escort-home', { f: 'sign' });
+  }, '提交');
 }
 function doSign(outId) {
   const o = outboundById(outId);
   const kg = Math.round(planKg(o.items));
+  const tpChecks = [...document.querySelectorAll('[data-tpcheck]')];
+  if (tpChecks.length && tpChecks.some(x => !x.checked)) {
+    return toast('请先逐项核实项目负责人的运输安排：车辆一致 / 运输证一致 / 未超载重', false);
+  }
   const v = vehicle($('#e_vehicle').dataset.v);
   if (v.load < kg) return toast(`车辆 ${v.plate} 载重 ${v.load}kg 不足累计 ${kg}kg，请更换车辆`, false);
   const cps = [];
   document.querySelectorAll('#cp-list [data-cp]').forEach(el => { const n = el.value.trim(); if (n) cps.push(n); });
   if (!cps.length) return toast('请至少设置 1 个沿途打卡点', false);
   const order = [...document.querySelectorAll('#stop-list [data-plan]')].map(el => el.dataset.plan);
-  const tr = signTransport(o, 'P5', $('#e_driver').dataset.v, $('#e_vehicle').dataset.v, val('e_via'), cps, order);
+  const pl0 = planById(o.plan);
+  const tp = (pl0 || {}).transPlan || null;
+  const me = escortMe();
+  const escortId = me;   // 签收人 = 现场扫码人，不再一律记计划押运员
+  if (tp && tp.escort && tp.escort !== me && !(pl0.escortChange && pl0.escortChange.done)) {
+    return toast(`本单计划押运员为 ${person(tp.escort).name}，本人非计划押运员，请先在上方办理变更押运员手续`, false);
+  }
+  const tr = signTransport(o, escortId, $('#e_driver').dataset.v, $('#e_vehicle').dataset.v, val('e_via'), cps, order, window._rvSegs || []);
+  if (tp && $('#e_vehicle').dataset.v !== tp.vehicle) {
+    const pl = planById(o.plan);
+    pl.vehicle = $('#e_vehicle').dataset.v;
+    pl.transPlanChanged = { from: tp.vehicle, to: $('#e_vehicle').dataset.v, by: escortId, time: Date.now() };
+    addLog(pl, '运输', `押运员申请变更车辆：${vehicle(tp.vehicle).plate} → ${vehicle($('#e_vehicle').dataset.v).plate}`, person(escortId).name);
+  }
   saveDB();
   toast(`签收完成，运输单 ${tr.no} 已生成（${tr.stops.length} 个卸货点 · ${cps.length} 个打卡点）`, true);
   nav.reset('escort-home', { f: 'road' });
@@ -179,9 +521,9 @@ Object.assign(PAGES, {
         <div class="kv"><span>驾驶员</span><b>${esc(driver(tr.driver).name)}</b></div>
         <div class="kv"><span>车辆</span><b>${esc(vehicle(tr.vehicle).plate)}</b></div>
         ${stops ? `<div class="kv"><span>卸货点（${tr.stops.length}）</span><b>${tr.stops.map(s => esc(site(s.site).name)).join(' → ')}</b></div>` : ''}
-        ${tr.departTime ? `<div class="kv"><span>出发打点</span><b>${fmtFull(tr.departTime)}（服务端时间+定位双写）</b></div>` : ''}
-        <div class="kv"><span>轨迹点</span><b>${tr.tracks || 0} 个 · 30s 间隔上报（C05）</b></div>
-        ${tr.status === '运输中' ? `<div class="kv"><span>偏离预警</span><b class="ok">未触发（>500m×3 点判异，C06）</b></div>` : ''}
+        ${tr.departTime ? `<div class="kv"><span>出发打点</span><b>${fmtFull(tr.departTime)}（服务端时间记录）</b></div>` : ''}
+        <div class="kv"><span>轨迹点</span><b>一期不启用（甲方确认 Q13）</b></div>
+        ${tr.status === '运输中' ? `<div class="kv"><span>偏离预警</span><b>一期不启用（甲方确认 Q13）</b></div>` : ''}
       </div>
       ${(tr.cps || []).length ? `<div class="form-card">
         <div class="fc-title">沿途打卡点（${tr.cps.filter(c => c.time).length}/${tr.cps.length} 已打卡）</div>
@@ -196,31 +538,30 @@ Object.assign(PAGES, {
         </div>`).join('')}
       </div>` : ''}
       ${stops ? `<div class="form-card">
-        <div class="fc-title">卸货点序列（${tr.stops.filter(s => s.done).length}/${tr.stops.length} 站完成 · 逐点围栏判定 + 本点核量）</div>
+        <div class="fc-title">卸货点序列（${tr.stops.filter(s => s.done).length}/${tr.stops.length} 站完成 · 押运员手动确认到达 + 本点核量）</div>
         ${tr.stops.map((s, i) => {
           const sp = planById(s.plan);
           const tier = tierOf(planKg(sp.items));
           return `<div class="rc-item">
           <div class="oi-name">${i + 1}. ${esc(site(s.site).name)} <i class="batch">${esc(sp.planNo)}</i>${tier.level !== '抽查' ? ` <em class="warn">${esc(tier.level)}</em>` : ''}</div>
           ${s.done ? `<div class="kv"><span>核量接收</span><b>已完成 · 到达 ${fmtTime(s.arriveTime)}</b></div>`
-            : (s.suggestArrive ? `<div class="kv"><span>围栏判定</span><b>已进场 · 待安全员核量接收</b></div>`
+            : (s.suggestArrive ? `<div class="kv"><span>到达状态</span><b>押运员已确认到达 · 待安全员核量接收</b></div>`
               : (tr.status === '运输中' && i === pendingIdx
-                ? `<button class="btn primary sm block" onclick="arriveStopCheck('${tr.id}',${i})">到达此卸货点（进入围栏 D01）</button>`
+                ? `<button class="btn primary sm block" onclick="arriveStopCheck('${tr.id}',${i})">到达此卸货点（押运员手动确认）</button>`
                 : '<div class="f-note">待前站完成后到达</div>'))}
         </div>`;
         }).join('')}
-        <div class="f-note">单点核量不影响整趟：某点差异生成异常单后，押运继续前往下一卸货点。</div>
+        <div class="f-note">定位 / 围栏 / 轨迹预警第一阶段不启用（甲方确认 Q13）：到达由押运员手动点击确认。单点核量不影响整趟。</div>
       </div>` : ''}
       ${tr.status === '待发车' ? `
-        <button class="btn primary block" onclick="doDepart('${tr.id}')">发车 · 记录出发时间（定位打点 C04）</button>
-        <div class="f-note center">发车后自动开启在途轨迹上报，逐点进入围栏后由押运员确认到达</div>` : ''}
+        <button class="btn primary block" onclick="doDepart('${tr.id}')">发车 · 记录出发时间</button>
+        <div class="f-note center">发车后逐点由押运员手动点击确认到达（Q13），安全员核量接收</div>` : ''}
       ${tr.status === '运输中' ? `
         <div class="btn-row">
-          <button class="btn ghost" onclick="reportAbnormal('${tr.id}')">异常上报（C07）</button>
           <button class="btn ghost" onclick="nav.push('keeper-out-detail',{id:'${tr.outbound}'})">查看出库联单</button>
         </div>
-        <div class="f-note center">${stops ? '每点到达后由现场安全员核量本点明细，全部点完成整趟结束' : '到达后由现场安全员进行「到场接收」确认'}</div>` : ''}
-      ${tr.status === '已到达' ? `<div class="ok-strip">${stops ? '全部卸货点已完成核量接收，整趟押运结束' : '已到达作业点围栏，建议到达时间已生成，待安全员确认（D02）'}</div>` : ''}`;
+        <div class="f-note center">异常预警一期不启用，移至 P1 阶段（甲方确认 Q09）。${stops ? '每点到达后由现场安全员核量本点明细，全部点完成整趟结束' : '到达后由现场安全员进行「到场接收」确认'}</div>` : ''}
+      ${tr.status === '已到达' ? `<div class="ok-strip">${stops ? '全部卸货点已完成核量接收，整趟押运结束' : '押运员已确认到达，待安全员核量确认（D02）'}</div>` : ''}`;
     }
   }
 });
@@ -236,7 +577,7 @@ function doDepart(id) {
 function arriveStopCheck(trId, idx) {
   const tr = transportById(trId);
   const st = tr.stops[idx];
-  confirmSheet('到达卸货点', `进入「${site(st.site).name}」围栏，系统将记录到达时间与定位，该作业点转入待接收（安全员核量）。`, () => {
+  confirmSheet('到达卸货点', `确认已到达「${site(st.site).name}」作业点？确认后记录到达时间，该作业点转入待接收（安全员核量）。定位围栏与轨迹预警一期不启用（甲方确认 Q13），到达由押运员手动点击确认。`, () => {
     arriveStop(tr, idx);
     saveDB();
     toast(`已到达「${site(st.site).name}」，待安全员核量接收`, true);
@@ -489,10 +830,25 @@ Object.assign(PAGES, {
       const exs = DB.exceptions.filter(e => DB.plans.find(x => x.id === e.plan && ['已到场', '待退库'].includes(x.status)));
       let body = '';
       if (f === 'blast') body = waitBlast.length ? waitBlast.map(x => planCard(x, 'supGoBlast')).join('') : EMPTY('暂无待爆破登记的作业点');
-      if (f === 'ret') body = waitRet.length ? waitRet.map(x => `<div class="card plan-card" onclick="nav.push('sup-return',{id:'${x.id}'})">
-        <div class="pc-top"><span class="pc-no">${esc(x.planNo)}</span>${statusPill(x.status)}</div>
-        <div class="pc-name">${esc(site(x.site).name)}</div>
-        <div class="pc-sub">退库登记 / 反向押送进度</div></div>`).join('') : EMPTY('暂无退库中作业点');
+      if (f === 'ret') {
+        /* 退库单产生后，安全监理同步可见并可跟踪：扫码接单 / 在途 / 到库 / 入库 */
+        const rts = DB.returns.filter(r => ['待押送', '押送中', '待入库确认', '已入库'].includes(r.status)).slice().reverse();
+        body = rts.length ? rts.map(r => {
+          const pl2 = planById(r.plan) || {};
+          const tl = [
+            r.createTime ? '生成 ' + fmtTime(r.createTime) : '已生成',
+            r.escortScan ? '押运员扫码接单 ' + fmtTime(r.escortScan.time) + '（' + person(r.escortScan.by).name + '）' : '待押运员扫码',
+            r.arriveTime ? '到达库房 ' + fmtTime(r.arriveTime) : '',
+            r.keeperConfirmTime ? '入库完成 ' + fmtTime(r.keeperConfirmTime) + (r.inPhotos ? '（照片 ' + r.inPhotos + ' 张）' : '') : ''
+          ].filter(Boolean).join(' · ');
+          return `<div class="card plan-card" onclick="nav.push('sup-return',{id:'${pl2.id || ''}'})">
+            <div class="pc-top"><span class="pc-no">${esc(r.retNo)}</span>${statusPill(r.status)}</div>
+            <div class="pc-name">${esc(site(pl2.site).name)} → ${esc(r.targetName || storage(r.target || 'S1').name)}</div>
+            <div class="pc-sub">${r.items.map(i => goodsName(i.goods) + ' ' + i.qty + GOODS[i.goods].unit).join('、')}</div>
+            <div class="pc-sub">${esc(tl)}</div>
+          </div>`;
+        }).join('') : EMPTY('暂无退库单');
+      }
       return `
       <div class="page-title">爆破作业与退库（E 模块）<span class="page-sub">三态结果 · 三量平衡（R2）· 跨日退库（Q4）</span></div>
       <div class="seg">
@@ -511,15 +867,18 @@ Object.assign(PAGES, {
       const pl = planById(p.id);
       const o = outboundByPlan(pl.id);
       const rc = receiveByPlan(pl.id);
+      const q = blastQty(pl.id);
       window._formState = { photos: 0, ssign: false };
       const nowDT = new Date(Date.now());
       const dv = `${nowDT.getFullYear()}-${pad(nowDT.getMonth() + 1)}-${pad(nowDT.getDate())}T${pad(nowDT.getHours())}:${pad(nowDT.getMinutes())}`;
       return `
+      ${wizBar(1, 3, ['爆破情况', '结果与用量', '核验与签名'])}
       <div class="head-card sm">
         <div class="hc-no">${esc(pl.planNo)}</div>
         <div class="hc-name">${esc(site(pl.site).name)}</div>
-        <div class="hc-sub">到场 ${rc ? fmtTime(rc.arriveTime) : '-'} · 出库量 ${o ? o.items.reduce((s, i) => s + (i.goods === 'zy' ? i.qty : 0), 0) : 0}kg</div>
+        <div class="hc-sub">到场 ${rc ? fmtTime(rc.arriveTime) : '-'} · 本点出库量 ${o ? Math.round(q.items.reduce((s, i) => s + (i.goods === 'zy' ? i.qty : 0), 0)) : 0}kg</div>
       </div>
+      <div data-wst="1">
       <div class="form-card">
         <div class="fc-title">爆破情况（E01）</div>
         <div class="f-row"><label>实际起爆时间</label><input id="b_time" type="datetime-local" class="f-sel w" value="${dv}"></div>
@@ -527,26 +886,40 @@ Object.assign(PAGES, {
         <div class="f-row"><label>天气情况</label><select id="b_weather" class="f-sel w"><option>晴</option><option>多云</option><option>阴</option><option>小雨</option><option>大风（≥5级）</option></select></div>
         <div class="f-row"><label>炸药领取库房</label><b>${o ? esc(storage(o.storage).name) : '-'}<i class="src-note">（出库单自动带出）</i></b></div>
         <div class="f-row"><label>爆破责任单位</label><b>${esc(company(project(planById(p.id).project).company).name)}<i class="src-note">（项目备案带出）</i></b></div>
-        ${o.items.map((it, i) => {
-          const def = it.goods === 'lg' ? it.qty : (it.goods === 'zy' ? Math.round(it.qty * 0.84 * 10) / 10 : Math.round(it.qty * 0.8 * 10) / 10);
-          return `<div class="oi-edit"><span>${esc(goodsName(it.goods))} 实际用量</span><input id="bu_${i}" type="number" value="${def}" oninput="renderBalance('${pl.id}')"><span class="f-unit">${esc(GOODS[it.goods].unit)}</span></div>`;
+        ${outUsedRows(o, pl.id).map((r, i) => {
+          const plQty = q.planItems.filter(i => i.goods === r.goods && (!i.spec || i.spec === r.spec))
+            .reduce((s, i) => s + i.qty, 0) || q.planItems.filter(i => i.goods === r.goods).reduce((s, i) => s + i.qty, 0);
+          const def = Math.min(r.qty, plQty || r.qty);
+          return `<div class="oi-edit"><span>${esc(goodsName(r.goods))} 实际用量</span><input id="bu_${i}" type="number" value="${def}" oninput="renderBalance('${pl.id}')"><span class="f-unit">${esc(GOODS[r.goods].unit)}</span></div>
+          <div class="oi-line" style="margin:-2px 0 10px">${esc(r.spec)}${r.n > 1 ? ` · 合并 ${r.n} 个批次（已按品种汇总）` : ''}</div>`;
         }).join('')}
-        <div class="f-row"><label>爆破效果</label><textarea id="b_effect" class="f-ta" placeholder="块度、飞石、盲炮等情况"></textarea></div>
-        <div class="f-row"><label>备注</label><input id="b_remark" placeholder="其他需说明的情况（选填）"></div>
       </div>
+      </div>
+      <div data-wst="2">
       <div class="form-card">
-        <div class="fc-title">爆破结果（三态）</div>
+        <div class="fc-title">爆破结果（三态）与实测用量</div>
         <div class="radios">
           <label><input type="radio" name="b_result" value="NORMAL_NO_RETURN" onchange="renderBalance('${pl.id}')">正常 · 无返库</label>
           <label><input type="radio" name="b_result" value="NORMAL_RETURN" checked onchange="renderBalance('${pl.id}')">正常 · 有返库</label>
           <label><input type="radio" name="b_result" value="ABNORMAL" onchange="renderBalance('${pl.id}')">异常</label>
         </div>
         <div class="f-row"><label>盲炮未处理</label><select id="b_blind" class="f-sel w" onchange="renderBalance('${pl.id}')"><option value="">无</option><option value="1">有（双通知民警+监理单位）</option></select></div>
+        <div class="f-row"><label>爆破效果</label><textarea id="b_effect" class="f-ta" placeholder="块度、飞石、盲炮等情况"></textarea></div>
+        <div class="f-row"><label>备注</label><input id="b_remark" placeholder="其他需说明的情况（选填）"></div>
       </div>
+      <div id="balance_card"></div>
+      </div>
+      <div data-wst="3">
       <div class="form-card">
         <div class="fc-title">监理核验人员（爆破结束后共同核验，F6）</div>
-        ${MASTER.persons.filter(pp => ['爆破员', '测量技术员', '安全员'].includes(pp.role)).map(pp => `<div class="ck-line exec"><span class="ck-txt">${esc(pp.name)} · ${esc(pp.role)}</span><input type="checkbox" data-checker="${pp.id}" aria-label="选择${esc(pp.name)}"></div>`).join('')}
-        <div class="f-note">至少选择 1 名技术人员 / 安全员参与核验；所选人员随爆破记录留痕。</div>
+        ${(() => {
+          const sids = planSites(pl).map(sp => sp.site);
+          const cand = MASTER.persons.filter(pp => ['爆破员', '测量技术员', '安全员'].includes(pp.role)
+            && (pp.status || '在岗') !== '停用' && pp.project === pl.project && (pp.sites || []).some(s => sids.includes(s)));
+          if (!cand.length) return `<div class="f-note">本作业点位（${sids.map(s => site(s).name).join('、')}）暂无已关联的核验人员：请先在 PC 端「四大员维护」为爆破员 / 测量技术员 / 安全员填写所属项目与作业点位。</div>`;
+          return cand.map(pp => `<div class="ck-line exec"><span class="ck-txt">${esc(pp.name)} · ${esc(pp.role)} · ${esc((pp.sites || []).map(s => site(s).name).join('/'))}</span><input type="checkbox" data-checker="${pp.id}" aria-label="选择${esc(pp.name)}"></div>`).join('');
+        })()}
+        <div class="f-note">只列本作业点位（${esc((planSites(pl).map(sp => site(sp.site).name)).join('、'))}）且属于本项目的人员；至少选择 1 名，所选人员随爆破记录留痕。</div>
       </div>
       <div class="form-card">
         <div class="fc-title">安全监理手签（必签 · F6）</div>
@@ -556,32 +929,78 @@ Object.assign(PAGES, {
             <button class="btn ghost sm" onclick="demoSign('sup_sign',window._formState,'ssign')">演示快速签名（李建国）</button>
           </div></div>
       </div>
-      <div id="balance_card"></div>
       <button class="btn primary block" onclick="submitBlast('${pl.id}')">提交爆破登记</button>
-      <div class="f-note center">四量对照按出库单维度、允许跨日归集（R2 / E05）；不平不允许提交完成。</div>`;
+      <div class="f-note center">四量对照按出库单维度、允许跨日归集（R2 / E05）；不平不允许提交完成。</div>
+      </div>
+      ${wizNav(1, 3)}`;
     },
-    after(p) { renderBalance(p.id); initSign('sup_sign', window._formState, 'ssign'); }
+    after(p) { renderBalance(p.id); initSign('sup_sign', window._formState, 'ssign'); wizApply(1); }
   }
 });
+/* 合并出库单（一单多点）按本计划所在作业点取明细；单计划单据回退整单明细 */
+function outItemsForPlan(o, planId) {
+  if (!o) return [];
+  const g = outGroups(o).find(x => x.plan === planId);
+  return (g && g.items) ? g.items : (o.items || []);
+}
+/* 本计划所在点位：出库明细 + 计划明细 + 计划量 */
+function blastQty(planId) {
+  const pl = planById(planId);
+  const o = outboundByPlan(planId);
+  const items = outItemsForPlan(o, planId);
+  const sp = planSites(pl).find(x => x.site === pl.site);
+  const planItems = normItems((sp && sp.items) ? sp.items : (pl.items || []));
+  return { o, items, planItems, planKgSum: planKg(planItems) };
+}
+/* 出库单明细按「品种+规格」聚合：同品种多批次不再重复出多个「实际用量」输入框 */
+function outUsedRows(o, planId) {
+  const map = {};
+  (planId ? outItemsForPlan(o, planId) : (o && o.items) || []).forEach(it => {
+    const k = it.goods + '|' + it.spec;
+    if (!map[k]) map[k] = { key: k, goods: it.goods, spec: it.spec, qty: 0, n: 0 };
+    map[k].qty += it.qty; map[k].n++;
+  });
+  return Object.keys(map).map(k => map[k]);
+}
+/* 本点位剩余量（真实）：本点出库明细（按品种聚合）− 监理填报的实际用量 */
+function remainRows(planId) {
+  const o = outboundByPlan(planId);
+  const bl = blastingByPlan(planId);
+  const usedMap = {};
+  ((bl && bl.used) || []).forEach(u => { const k = u.goods + '|' + u.spec; usedMap[k] = (usedMap[k] || 0) + u.qty; });
+  return outUsedRows(o, planId).map(r => {
+    const u = usedMap[r.goods + '|' + r.spec] || 0;
+    return { goods: r.goods, spec: r.spec, qty: r.qty, n: r.n, used: u, remain: r2(Math.max(0, r.qty - u)) };
+  });
+}
 function renderBalance(planId) {
   const pl = planById(planId);
   const o = outboundByPlan(planId);
   const box = $('#balance_card');
   if (!box || !o) return;
-  const used = o.items.map((it, i) => ({ goods: it.goods, spec: it.spec, qty: parseFloat(val('bu_' + i)) || 0 }));
+  const q = blastQty(planId);
+  const agg = outUsedRows(o, planId);
+  const used = agg.map((r, i) => ({ goods: r.goods, spec: r.spec, qty: parseFloat(val('bu_' + i)) || 0 }));
+  const planOf = r => q.planItems.filter(i => i.goods === r.goods && (!i.spec || i.spec === r.spec))
+    .reduce((s, i) => s + i.qty, 0) || q.planItems.filter(i => i.goods === r.goods).reduce((s, i) => s + i.qty, 0);
+  const overRows = used.filter(u => u.qty > planOf(u));
   const result = (document.querySelector('input[name=b_result]:checked') || {}).value;
-  const ret = result === 'NORMAL_RETURN' ? used.map(u => ({ ...u, qty: Math.max(0, u.qty * 0.15) })) : [];
-  const blind = val('b_blind') ? 1 : 0;
-  const OUT = planKg(o.items), USE = planKg(used), RET = planKg(ret);
-  const LOSS = Math.max(0, OUT - USE - RET) || (blind ? 1 : 0);
+  const remain = agg.map((r, i) => ({ goods: r.goods, spec: r.spec, qty: r2(Math.max(0, r.qty - used[i].qty)) }));
+  const ret = result === 'NORMAL_RETURN' ? remain : [];
+  const OUT = planKg(q.items), USE = planKg(used), RET = planKg(ret);
+  const LOSS = Math.max(0, OUT - USE - RET);
   const balanced = Math.abs(OUT - USE - RET - LOSS) < 0.001;
-  box.innerHTML = `<div class="card bal-card ${balanced ? '' : 'bad'}">
-    <div class="fc-title">四量对照（实时 · 按出库单维度）</div>
-    <div class="bal-row"><span>出库 OUT</span><b>${OUT.toFixed(1)}kg</b></div>
-    <div class="bal-row"><span>实爆 USE</span><b>${USE.toFixed(1)}kg</b></div>
-    <div class="bal-row"><span>退库 RET${result === 'NORMAL_RETURN' ? '（预估，提交后登记明细）' : ''}</span><b>${RET.toFixed(1)}kg</b></div>
-    <div class="bal-row"><span>损耗 LOSS（含盲炮）</span><b>${LOSS.toFixed(1)}kg</b></div>
-    <div class="bal-sum ${balanced ? 'ok' : 'bad'}">${balanced ? '✓ OUT = USE + RET + LOSS，平衡' : '✗ 不平衡，禁止提交完成'}</div>
+  box.innerHTML = `<div class="card bal-card compact ${balanced ? '' : 'bad'}">
+    <div class="fc-title">四量对照（实时 · 本作业点位）</div>
+    <div class="bal-grid">
+      <div class="bal-cell"><span>出库 OUT</span><b>${OUT.toFixed(1)}kg</b></div>
+      <div class="bal-cell"><span>实爆 USE</span><b>${USE.toFixed(1)}kg</b></div>
+      <div class="bal-cell"><span>退库 RET</span><b>${RET.toFixed(1)}kg</b></div>
+      <div class="bal-cell"><span>损耗 LOSS</span><b>${LOSS.toFixed(1)}kg</b></div>
+    </div>
+    <div class="bal-sum ${balanced ? 'ok' : 'bad'}">${balanced ? '✓ 出库 = 实用 + 退库 + 损耗，账实相符' : '✗ 账实不符，禁止提交完成'}</div>
+    <div class="f-note">退库/销毁量按实际数据算：本点出库 ${OUT.toFixed(1)}kg − 实际用量 ${USE.toFixed(1)}kg = <b>${Math.max(0, OUT - USE).toFixed(1)}kg</b>${result === 'NORMAL_RETURN' ? '（本次全部退回）' : '（无返库，剩余计入损耗）'}</div>
+    ${overRows.length ? `<div class="bal-sum bad">✗ 实际用量超出计划：${overRows.map(u => `${esc(goodsName(u.goods))} 实用 ${u.qty} / 计划 ${planOf(u)} ${esc(GOODS[u.goods].unit)}`).join('，')}</div>` : ''}
   </div>`;
 }
 function submitBlast(planId) {
@@ -594,10 +1013,15 @@ function submitBlast(planId) {
   if (!t) return toast('请填写起爆时间', false);
   const result = (document.querySelector('input[name=b_result]:checked') || {}).value;
   if (result === 'ABNORMAL' && !val('b_effect').trim()) return toast('异常结果必须填写说明', false);
+  const qv = blastQty(planId);
+  const used = outUsedRows(o, planId).map((r, i) => ({ goods: r.goods, spec: r.spec, qty: parseFloat(val('bu_' + i)) || 0 }));
+  const planOf = r => qv.planItems.filter(i => i.goods === r.goods && (!i.spec || i.spec === r.spec))
+    .reduce((s, i) => s + i.qty, 0) || qv.planItems.filter(i => i.goods === r.goods).reduce((s, i) => s + i.qty, 0);
+  const overRows = used.filter(u => u.qty > planOf(u));
+  if (overRows.length) return toast(`实际用量不得大于计划用量：${overRows.map(u => `${goodsName(u.goods)} 实用 ${u.qty} / 计划 ${planOf(u)} ${GOODS[u.goods].unit}`).join('；')}，请核对后重新填写`, false);
   const checkers = [...document.querySelectorAll('[data-checker]')].filter(c => c.checked).map(c => c.dataset.checker);
   if (!checkers.length) return toast('请选择参与核验的技术人员 / 安全员（至少 1 人）', false);
   if (!window._formState.ssign) return toast('爆破结束后须安全监理手签确认', false);
-  const used = o.items.map((it, i) => ({ goods: it.goods, spec: it.spec, qty: parseFloat(val('bu_' + i)) || 0 }));
   const data = {
     blastTime: new Date(t).getTime(), method: val('b_method'), weather: val('b_weather'),
     fromStorage: o ? o.storage : null,
@@ -625,43 +1049,44 @@ Object.assign(PAGES, {
       const pl = planById(p.id);
       const o = outboundByPlan(pl.id);
       const bl = blastingByPlan(pl.id);
-      const usedMap = {};
-      bl.used.forEach(u => usedMap[u.goods + u.spec] = u.qty);
+      const rr = returnRoute(pl);
       window._formState = { dphotos: 0 };
-      const rows = o.items.map((it, i) => {
-        const remain = r2(Math.max(0, it.qty - (usedMap[it.goods + it.spec] || 0)));
-        return { i, it, remain };
-      });
-      const retRows = rows.map(r => `<div class="rc-item">
-          <div class="oi-name">${esc(goodsName(r.it.goods))} · ${esc(r.it.spec)} <i class="batch">${esc(r.it.batch)}</i></div>
-          <div class="oi-edit"><span>可退</span><b id="rr_${r.i}">${r.remain}</b><span class="f-unit">${esc(GOODS[r.it.goods].unit)}</span></div>
-          <div class="oi-edit"><span>本次退库</span><input id="rq_${r.i}" type="number" value="${r.remain}" max="${r.remain}"><span class="f-unit">${esc(GOODS[r.it.goods].unit)}</span></div>
+      const rows = remainRows(pl.id);
+      const retRows = rows.map((r, i) => `<div class="rc-item">
+          <div class="oi-name">${esc(goodsName(r.goods))} · ${esc(r.spec)} <i class="batch">${r.n > 1 ? '合并 ' + r.n + ' 个批次' : ''}</i></div>
+          <div class="oi-edit"><span>出库 ${r.qty}</span><span>实用 ${r.used}</span><b id="rr_${i}">可退 ${r.remain}</b><span class="f-unit">${esc(GOODS[r.goods].unit)}</span></div>
+          <div class="oi-edit"><span>本次退库</span><input id="rq_${i}" type="number" value="${r.remain}" max="${r.remain}"><span class="f-unit">${esc(GOODS[r.goods].unit)}</span></div>
         </div>`).join('');
-      const dhRows = rows.map(r => `<div class="rc-item">
-          <div class="oi-name">${esc(goodsName(r.it.goods))} · ${esc(r.it.spec)} <i class="batch">${esc(r.it.batch)}</i></div>
-          <div class="oi-edit"><span>剩余量</span><b>${r.remain}</b><span class="f-unit">${esc(GOODS[r.it.goods].unit)}</span></div>
-          <div class="oi-edit"><span>销毁量</span><input id="xq_${r.i}" type="number" value="0" max="${r.remain}"><span class="f-unit">${esc(GOODS[r.it.goods].unit)}</span></div>
+      const dhRows = rows.map((r, i) => `<div class="rc-item">
+          <div class="oi-name">${esc(goodsName(r.goods))} · ${esc(r.spec)} <i class="batch">${r.n > 1 ? '合并 ' + r.n + ' 个批次' : ''}</i></div>
+          <div class="oi-edit"><span>出库 ${r.qty}</span><span>实用 ${r.used}</span><b>剩余 ${r.remain}</b><span class="f-unit">${esc(GOODS[r.goods].unit)}</span></div>
+          <div class="oi-edit"><span>销毁量</span><input id="xq_${i}" type="number" value="${r.remain}" max="${r.remain}"><span class="f-unit">${esc(GOODS[r.goods].unit)}</span></div>
         </div>`).join('');
       return `
       <div class="head-card sm"><div class="hc-no">${esc(pl.planNo)}</div>
         <div class="hc-name">${esc(site(pl.site).name)}</div>
-        <div class="hc-sub">关联原出库单 ${esc(o.outNo)}（Q4）· 支持当日 / 跨日 / 多次处置</div>
+        <div class="hc-sub">关联原出库单 ${esc(o.outNo)}（Q4）· 退库规则见下方说明（甲方确认 Q07）</div>
       </div>
-      <div class="form-card">
-        <div class="fc-title">处置方式（销售库出来未用完的爆炸物）</div>
+      ${rr.isUse ? `<div class="form-card">
+        <div class="fc-title">处置方式（使用库出库 · 强制原路原库退回）</div>
+        <div class="kv"><span>出库库房</span><b>${esc(rr.src.name)}（${esc(rr.src.type)}）</b></div>
+        <div class="kv"><span>退库去向</span><b>${esc(rr.targetName)}（原库 · 不可更改）</b></div>
+        <div class="f-note">${esc(rr.tip)}</div>
+      </div>` : `<div class="form-card">
+        <div class="fc-title">处置方式（销售库出库 · 未用完二选一）</div>
         <div class="radios">
-          <label><input type="radio" name="d_mode" value="return" checked onchange="dispMode()">退库 · 反向押送回原销售库</label>
+          <label><input type="radio" name="d_mode" value="return" checked onchange="dispMode()">退回中间库 · ${esc(rr.targetName)}（库管员入库）</label>
           <label><input type="radio" name="d_mode" value="destroy" onchange="dispMode()">销毁 · 现场登记销毁量</label>
         </div>
-        <div class="f-note" id="dm_note">生成退库单并推送押运员：扫码确认退库量、驾驶员、押运员后按原押运路线反向回库。</div>
-      </div>
+        <div class="f-note" id="dm_note">生成退库单并推送押运员：确认退库量、驾驶员、押运员后押送至「${esc(rr.targetName)}」，由库管员入库。</div>
+      </div>`}
       <div id="ret_box">
         <div class="form-card">
-          <div class="fc-title">退库明细（E02）· 不可超剩余量</div>
+          <div class="fc-title">退库明细（E02）· 须一次退完剩余量</div>
           ${retRows}
         </div>
         <div class="card warn-card sm">
-          <div class="f-note">跨日退库说明：退库可跨日归集到同一出库单；默认 T+3 未退库转预警（12.4 约束 3）。</div>
+          <div class="f-note">退库规则：可跨日，但不能分批、必须一次退完；库房不能拒收。使用库出库的必须原路原库退回；销售库出库的可退中间库或销毁。本次去向：<b>${esc(rr.targetName)}</b>。</div>
         </div>
         <button class="btn primary block" onclick="submitReturn('${pl.id}')">提交退库单 · 生成反向押送任务</button>
       </div>
@@ -671,7 +1096,7 @@ Object.assign(PAGES, {
           ${dhRows}
           <div class="f-row" style="margin-top:8px"><label>销毁原因 / 方式</label><textarea id="dh_reason" class="f-ta" placeholder="如：受潮结块失效，按 GB6722 规程现场爆破销毁"></textarea></div>
           <div class="f-row"><label>销毁现场照片</label><div id="dhph">${photoStrip(window._formState, 'dphotos')}</div></div>
-          <div class="f-note">销毁记录同步民警与库管员（台账记销毁出账），链路直接进入待核验。</div>
+          <div class="f-note">销毁只做登记（甲方确认 Q06）：本系统仅登记销毁量 / 原因 / 现场照片并同步台账与民警，销毁审批与见证流程不在一期建设范围。</div>
         </div>
         <button class="btn danger block" onclick="submitDestroy('${pl.id}')">提交销毁记录（须照片留证）</button>
       </div>`;
@@ -679,27 +1104,29 @@ Object.assign(PAGES, {
   }
 });
 function dispMode() {
-  const destroy = (document.querySelector('input[name=d_mode]:checked') || {}).value === 'destroy';
+  const checked = document.querySelector('input[name=d_mode]:checked');
+  if (!checked) return;              // 使用库出库：无处置方式选择，固定退库
+  const destroy = checked.value === 'destroy';
   const ret = $('#ret_box'), dh = $('#dh_box'), note = $('#dm_note');
   if (ret) ret.style.display = destroy ? 'none' : '';
   if (dh) dh.style.display = destroy ? '' : 'none';
   if (note) note.textContent = destroy
-    ? '销毁须逐品种登记销毁量、原因并拍照留证；记录推送民警与库管员。'
-    : '生成退库单并推送押运员：扫码确认退库量、驾驶员、押运员后按原押运路线反向回库。';
+    ? '销毁只做登记（甲方确认 Q06）：逐品种登记销毁量、原因并拍照留证，记录推送民警与库管员；审批与见证流程不在一期范围。'
+    : '生成退库单并推送押运员：扫码确认退库量、驾驶员、押运员后按原押运路线反向回库（一次退完 · 原库退回 · 不能拒收，Q07）。';
 }
 function submitDestroy(planId) {
   const pl = planById(planId);
-  const o = outboundByPlan(planId);
-  const bl = blastingByPlan(planId);
-  const usedMap = {}; bl.used.forEach(u => usedMap[u.goods + u.spec] = u.qty);
+  const rr = returnRoute(pl);
+  if (rr.isUse) return toast(`本批物品从「${rr.src.name}」（使用库）出库，未用完必须原路原库退回，不允许销毁`, false);
+  const rows = remainRows(planId);
   const items = [];
-  o.items.forEach((it, i) => {
+  let bad = false;
+  rows.forEach((r, i) => {
     const q = parseFloat(val('xq_' + i)) || 0;
-    const remain = r2(Math.max(0, it.qty - (usedMap[it.goods + it.spec] || 0)));
-    if (q > remain) { items.push('__BAD__'); return; }
-    if (q > 0) items.push({ goods: it.goods, spec: it.spec, qty: q, batch: it.batch });
+    if (q > r.remain) bad = true;
+    if (q > 0) items.push({ goods: r.goods, spec: r.spec, qty: q, batch: r.n > 1 ? `合并 ${r.n} 批次` : '' });
   });
-  if (items.includes('__BAD__')) return toast('销毁量超过剩余量，已拦截', false);
+  if (bad) return toast('销毁量超过剩余量（出库 − 实际用量），已拦截', false);
   if (!items.length) return toast('销毁量不能为 0', false);
   const reason = val('dh_reason').trim();
   if (!reason) return toast('请填写销毁原因 / 方式', false);
@@ -713,20 +1140,25 @@ function submitReturn(planId) {
   const pl = planById(planId);
   const o = outboundByPlan(planId);
   const bl = blastingByPlan(planId);
-  const usedMap = {}; bl.used.forEach(u => usedMap[u.goods + u.spec] = u.qty);
+  const rows = remainRows(planId);
   const items = [];
-  o.items.forEach((it, i) => {
+  let bad = false;
+  rows.forEach((r, i) => {
     const q = parseFloat(val('rq_' + i)) || 0;
-    const remain = r2(Math.max(0, it.qty - (usedMap[it.goods + it.spec] || 0)));
-    if (q > remain) { items.push('__BAD__'); return; }
-    if (q > 0) items.push({ goods: it.goods, spec: it.spec, qty: q, batch: it.batch });
+    if (q > r.remain) bad = true;
+    if (q > 0) items.push({ goods: r.goods, spec: r.spec, qty: q, batch: r.n > 1 ? `合并 ${r.n} 批次` : '' });
   });
-  if (items.includes('__BAD__')) return toast('退库量超过剩余量，已拦截（行级防超退）', false);
+  if (bad) return toast('退库量超过可退量（出库 − 实际用量），已拦截', false);
   if (!items.length) return toast('退库量不能为 0', false);
+  for (let i = 0; i < rows.length; i++) {
+    const q = parseFloat(val('rq_' + i)) || 0;
+    if (rows[i].remain > 0 && q < rows[i].remain) return toast('退库必须一次退完剩余量，不能分批（甲方确认 Q07）', false);
+  }
   const rt = createReturn(pl, items, 'P2');
   saveDB();
-  toast(`退库单 ${rt.retNo} 已生成，已推送押运员反向押送`, true);
-  nav.reset('sup-home');
+  toast(`退库单 ${rt.retNo} 已生成，请让押运员扫码接单`, true);
+  nav.reset('sup-home', { f: 'ret' });
+  nav.push('sup-return-qr', { id: rt.id });
 }
 
 Object.assign(PAGES, {
@@ -740,22 +1172,18 @@ Object.assign(PAGES, {
       const tr = rt.transport ? transportById(rt.transport) : null;
       return `
       <div class="head-card sm"><div class="hc-no">${esc(rt.retNo)}</div>
-        <div class="hc-name">${esc(site(pl.site).name)} → 城西销售库</div>
+        <div class="hc-name">${esc(site(pl.site).name)} → ${esc(rt.targetName || storage(rt.target || 'S1').name)}</div>
         <div class="hc-sub">${rt.items.map(i => goodsName(i.goods) + ' ' + i.qty + GOODS[i.goods].unit).join('、')}</div>
       </div>
       ${!tr ? `
-      <div class="card qr-card sm">
-        <div class="scan-btn" onclick="this.textContent='✓ 已扫码（${esc(rt.retNo)}）';this.classList.add('ok');window._formState.scan=true">
-          <svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 4h6M20 4h-4M4 20v-6M20 20h-6M4 8v4h4M20 8v4h-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
-          <span>押运员扫码确认退库单</span>
-        </div>
-        <div class="qr-tip">扫码核对：退库量 · 驾驶员 · 押运员（确认后方可发车）</div>
+      <div class="card sm">
+        <div class="kv"><span>退库单来源</span><b>扫码接单 · ${esc(rt.escortScan ? person(rt.escortScan.by).name + ' · ' + fmtTime(rt.escortScan.time) : '已绑定')}</b></div>
+        <div class="kv"><span>接单人</span><b>${esc(person(escortMe()).name)}（本人）</b></div>
       </div>
       <div class="form-card">
-        <div class="fc-title">退库单确认（E03 · 扫码即核对）</div>
+        <div class="fc-title">退库单明细核对（E03 · 扫码时已获取，无需二次扫码）</div>
         ${rt.items.map(i => `<div class="kv"><span>${esc(goodsName(i.goods))} · ${esc(i.spec)}<i class="batch">${esc(i.batch)}</i></span><b>退库量 ${i.qty} ${esc(GOODS[i.goods].unit)}</b></div>`).join('')}
-        <div class="kv"><span>押运员</span><b>孙立冬（本人）</b></div>
-        <div class="kv"><span>路线</span><b>原押运路线反向：${esc(site(pl.site).name)} → 城西销售库</b></div>
+        <div class="kv"><span>反向路线</span><b>${esc(site(pl.site).name)} → ${esc(rt.targetName || storage(rt.target || 'S1').name)}</b></div>
       </div>
       <div class="form-card">
         <div class="fc-title">接收退库物品并安排人车（E03）</div>
@@ -764,20 +1192,77 @@ Object.assign(PAGES, {
       </div>
       <button class="btn primary block" onclick="doReturnDepart('${rt.id}')">确认接收 · 发车反向押送</button>` : `
       <div class="route-wrap">${routeSVG(tr.progress)}
-        <div class="route-meta"><span>${esc(tr.route.from)}</span><b>${tr.progress || 0}%</b><span>销售库</span></div>
+        <div class="route-meta"><span>${esc(tr.route.from)}</span><b>${tr.progress || 0}%</b><span>${esc(tr.route.to)}</span></div>
       </div>
-      <div class="ok-strip">${rt.status === '待入库确认' ? '已到库，待库管员核销入库' : '反向押送中…'}</div>`}
+      <div class="ok-strip">${rt.status === '待入库确认' ? '已到库，待库管员拍照核销入库' : '反向押送中 · 安全监理与原出库库管员实时跟踪'}</div>
+      ${rt.status === '押送中' ? `<div class="form-card">
+        <div class="fc-title">到达指定库房（手动确认）</div>
+        <div class="kv"><span>目标库房</span><b>${esc(rt.targetName || storage(rt.target || 'S1').name)}</b></div>
+        <div class="kv"><span>状态同步</span><b>安全监理 · 原出库库管员 · 押运员</b></div>
+        <div class="f-note">到达后点下方按钮，库管员才能进入待入库确认（需拍照核实后库存回加）。</div>
+        <button class="btn primary block" type="button" onclick="escortArriveReturn('${rt.id}')">到达指定库房 · 通知库管员入库</button>
+      </div>` : ''}`}
       <div class="f-note center">退库反向押送复用运输链路（direction=RETURN），到库后由库管员按批次核销、库存回加。</div>`;
     }
   }
 });
 function doReturnDepart(rtId) {
-  if (!(window._formState && window._formState.scan)) return toast('请先扫码确认退库单（退库量/驾驶员/押运员）', false);
+  /* 扫码接单时已获取退库单并绑定本人，这里不再要求二次扫码 */
+  if (!window._formState || window._formState.scan !== 'skip') window._formState = { scan: 'skip' };
   const rt = byId(DB.returns, rtId);
   const tr = departReturn(rt, 'P5', $('#e_driver').dataset.v, $('#e_vehicle').dataset.v);
   saveDB();
-  toast('扫码确认完成，已发车反向押送', true);
+  toast('已发车反向押送，安全监理与原出库库管员可实时跟踪', true);
   nav.render();
   startRouteAnim(tr);
 }
+/* 押运员手动确认到达指定库房 → 库管员方可入库确认 */
+function escortArriveReturn(rtId) {
+  const rt = byId(DB.returns, rtId);
+  if (!rt) return toast('退库单不存在', false);
+  if (rt.status !== '押送中') return toast(`当前状态为「${rt.status}」，不可重复确认到达`, false);
+  const target = rt.targetName || storage(rt.target || 'S1').name;
+  confirmSheet('到达确认', `确认已将退库物品送达「${target}」？\n确认后安全监理与原出库库管员同步看到「待入库确认」，库管员方可拍照核销入库。`,
+    () => {
+      arriveReturn(rt);
+      saveDB();
+      toast('已确认到达，等待库管员拍照核销入库', true);
+      nav.render();
+    }, '确认到达');
+}
 function supGoBlast(id) { nav.push('sup-blast', { id }); }
+
+/* ================= 安全监理：退库单二维码（押运员扫码接单）================= */
+Object.assign(PAGES, {
+  'sup-return-qr': {
+    title: '退库单二维码',
+    render(p) {
+      const rt = byId(DB.returns, p.id);
+      if (!rt) return EMPTY('退库单不存在') + `<button class="btn ghost block" onclick="nav.reset('sup-home',{f:'ret'})">返回</button>`;
+      const pl = planById(rt.plan);
+      const out = outboundById(rt.outbound);
+      const target = rt.targetName || storage(rt.target || 'S1').name;
+      return `
+      <div class="head-card sm">
+        <div class="hc-no">${esc(rt.retNo)}</div>
+        <div class="hc-name">${esc(site(pl.site).name)} → ${esc(target)}</div>
+        <div class="hc-sub">退库单已生成 · 等待押运员扫码接单</div>
+      </div>
+      <div class="card qr-card qr-sm">
+        ${qrSVG(rt.retNo)}
+        <div class="qr-no">${esc(rt.retNo)}</div>
+        <div class="qr-tip">押运员扫码接单（E03）· 扫码后该单才进入其「返程押送」，未接单他人不可见</div>
+      </div>
+      <div class="form-card">
+        <div class="fc-title">退库单内容（押运员扫码后核对）</div>
+        ${rt.items.map(i => `<div class="kv"><span>${esc(goodsName(i.goods))} · ${esc(i.spec)}</span><b>${i.qty} ${esc(GOODS[i.goods].unit)}</b></div>`).join('')}
+        <div class="kv"><span>退库去向</span><b>${esc(target)}</b></div>
+        <div class="kv"><span>关联原出库单</span><b>${esc(out ? out.outNo : '-')}</b></div>
+        <div class="kv"><span>监护人</span><b>${esc(person(rt.supervisor || 'P2').name)}（安全监理）</b></div>
+        <div class="kv"><span>接单状态</span><b>${rt.escortScan ? `已接单 · ${esc(person(rt.escortScan.by).name)} · ${fmtTime(rt.escortScan.time)}` : '待押运员扫码接单'}</b></div>
+      </div>
+      <div class="f-note" style="margin:8px 2px">一单一码一位押运员：接单后按原路线反向回库，库管员核销入库；不可分批、库房不能拒收（Q07）。</div>
+      <button class="btn primary block" onclick="nav.reset('sup-home',{f:'ret'})">完成 · 返回退库列表</button>`;
+    }
+  }
+});

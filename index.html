@@ -3,71 +3,574 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>民爆最后一公里 · 演示中心</title>
+<title>民爆最后一公里 · 监管系统原型</title>
+<meta name="description" content="民用爆炸物品全流程监管：从计划上报到远程核验的六节点闭环，小程序 + PC 管理后台 + 自建俯瞰大屏。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    min-height: 100vh;
-    background: linear-gradient(160deg, #7a0e0e 0%, #a31515 55%, #c0392b 100%);
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px;
+  :root{
+    --dp-color-ground:#fcfcfd;
+    --dp-color-ink:#16191f;
+    --dp-color-ink-secondary:#454c58;
+    --dp-color-ground-muted:#f3f4f6;
+    --dp-color-rule:#dde0e6;
+    --dp-color-accent:#074ce0;
+    --dp-color-field:#16191f;
+    --dp-color-on-field:#fcfcfd;
+    --dp-color-on-field-secondary:#d0d4dd;
+    --dp-color-panel:#ffffff;
+    --dp-color-on-accent:#ffffff;
+
+    --dp-typography-body:16px;
+    --dp-typography-interface:15px;
+    --dp-typography-small:14px;
+    --dp-typography-metadata:13px;
+    --dp-typography-label:12px;
+    --dp-typography-body-leading:1.6;
+
+    --dp-spacing-grid-gap:24px;
+    --dp-radius-panel:12px;
+    --dp-border-hairline:1px;
+    --dp-motion-interaction:160ms;
+    --dp-motion-easing:ease-out;
+
+    --font-display:"Host Grotesk","Instrument Sans",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    --font-body:"Instrument Sans",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    --shadow-card:0 1px 2px rgba(22,25,31,.05),0 8px 24px -18px rgba(22,25,31,.28);
+    --shadow-lift:0 2px 4px rgba(22,25,31,.06),0 18px 36px -22px rgba(22,25,31,.34);
+    --w-page:1180px;
   }
-  .wrap { max-width: 720px; width: 100%; }
-  h1 { color: #fff; font-size: 30px; letter-spacing: 2px; text-align: center; margin-bottom: 8px; }
-  .sub { color: rgba(255,255,255,.75); text-align: center; font-size: 14px; margin-bottom: 32px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  a.card {
-    background: rgba(255,255,255,.96); border-radius: 12px; padding: 22px 20px;
-    text-decoration: none; color: #7a0e0e; display: block;
-    transition: transform .15s ease, box-shadow .15s ease;
-    border: 2px solid transparent;
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--dp-color-ground);color:var(--dp-color-ink);
+    font-family:var(--font-body);font-size:var(--dp-typography-body);
+    line-height:var(--dp-typography-body-leading);
+    -webkit-font-smoothing:antialiased;
   }
-  a.card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.25); border-color: #ffd7d7; }
-  .card h2 { font-size: 17px; margin-bottom: 6px; }
-  .card p { font-size: 13px; color: #8a6d6d; line-height: 1.6; }
-  .card .tag { display: inline-block; font-size: 11px; background: #f5e1e1; color: #a31515; border-radius: 999px; padding: 2px 10px; margin-bottom: 10px; }
-  footer { text-align: center; color: rgba(255,255,255,.6); font-size: 12px; margin-top: 28px; }
-  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--w-page);margin:0 auto;padding:0 32px}
+  .skip{position:absolute;left:-9999px;top:0;background:var(--dp-color-accent);color:var(--dp-color-on-accent);
+    padding:10px 16px;border-radius:0 0 8px 0;z-index:100}
+  .skip:focus{left:0}
+  :focus-visible{outline:2px solid var(--dp-color-accent);outline-offset:2px;border-radius:4px}
+  .on-dark :focus-visible,.closing :focus-visible{outline-color:var(--dp-color-on-field)}
+
+  /* ---------- 顶栏 ---------- */
+  .bar{border-bottom:var(--dp-border-hairline) solid var(--dp-color-rule);background:var(--dp-color-ground)}
+  .bar .wrap{display:flex;align-items:center;gap:var(--dp-spacing-grid-gap);min-height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;
+    letter-spacing:-.02em;font-size:16px}
+  .brand .mark{width:24px;height:24px;border-radius:6px;background:var(--dp-color-accent);position:relative;flex:none}
+  .brand .mark::after{content:"";position:absolute;inset:7px;border:2px solid #fff;border-radius:2px}
+  .bar nav{display:flex;gap:26px;margin-left:auto;font-size:var(--dp-typography-small)}
+  .bar nav a{color:var(--dp-color-ink-secondary);padding:6px 0;border-bottom:1px solid transparent;
+    transition:color var(--dp-motion-interaction) var(--dp-motion-easing),border-color var(--dp-motion-interaction) var(--dp-motion-easing)}
+  .bar nav a:hover{color:var(--dp-color-accent);border-bottom-color:var(--dp-color-accent)}
+  .bar .cta{margin-left:8px}
+
+  /* ---------- 按钮 ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;
+    padding:11px 20px;border-radius:8px;font-family:var(--font-body);font-size:var(--dp-typography-interface);
+    font-weight:500;border:var(--dp-border-hairline) solid transparent;cursor:pointer;
+    transition:transform var(--dp-motion-interaction) var(--dp-motion-easing),
+               background-color var(--dp-motion-interaction) var(--dp-motion-easing),
+               box-shadow var(--dp-motion-interaction) var(--dp-motion-easing)}
+  .btn-primary{background:var(--dp-color-accent);color:var(--dp-color-on-accent)}
+  .btn-primary:hover{background:#063fc0;transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(7,76,224,.7)}
+  .btn-primary:active{transform:translateY(0);box-shadow:none}
+  .btn-ghost{background:var(--dp-color-panel);color:var(--dp-color-ink);border-color:var(--dp-color-rule)}
+  .btn-ghost:hover{background:var(--dp-color-ground-muted);transform:translateY(-1px)}
+  .btn-ghost:active{transform:translateY(0)}
+  .btn-sm{min-height:38px;padding:8px 14px;font-size:var(--dp-typography-small)}
+
+  /* ---------- 首屏 ---------- */
+  .hero{padding:76px 0 64px}
+  .hero .wrap{display:grid;grid-template-columns:1.45fr 1fr;gap:56px;align-items:start}
+  .eyebrow{font-size:var(--dp-typography-label);letter-spacing:.14em;text-transform:uppercase;
+    color:var(--dp-color-ink-secondary);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:2px;background:var(--dp-color-accent);flex:none}
+  h1{font-family:var(--font-display);font-weight:700;font-size:clamp(38px,4.6vw,58px);line-height:1.06;
+    letter-spacing:-.035em;margin-bottom:22px;max-width:20ch}
+  h1 em{font-style:normal;color:var(--dp-color-accent)}
+  .lead{font-size:18px;color:var(--dp-color-ink-secondary);line-height:1.65;max-width:52ch;margin-bottom:30px}
+  .actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .hero-note{margin-top:18px;font-size:var(--dp-typography-metadata);color:var(--dp-color-ink-secondary)}
+
+  .figure{background:var(--dp-color-panel);border:var(--dp-border-hairline) solid var(--dp-color-rule);
+    border-radius:var(--dp-radius-panel);padding:18px 18px 14px;box-shadow:var(--shadow-card)}
+  .figure .fhead{display:flex;align-items:center;justify-content:space-between;
+    font-size:var(--dp-typography-label);color:var(--dp-color-ink-secondary);margin-bottom:6px}
+  .figure .fhead b{font-weight:500;letter-spacing:.03em}
+  .figure .pill{font-size:11px;color:var(--dp-color-accent);border:var(--dp-border-hairline) solid #c9d8fb;
+    background:#f2f6fe;border-radius:999px;padding:2px 9px;font-weight:500}
+  .figure svg{display:block;width:100%;height:auto}
+  .figure figcaption{font-size:var(--dp-typography-label);color:var(--dp-color-ink-secondary);
+    border-top:var(--dp-border-hairline) solid var(--dp-color-rule);padding-top:10px;margin-top:4px}
+
+  /* ---------- 事实条 ---------- */
+  .facts{border-top:var(--dp-border-hairline) solid var(--dp-color-rule);
+    border-bottom:var(--dp-border-hairline) solid var(--dp-color-rule)}
+  .facts .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--dp-spacing-grid-gap);padding:26px 32px}
+  .fact{padding-right:20px}
+  .fact+.fact{border-left:var(--dp-border-hairline) solid var(--dp-color-rule);padding-left:24px}
+  .fact b{display:block;font-family:var(--font-display);font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+  .fact b span{font-size:15px;font-weight:500;letter-spacing:0;margin-left:4px;color:var(--dp-color-ink-secondary)}
+  .fact i{font-style:normal;display:block;font-size:var(--dp-typography-label);color:var(--dp-color-ink-secondary);margin-top:6px}
+
+  /* ---------- 淡灰场：交付物 ---------- */
+  .band{background:var(--dp-color-ground-muted);border-bottom:var(--dp-border-hairline) solid var(--dp-color-rule)}
+  .band .wrap{padding:76px 32px}
+  .sect-head{display:grid;grid-template-columns:1.45fr 1fr;gap:48px;align-items:end;margin-bottom:36px}
+  h2{font-family:var(--font-display);font-weight:700;font-size:clamp(27px,3vw,38px);line-height:1.14;letter-spacing:-.03em}
+  .sect-head p{color:var(--dp-color-ink-secondary);font-size:var(--dp-typography-body);max-width:38ch}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--dp-spacing-grid-gap)}
+  .card{background:var(--dp-color-panel);border:var(--dp-border-hairline) solid var(--dp-color-rule);
+    border-radius:var(--dp-radius-panel);padding:22px;box-shadow:var(--shadow-card);display:flex;flex-direction:column;
+    transition:transform var(--dp-motion-interaction) var(--dp-motion-easing),
+               box-shadow var(--dp-motion-interaction) var(--dp-motion-easing),
+               border-color var(--dp-motion-interaction) var(--dp-motion-easing)}
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift);border-color:#c9d3e6}
+  .card .ico{width:34px;height:34px;border-radius:8px;background:#f2f6fe;border:var(--dp-border-hairline) solid #dbe6fb;
+    display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+  .card .ico svg{width:18px;height:18px;stroke:var(--dp-color-accent);fill:none;stroke-width:1.6;
+    stroke-linecap:round;stroke-linejoin:round}
+  .card .kicker{font-size:var(--dp-typography-label);color:var(--dp-color-ink-secondary);letter-spacing:.02em;margin-bottom:6px}
+  .card h3{font-family:var(--font-display);font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.3;margin-bottom:8px}
+  .card p{font-size:var(--dp-typography-small);color:var(--dp-color-ink-secondary);line-height:1.6;max-width:36ch}
+  .card .go{margin-top:auto;padding-top:16px;font-size:var(--dp-typography-small);color:var(--dp-color-accent);font-weight:500}
+  .card .go span{display:inline-block;transition:transform var(--dp-motion-interaction) var(--dp-motion-easing)}
+  .card:hover .go span{transform:translateX(3px)}
+
+  /* ---------- 深色场：流程 ---------- */
+  .dark{background:var(--dp-color-field);color:var(--dp-color-on-field)}
+  .dark .wrap{padding:80px 32px}
+  .dark h2{color:var(--dp-color-on-field);max-width:24ch}
+  .dark .sect-head p{color:var(--dp-color-on-field-secondary)}
+  .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin:40px 0 8px;
+    border-top:var(--dp-border-hairline) solid rgba(252,252,253,.16)}
+  .step{padding:22px 16px 26px 0;border-right:var(--dp-border-hairline) solid rgba(252,252,253,.12);position:relative}
+  .step:last-child{border-right:0}
+  .step b.num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
+    border:var(--dp-border-hairline) solid rgba(252,252,253,.3);font-family:var(--font-display);
+    font-size:var(--dp-typography-label);font-weight:500;color:var(--dp-color-on-field);margin-bottom:14px}
+  .step h3{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+  .step p{font-size:var(--dp-typography-metadata);color:var(--dp-color-on-field-secondary);line-height:1.55;max-width:20ch}
+  .benefits{display:grid;grid-template-columns:1fr 1fr;gap:20px 48px;margin-top:44px;
+    border-top:var(--dp-border-hairline) solid rgba(252,252,253,.16);padding-top:34px}
+  .benefit{display:flex;gap:12px;align-items:flex-start}
+  .benefit svg{width:18px;height:18px;flex:none;margin-top:3px;stroke:#7fa4ff;fill:none;stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round}
+  .benefit b{display:block;font-family:var(--font-display);font-size:var(--dp-typography-interface);
+    font-weight:700;margin-bottom:3px;letter-spacing:-.01em}
+  .benefit i{font-style:normal;font-size:var(--dp-typography-small);color:var(--dp-color-on-field-secondary);line-height:1.55}
+
+  /* ---------- 对比 ---------- */
+  .compare .wrap{padding:76px 32px}
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--dp-spacing-grid-gap);margin-top:34px;align-items:start}
+  .plan{background:var(--dp-color-panel);border:var(--dp-border-hairline) solid var(--dp-color-rule);
+    border-radius:var(--dp-radius-panel);padding:24px;box-shadow:var(--shadow-card)}
+  .plan.featured{border-color:var(--dp-color-accent);box-shadow:0 0 0 1px var(--dp-color-accent),var(--shadow-card)}
+  .plan .badge{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.02em;padding:3px 9px;
+    border-radius:999px;background:var(--dp-color-accent);color:var(--dp-color-on-accent);margin-bottom:12px}
+  .plan h3{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+  .plan .sub{font-size:var(--dp-typography-metadata);color:var(--dp-color-ink-secondary);margin-bottom:16px;
+    padding-bottom:16px;border-bottom:var(--dp-border-hairline) solid var(--dp-color-rule)}
+  .plan ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .plan li{display:flex;gap:9px;font-size:var(--dp-typography-small);color:var(--dp-color-ink-secondary);line-height:1.5}
+  .plan li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--dp-color-accent);
+    flex:none;margin-top:8px}
+  .plan .go{display:inline-block;margin-top:20px;font-size:var(--dp-typography-small);font-weight:500;color:var(--dp-color-accent)}
+
+  /* ---------- 常见问题 ---------- */
+  .faq{border-top:var(--dp-border-hairline) solid var(--dp-color-rule);background:var(--dp-color-ground)}
+  .faq .wrap{padding:64px 32px 72px;display:grid;grid-template-columns:.9fr 1.45fr;gap:56px;align-items:start}
+  .faq h2{font-size:clamp(24px,2.4vw,30px)}
+  .faq .side p{color:var(--dp-color-ink-secondary);font-size:var(--dp-typography-body);margin-top:12px;max-width:30ch}
+  details{border-top:var(--dp-border-hairline) solid var(--dp-color-rule)}
+  details:last-of-type{border-bottom:var(--dp-border-hairline) solid var(--dp-color-rule)}
+  summary{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 0;cursor:pointer;
+    font-family:var(--font-display);font-size:16px;font-weight:500;letter-spacing:-.01em;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary .pm{position:relative;width:14px;height:14px;flex:none}
+  summary .pm::before,summary .pm::after{content:"";position:absolute;background:var(--dp-color-ink-secondary);
+    border-radius:1px;transition:transform var(--dp-motion-interaction) var(--dp-motion-easing),
+    background-color var(--dp-motion-interaction) var(--dp-motion-easing)}
+  summary .pm::before{left:0;top:6px;width:14px;height:2px}
+  summary .pm::after{left:6px;top:0;width:2px;height:14px}
+  details[open] summary .pm::after{transform:rotate(90deg)}
+  summary:hover{color:var(--dp-color-accent)}
+  summary:hover .pm::before,summary:hover .pm::after{background:var(--dp-color-accent)}
+  details p{font-size:var(--dp-typography-small);color:var(--dp-color-ink-secondary);line-height:1.7;
+    padding:0 34px 20px 0;max-width:62ch}
+
+  /* ---------- 收尾 ---------- */
+  .closing{background:var(--dp-color-field);color:var(--dp-color-on-field)}
+  .closing .wrap{padding:80px 32px 0}
+  .closing h2{color:var(--dp-color-on-field);max-width:22ch;margin-bottom:16px}
+  .closing p{color:var(--dp-color-on-field-secondary);max-width:52ch;margin-bottom:28px;font-size:var(--dp-typography-body)}
+  .closing .actions .btn-ghost{background:transparent;color:var(--dp-color-on-field);border-color:rgba(252,252,253,.28)}
+  .closing .actions .btn-ghost:hover{background:rgba(252,252,253,.08)}
+  .footgrid{display:grid;grid-template-columns:1.45fr 1fr 1fr 1fr;gap:32px;
+    border-top:var(--dp-border-hairline) solid rgba(252,252,253,.16);margin-top:64px;padding:32px 0 40px}
+  .footgrid .who{font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:-.01em;margin-bottom:8px}
+  .footgrid .who+p{font-size:var(--dp-typography-label);color:var(--dp-color-on-field-secondary);max-width:34ch;margin:0}
+  .fcol b{display:block;font-size:var(--dp-typography-label);letter-spacing:.06em;text-transform:uppercase;
+    color:var(--dp-color-on-field-secondary);margin-bottom:10px;font-weight:500}
+  .fcol a{display:block;font-size:var(--dp-typography-small);color:var(--dp-color-on-field);padding:4px 0;
+    transition:color var(--dp-motion-interaction) var(--dp-motion-easing)}
+  .fcol a:hover{color:#93b2ff}
+  .legal{border-top:var(--dp-border-hairline) solid rgba(252,252,253,.12);padding:16px 0 26px;
+    display:flex;justify-content:space-between;gap:16px;font-size:var(--dp-typography-label);
+    color:var(--dp-color-on-field-secondary);flex-wrap:wrap}
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width:1050px){
+    .hero .wrap{gap:32px}
+    .hero{padding:60px 0 52px}
+    .steps{grid-template-columns:repeat(3,1fr);row-gap:8px}
+    .step:nth-child(3){border-right:0}
+    .step:nth-child(n+4){border-top:var(--dp-border-hairline) solid rgba(252,252,253,.12);margin-top:6px}
+    .footgrid{grid-template-columns:1.4fr 1fr 1fr 1fr;gap:24px}
+  }
+  @media (max-width:900px){
+    .grid-3{grid-template-columns:1fr 1fr}
+    .bar nav{display:none}
+  }
+  @media (max-width:760px){
+    .wrap{padding:0 20px}
+    .band .wrap,.dark .wrap,.compare .wrap,.faq .wrap,.closing .wrap{padding-left:20px;padding-right:20px}
+    .hero .wrap{grid-template-columns:1fr;gap:36px}
+    h1{max-width:none}
+    .figure{order:2}
+    .facts .wrap{grid-template-columns:1fr 1fr;gap:22px 20px;padding:24px 20px}
+    .fact{padding-right:0}
+    .fact+.fact{border-left:0;padding-left:0}
+    .fact:nth-child(even){border-left:var(--dp-border-hairline) solid var(--dp-color-rule);padding-left:18px}
+    .sect-head{grid-template-columns:1fr;gap:14px}
+    .plans{grid-template-columns:1fr}
+    .faq .wrap{grid-template-columns:1fr;gap:28px}
+    .benefits{grid-template-columns:1fr;gap:18px}
+    .footgrid{grid-template-columns:1fr 1fr;gap:26px;margin-top:48px}
+    .steps{grid-template-columns:1fr 1fr}
+    .step{border-right:0;padding-right:14px}
+    .step:nth-child(odd){border-right:var(--dp-border-hairline) solid rgba(252,252,253,.12)}
+    .step:nth-child(n+3){border-top:var(--dp-border-hairline) solid rgba(252,252,253,.12)}
+  }
+  @media (max-width:480px){
+    .grid-3{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr}
+    .step{border-right:0!important;border-top:var(--dp-border-hairline) solid rgba(252,252,253,.12)}
+    .step:first-child{border-top:0}
+    .actions .btn{flex:1 1 auto}
+    .legal{flex-direction:column;gap:6px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+    .card:hover,.btn:hover{transform:none}
+  }
 </style>
 </head>
 <body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<header class="bar">
   <div class="wrap">
-    <h1>民爆最后一公里</h1>
-    <div class="sub">民用爆炸物品全流程监管 · 小程序高保真原型 / 设计文档 / 演示文稿</div>
-    <div class="grid">
-      <a class="card" href="miniprogram-prototype/index.html">
-        <span class="tag">9 角色全流程演示</span>
-        <h2>📱 小程序原型</h2>
-        <p>治安管理员 · 民爆企业 · 公安监管三端，93 项功能在线交互演示（手机模式打开体验最佳）</p>
-      </a>
-      <a class="card" href="bigscreen/index.html">
-        <span class="tag">V1.4 · 系统自建</span>
-        <h2>🖥️ 俯瞰大屏效果</h2>
-        <p>GIS 一张图 + 异常事件墙 + 指标看板：作业点/库房/车辆三层图层、电子围栏、实时轨迹（1920 深色科技蓝）</p>
-      </a>
-      <a class="card" href="pc-admin/index.html">
-        <span class="tag">V1.4 · L01–L08</span>
-        <h2>💻 PC 管理后台</h2>
-        <p>工作台、主数据管理（8 类）与审核、检查配置、统计报表、一作业点一档、系统管理、日志与大屏配置</p>
-      </a>
-      <a class="card" href="民爆最后一公里监管功能设计说明.html">
-        <span class="tag">V1.4 · 公安红排版</span>
-        <h2>📄 设计说明文档</h2>
-        <p>功能架构、状态机、数据模型、角色权限矩阵与全流程说明（93 项功能清单）</p>
-      </a>
-      <a class="card" href="miniprogram-prototype/%E6%B0%91%E7%88%86%E6%9C%80%E5%90%8E%E4%B8%80%E5%85%AC%E9%87%8C%E5%8A%9F%E8%83%BD%E6%B8%85%E5%8D%95.xlsx">
-        <span class="tag">73 行 · 六大板块</span>
-        <h2>📊 功能清单（Excel）</h2>
-        <p>企业侧 / 公安侧 / 治安管理员 / 平台公共 / PC 管理后台 / 俯瞰大屏，一级-二级功能与描述</p>
-      </a>
-      <a class="card" href="ppt/index.html">
-        <span class="tag">17 页 · 公安蓝</span>
-        <h2>📽️ 汇报 PPT</h2>
-        <p>项目背景、建设思路、功能蓝图与实施路径汇报幻灯片（HTML 版 + PDF/PPTX 源文件）</p>
-      </a>
-    </div>
-    <footer>GitHub Pages · ikid-zhang/minbao-lastmile · 数据本地模拟，仅供演示</footer>
+    <a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>民爆最后一公里</a>
+    <nav aria-label="页面导航">
+      <a href="#deliverables">交付物</a>
+      <a href="#flow">监管流程</a>
+      <a href="#compare">三端分工</a>
+      <a href="#faq">常见问题</a>
+    </nav>
+    <a class="btn btn-primary btn-sm cta" href="miniprogram-prototype/index.html">打开原型</a>
   </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">民用爆炸物品全流程监管</p>
+        <h1>把最后一公里，<br>放进<em>一条数据链</em></h1>
+        <p class="lead">计划上报、库房出库、在途押运、到场核量、现场爆破、远程核验——九个角色在同一个时间轴上作业，公安在同一个视图里核验。纸质交接变成可回放、可检查、可导出的节点记录。</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="miniprogram-prototype/index.html">进入小程序原型</a>
+          <a class="btn btn-ghost" href="民爆最后一公里监管功能设计说明.html">阅读设计说明 V1.4</a>
+        <p class="hero-note">真实后端服务驱动 · 原生 Node.js 零依赖 · 三端实时同源持久化</p>
+      </div>
+
+      <figure class="figure">
+        <div class="fhead"><b>运行视图</b><span class="pill">V1.4</span></div>
+        <svg viewBox="0 0 440 440" role="img" aria-labelledby="dgmTitle dgmDesc">
+          <title id="dgmTitle">六个作业环节汇聚到同一监管中枢</title>
+          <desc id="dgmDesc">计划上报、库房出库、在途押运、到场核量、现场爆破、远程核验六个环节的数据汇入同一监管中枢，向小程序、PC 管理后台与俯瞰大屏输出同一份节点记录。</desc>
+          <defs>
+            <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#3468ee"/><stop offset="1" stop-color="#074ce0"/>
+            </linearGradient>
+            <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#16191f" flood-opacity=".16"/>
+            </filter>
+          </defs>
+          <circle cx="220" cy="220" r="200" fill="none" stroke="#eef1f5"/>
+          <circle cx="220" cy="220" r="152" fill="none" stroke="#e3e7ee" stroke-dasharray="2 6"/>
+          <g stroke="#dde0e6" fill="none" stroke-width="1.2">
+            <path d="M104 64 C 138 64 156 132 156 186"/>
+            <path d="M104 220 L 156 220"/>
+            <path d="M104 376 C 138 376 156 308 156 254"/>
+            <path d="M336 64 C 302 64 284 132 284 186"/>
+            <path d="M336 220 L 284 220"/>
+            <path d="M336 376 C 302 376 284 308 284 254"/>
+          </g>
+          <rect x="156" y="156" width="128" height="128" rx="20" fill="url(#gBlue)" filter="url(#soft)"/>
+          <text x="220" y="212" text-anchor="middle" font-family="Host Grotesk, Instrument Sans, PingFang SC, sans-serif"
+                font-size="16" font-weight="700" fill="#ffffff">监管中枢</text>
+          <text x="220" y="232" text-anchor="middle" font-family="Instrument Sans, PingFang SC, sans-serif"
+                font-size="11" fill="#dbe6ff">最后一公里</text>
+          <g fill="#ffffff" opacity=".6">
+            <rect x="176" y="250" width="22" height="4" rx="2"/>
+            <rect x="202" y="250" width="22" height="4" rx="2"/>
+            <rect x="228" y="250" width="16" height="4" rx="2"/>
+          </g>
+          <g font-family="Instrument Sans, PingFang SC, sans-serif" font-size="12" fill="#16191f" text-anchor="middle">
+            <rect x="8" y="46" width="96" height="36" rx="9" fill="#ffffff" stroke="#dde0e6" filter="url(#soft)"/>
+            <text x="56" y="69">计划上报</text>
+            <rect x="8" y="202" width="96" height="36" rx="9" fill="#ffffff" stroke="#dde0e6" filter="url(#soft)"/>
+            <text x="56" y="225">库房出库</text>
+            <rect x="8" y="358" width="96" height="36" rx="9" fill="#ffffff" stroke="#dde0e6" filter="url(#soft)"/>
+            <text x="56" y="381">在途押运</text>
+            <rect x="336" y="46" width="96" height="36" rx="9" fill="#ffffff" stroke="#dde0e6" filter="url(#soft)"/>
+            <text x="384" y="69">到场核量</text>
+            <rect x="336" y="202" width="96" height="36" rx="9" fill="#ffffff" stroke="#dde0e6" filter="url(#soft)"/>
+            <text x="384" y="225">现场爆破</text>
+            <rect x="336" y="358" width="96" height="36" rx="9" fill="#ffffff" stroke="#dde0e6" filter="url(#soft)"/>
+            <text x="384" y="381">远程核验</text>
+          </g>
+        </svg>
+        <figcaption>六类现场环节 → 同一份节点数据 → 小程序 / PC 后台 / 大屏三个视图</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="facts" aria-label="关键事实">
+    <div class="wrap">
+      <div class="fact"><b>9<span>类</span></b><i>作业与监管角色</i></div>
+      <div class="fact"><b>93<span>项</span></b><i>本期交付功能</i></div>
+      <div class="fact"><b>6<span>个</span></b><i>闭环节点，缺一环即断链</i></div>
+      <div class="fact"><b>8<span>类</span></b><i>基础数据，治安管理员可维护</i></div>
+    </div>
+  </section>
+
+  <section class="band" id="deliverables">
+    <div class="wrap">
+      <div class="sect-head">
+        <h2>六个可以直接打开的交付物</h2>
+        <p>原型与文档同源：页面里的每一条规则，都能在设计说明里找到编号与依据。</p>
+      </div>
+      <div class="grid-3">
+        <a class="card" href="miniprogram-prototype/index.html">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 5.5h2"/><circle cx="12" cy="18" r=".6" fill="currentColor" stroke="none"/></svg></span>
+          <p class="kicker">九角色 · 全流程</p>
+          <h3>小程序原型</h3>
+          <p>计划、出库、押运、爆破、核验逐节点可点，双人双锁与一单多点都能走完整链路。</p>
+          <p class="go">打开演示 <span>→</span></p>
+        </a>
+        <a class="card" href="pc-admin/index.html">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span>
+          <p class="kicker">L01–L08</p>
+          <h3>PC 管理后台</h3>
+          <p>主数据表格化维护与审核生效、检查配置、监管报表、一作业点一档、日志与大屏配置。</p>
+          <p class="go">打开后台 <span>→</span></p>
+        </a>
+        <a class="card" href="bigscreen/index.html">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6.5 9.5 4l5 2.5L21 4v13.5L14.5 20l-5-2.5L3 20z"/><path d="M9.5 4v13.5M14.5 6.5V20"/></svg></span>
+          <p class="kicker">系统建设内容 · 自建</p>
+          <h3>俯瞰大屏</h3>
+          <p>GIS 一张图三层图层、电子围栏与实时轨迹、异常事件墙、当日指标与分屏轮播。</p>
+          <p class="go">查看大屏 <span>→</span></p>
+        </a>
+        <a class="card" href="民爆最后一公里监管功能设计说明.html">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span>
+          <p class="kicker">V1.5 甲方确认落地版</p>
+          <h3>设计说明文档</h3>
+          <p>功能架构、状态机、数据模型、接口清单、角色权限矩阵与全链路业务复核。</p>
+          <p class="go">阅读文档 <span>→</span></p>
+        </a>
+        <a class="card" href="docs/api/api-spec.md">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8"/></svg></span>
+          <p class="kicker">RESTful · 双网同步</p>
+          <h3>后端服务与 API 规范</h3>
+          <p>已落地的统一后端服务、20+表 DDL 架构 (schema.sql) 与全节点强卡口接口规范。</p>
+          <p class="go">查看 API 规范 <span>→</span></p>
+        </a>
+        <a class="card" href="miniprogram-prototype/%E6%B0%91%E7%88%86%E6%9C%80%E5%90%8E%E4%B8%80%E5%85%AC%E9%87%8C%E5%8A%9F%E8%83%BD%E6%B8%85%E5%8D%95.xlsx">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.5h18M9.5 9.5V20"/></svg></span>
+          <p class="kicker">93 项功能 · 六个板块</p>
+          <h3>功能清单（Excel）</h3>
+          <p>企业侧、公安侧、治安管理员、平台公共、PC 后台、大屏，逐条一级—二级—描述。</p>
+          <p class="go">下载清单 <span>→</span></p>
+        </a>
+        <a class="card" href="ppt/index.html">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="11" rx="2"/><path d="M12 15v4M8 21h8"/></svg></span>
+          <p class="kicker">17 页</p>
+          <h3>汇报 PPT</h3>
+          <p>从问题现状到建设思路、功能蓝图与分期实施路径，可直接用于汇报讲解。</p>
+          <p class="go">查看幻灯片 <span>→</span></p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="dark" id="flow">
+    <div class="wrap">
+      <div class="sect-head">
+        <h2>一条链上的六个节点</h2>
+        <p>每个节点都有责任人、留痕与校验规则，任一环缺失即标记为未闭环。</p>
+      </div>
+      <div class="steps">
+        <div class="step"><b class="num">1</b><h3>计划上报</h3><p>提前填报，三级签批后生效</p></div>
+        <div class="step"><b class="num">2</b><h3>库房出库</h3><p>双人双锁，复核通过才扣库存</p></div>
+        <div class="step"><b class="num">3</b><h3>在途押运</h3><p>一单多点，载重与卸货序列校验</p></div>
+        <div class="step"><b class="num">4</b><h3>到场核量</h3><p>逐点打卡，逐点核对数量</p></div>
+        <div class="step"><b class="num">5</b><h3>现场爆破</h3><p>共同核验，监理手写签名</p></div>
+        <div class="step"><b class="num">6</b><h3>远程核验</h3><p>六节点回放，归档为一份档案</p></div>
+      </div>
+      <div class="benefits">
+        <div class="benefit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg>
+          <div><b>双人双锁</b><i>登记与复核分离，库存变更与签字人一一对应。</i></div>
+        </div>
+        <div class="benefit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg>
+          <div><b>一单多点</b><i>多作业点合并出库，押运员可调整卸货顺序并逐点核销。</i></div>
+        </div>
+        <div class="benefit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg>
+          <div><b>三量平衡</b><i>领取、使用、退库自动比对，差异生成待复核单。</i></div>
+        </div>
+        <div class="benefit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg>
+          <div><b>全程留痕</b><i>节点日志可检索可导出，电子签名带时间戳与定位。</i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="compare" id="compare">
+    <div class="wrap">
+      <div class="sect-head">
+        <h2>三个视图，一份数据</h2>
+        <p>同一套节点接口向三端供数，不会出现大屏有、手机没有的口径冲突。</p>
+      </div>
+      <div class="plans">
+        <div class="plan featured">
+          <span class="badge">现场作业主入口</span>
+          <h3>小程序</h3>
+          <p class="sub">九类角色，按岗位分发待办</p>
+          <ul>
+            <li>计划、出库、押运、爆破逐节点登记</li>
+            <li>扫码打卡、拍照与手写签名</li>
+            <li>基础数据移动端维护并留痕</li>
+            <li>差异、超时、检查待办即时提醒</li>
+          </ul>
+          <a class="go" href="miniprogram-prototype/index.html">进入原型 →</a>
+        </div>
+        <div class="plan">
+          <h3>PC 管理后台</h3>
+          <p class="sub">治安管理员，治理与配置</p>
+          <ul>
+            <li>八类主数据维护、导入导出与审核生效</li>
+            <li>检查项模板与分级到场阈值配置</li>
+            <li>闭环率、核验覆盖率等监管报表</li>
+            <li>一作业点一档归档与批量导出</li>
+          </ul>
+          <a class="go" href="pc-admin/index.html">进入后台 →</a>
+        </div>
+        <div class="plan">
+          <h3>俯瞰大屏</h3>
+          <p class="sub">值班室，全域态势与督办</p>
+          <ul>
+            <li>作业点、库房、在途车辆三层图层</li>
+            <li>电子围栏越界与轨迹偏离告警</li>
+            <li>异常事件墙点击定位到地图</li>
+            <li>多辖区轮播值守与当日指标</li>
+          </ul>
+          <a class="go" href="bigscreen/index.html">进入大屏 →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <div class="wrap">
+      <div class="side">
+        <h2>常见问题</h2>
+        <p>关于数据来源、系统架构与运行方式，先看这里。</p>
+      </div>
+      <div>
+        <details open>
+          <summary>系统数据是真实的吗？<span class="pm" aria-hidden="true"></span></summary>
+          <p>是。系统现已接入真实 Node.js 统一后端服务，数据持久化于服务端存储（<code>server/data/store.json</code>）。初始状态为零业务单据的真实空环境，支持测量技术员从第一条任务真实填报上报、经过六节点全流程流转并与 PC 后台、俯瞰大屏实时同步。</p>
+        </details>
+        <details>
+          <summary>三端如何协同运行？<span class="pm" aria-hidden="true"></span></summary>
+          <p>移动端小程序用于企业现场各员填报、复核、签收打卡与民警现场/远程核验；PC 管理后台负责八类主数据统一建档维护、审批与监管台账；俯瞰大屏实时展示全域一张图、实时流转状态与异常预警。</p>
+        </details>
+        <details>
+          <summary>俯瞰大屏是第三方对接还是自建？<span class="pm" aria-hidden="true"></span></summary>
+          <p>V1.4 起改为系统建设内容，自建 GIS 一张图，与小程序、PC 后台共用同一份节点数据（<code>/bb/overview/*</code>），不再依赖第三方专题站。</p>
+        </details>
+        <details>
+          <summary>文档和清单是什么版本？<span class="pm" aria-hidden="true"></span></summary>
+          <p>设计说明 V1.4（93 项功能、L 模块 PC 后台）、功能清单 73 行六个板块、简版需求说明书 V1.1。三者与页面同源，随仓库一起发布。</p>
+        </details>
+        <details>
+          <summary>手机上能正常看吗？<span class="pm" aria-hidden="true"></span></summary>
+          <p>可以。本页在 1050 / 760 / 480 三个断点重排，按钮保持 44px 触控高度；表格类内容在小屏转为单列卡片式条目。</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="closing">
+  <div class="wrap">
+    <h2>从计划到核验，一条数据链。</h2>
+    <p>九个角色在同一个时间轴上作业，公安在同一个视图里核验，档案随作业点自动成形。</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="miniprogram-prototype/index.html">进入小程序原型</a>
+      <a class="btn btn-ghost" href="pc-admin/index.html">打开 PC 管理后台</a>
+    </div>
+    <div class="footgrid">
+      <div>
+        <p class="who">民爆最后一公里 · 全链路监管系统</p>
+        <p>真实后端服务驱动，全链路业务闭环。</p>
+      </div>
+      <div class="fcol">
+        <b>交付物</b>
+        <a href="miniprogram-prototype/index.html">小程序原型</a>
+        <a href="pc-admin/index.html">PC 管理后台</a>
+        <a href="bigscreen/index.html">俯瞰大屏</a>
+      </div>
+      <div class="fcol">
+        <b>文档</b>
+        <a href="民爆最后一公里监管功能设计说明.html">设计说明 V1.4</a>
+        <a href="miniprogram-prototype/%E6%B0%91%E7%88%86%E6%9C%80%E5%90%8E%E4%B8%80%E5%85%AC%E9%87%8C%E5%8A%9F%E8%83%BD%E6%B8%85%E5%8D%95.xlsx">功能清单</a>
+        <a href="ppt/index.html">汇报 PPT</a>
+      </div>
+      <div class="fcol">
+        <b>仓库</b>
+        <a href="https://github.com/ikid-zhang/minbao-lastmile">GitHub</a>
+        <a href="https://ikid-zhang.github.io/minbao-lastmile/">在线站点</a>
+      </div>
+    </div>
+    <div class="legal">
+      <span>V1.4 · 2026-11-05</span>
+      <span>ikid-zhang/minbao-lastmile</span>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

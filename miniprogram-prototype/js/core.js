@@ -26,6 +26,7 @@ const nav = {
   reset(id, params) { this.stack = [{ id, params }]; this.render(); },
   top() { return this.stack[this.stack.length - 1]; },
   render() {
+    if (typeof stopScanCamera === 'function') stopScanCamera();
     const cur = this.top();
     if (!cur) return;
     saveDB();
@@ -54,6 +55,7 @@ const nav = {
         <span>${t.label}</span>
       </button>`).join('');
     if (fn && fn.after) fn.after(cur.params || {});
+    if (window.updateServerStatusBadge) window.updateServerStatusBadge();
   }
 };
 const ROLE_TITLES = {};
@@ -105,6 +107,48 @@ function confirmSheet(title, text, onOk, okText, danger) {
   mask.querySelector('[data-a=cancel]').onclick = () => closeSheet(mask);
   mask.querySelector('[data-a=ok]').onclick = () => { closeSheet(mask); onOk(); };
 }
+/* ---------- 分步表单：长表单按屏拆分（同页显隐，不重渲染，不丢已填内容） ---------- */
+function wizBar(step, total, titles) {
+  const t = titles || [];
+  return `<div class="wiz" data-cur="${step}" data-total="${total}">${Array.from({ length: total }, (_, i) => {
+    const n = i + 1, label = t[i] || ('第' + n + '步');
+    return `<div class="wiz-i ${n === step ? 'on' : (n < step ? 'done' : '')}">${n}. ${esc(label)}</div>`;
+  }).join('')}</div>`;
+}
+function wizNav(step, total) {
+  return `<div class="wiz-nav">
+    <button id="wiz_prev" class="btn ghost" type="button" onclick="wizStep(-1)" style="display:${step > 1 ? '' : 'none'}">上一步</button>
+    <button id="wiz_next" class="btn primary" type="button" onclick="wizStep(1)" style="display:${step < total ? '' : 'none'}">下一步</button>
+  </div>`;
+}
+function wizApply(step) {
+  const bar = document.querySelector('.wiz');
+  if (!bar) return;
+  const total = +bar.dataset.total;
+  bar.dataset.cur = step;
+  bar.querySelectorAll('.wiz-i').forEach((el, i) => {
+    const n = i + 1;
+    el.classList.toggle('on', n === step);
+    el.classList.toggle('done', n < step);
+  });
+  document.querySelectorAll('[data-wst]').forEach(el => {
+    el.style.display = (+el.dataset.wst === step) ? '' : 'none';
+  });
+  const prev = document.getElementById('wiz_prev');
+  const next = document.getElementById('wiz_next');
+  if (prev) prev.style.display = step > 1 ? '' : 'none';
+  if (next) next.style.display = step < total ? '' : 'none';
+  const view = document.getElementById('view');
+  if (view) view.scrollTop = 0;
+}
+function wizStep(delta) {
+  const bar = document.querySelector('.wiz');
+  if (!bar) return;
+  const total = +bar.dataset.total;
+  const cur = +bar.dataset.cur || 1;
+  const next = Math.min(total, Math.max(1, cur + delta));
+  if (next !== cur) wizApply(next);
+}
 function formSheet(title, html, onOk, okText) {
   const mask = document.createElement('div');
   mask.className = 'sheet-mask';
@@ -123,11 +167,11 @@ function formSheet(title, html, onOk, okText) {
   return mask;
 }
 
-/* ---------- 状态徽标 ---------- */
+/* ---------- 状态徽标（语义收敛：琥珀=待办待审 / 蓝=进行就绪 / 绿=完成 / 红=驳回异常 / 灰=作废） ---------- */
 const STATUS_CLS = {
-  '待审核': 's-audit', '已驳回': 's-reject', '待出库': 's-ready', '待运输': 's-ready', '待发车': 's-ready',
-  '运输中': 's-transit', '已到场': 's-arrive', '待接收': 's-arrive', '待退库': 's-return', '退库运输中': 's-transit',
-  '待核验': 's-verify', '已完成': 's-done', '责令整改': 's-reject', '已作废': 's-void', '待押送': 's-return', '押送中': 's-transit', '待入库确认': 's-verify', '已入库': 's-done', '待签收': 's-audit', '已签收': 's-ready', '已到达': 's-done', '检查中': 's-transit', '待执行': 's-ready', '待到场': 's-audit', '待处置': 's-reject', '待监管签字': 's-audit', '待负责人审核': 's-audit', '待复核': 's-audit', '部分到达': 's-transit'
+  '待审核': 's-pend', '已驳回': 's-bad', '待出库': 's-run', '待运输': 's-run', '待发车': 's-run',
+  '运输中': 's-run', '已到场': 's-run', '待接收': 's-run', '待退库': 's-pend', '退库运输中': 's-run',
+  '待核验': 's-pend', '已完成': 's-done', '责令整改': 's-bad', '已作废': 's-void', '待押送': 's-pend', '押送中': 's-run', '待入库确认': 's-pend', '已入库': 's-done', '待签收': 's-pend', '已签收': 's-done', '已到达': 's-done', '检查中': 's-run', '待执行': 's-run', '待到场': 's-pend', '待处置': 's-bad', '待监管签字': 's-pend', '待负责人审核': 's-pend', '待复核': 's-pend', '部分到达': 's-run'
 };
 function statusPill(s) { return `<span class="pill ${STATUS_CLS[s] || 's-void'}">${esc(s)}</span>`; }
 function levelBadge(plan) {
@@ -143,13 +187,13 @@ function photoStrip(state, key) {
   const n = state[key] || 0;
   let html = `<div class="photo-strip">`;
   for (let i = 0; i < n; i++) html += `<div class="ph-item"><svg viewBox="0 0 48 48" width="34" height="34"><rect x="4" y="10" width="40" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="21" r="4" fill="currentColor" opacity=".35"/><path d="M8 36l10-9 7 6 9-10 8 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><i>已留证</i></div>`;
-  html += `<button type="button" class="ph-add" onclick="uiAddPhoto(this,'${key}')">＋ 拍照留证</button></div>`;
+  html += `<button type="button" class="ph-add" onclick="uiAddPhoto(this,'${key}')">＋ 现场拍照留证</button></div>`;
   return html;
 }
 function uiAddPhoto(btn, key) {
   const state = window._formState || (window._formState = {});
   state[key] = (state[key] || 0) + 1;
-  toast('已拍照并打水印（时间/坐标/作业点/人员）', true);
+  toast('已现场拍照并打水印（时间/坐标/作业点/人员）· 仅限现场拍摄，不可从相册选择（甲方确认 Q15）', true);
   const wrap = btn.closest('.photo-strip');
   const tmp = document.createElement('div');
   tmp.innerHTML = photoStrip(state, key);
@@ -162,7 +206,7 @@ function initSign(canvasId, state, key) {
   if (!cv) return;
   const ctx = cv.getContext('2d');
   let drawing = false, drawn = false, last = null;
-  ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.strokeStyle = '#16191f';
+  ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.strokeStyle = '#0E1A3C';
   const pos = e => {
     const r = cv.getBoundingClientRect();
     const t = e.touches ? e.touches[0] : e;
@@ -192,7 +236,7 @@ function clearSign(canvasId, state, key) {
 function demoSign(cvId, state, key) {
   if (state) state[key] = true;
   const cv = document.getElementById(cvId);
-  if (cv) { const ctx = cv.getContext('2d'); ctx.lineWidth = 2.4; ctx.strokeStyle = '#16191f'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(80, 110); ctx.bezierCurveTo(140, 40, 220, 160, 320, 80); ctx.bezierCurveTo(380, 40, 430, 130, 520, 90); ctx.stroke(); }
+  if (cv) { const ctx = cv.getContext('2d'); ctx.lineWidth = 2.4; ctx.strokeStyle = '#0E1A3C'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(80, 110); ctx.bezierCurveTo(140, 40, 220, 160, 320, 80); ctx.bezierCurveTo(380, 40, 430, 130, 520, 90); ctx.stroke(); }
   toast('已手写签名（演示快速签名）', true);
 }
 
@@ -241,14 +285,14 @@ function timelineHTML(plan) {
 function routeSVG(progress) {
   const p = Math.max(0, Math.min(100, progress || 0));
   return `<svg viewBox="0 0 340 120" class="route-svg">
-    <rect x="0" y="0" width="340" height="120" rx="10" fill="#16191f"/>
+    <rect x="0" y="0" width="340" height="120" rx="10" fill="#E4EAF5" stroke="#C3D4F0" stroke-width="1.5"/>
     <path d="M12 5 C 60 10, 80 35, 120 60 S 200 105, 260 105 S 310 95, 330 78" fill="none" stroke="#3a4150" stroke-width="5" stroke-linecap="round"/>
     <path d="M12 5 C 60 10, 80 35, 120 60 S 200 105, 260 105 S 310 95, 330 78" fill="none" stroke="#7c9bff" stroke-width="2" stroke-dasharray="6 7" stroke-linecap="round" class="dash"/>
     <circle cx="12" cy="5" r="7" fill="#fcfcfd"/>
-    <text x="12" y="24" font-size="10" fill="#d0d4dd" text-anchor="middle">起运点</text>
+    <text x="12" y="26" font-size="11" fill="#d0d4dd" text-anchor="middle">起运点</text>
     <circle cx="330" cy="78" r="7" fill="#7c9bff"/>
-    <text x="330" y="97" font-size="10" fill="#d0d4dd" text-anchor="middle">作业点</text>
-    <g class="truck"><rect x="-9" y="-6" width="18" height="12" rx="2" fill="#074ce0" stroke="#a8c1ff" stroke-width="1.5"/><circle cx="-4" cy="7" r="2.4" fill="#a8c1ff"/><circle cx="5" cy="7" r="2.4" fill="#a8c1ff"/></g>
+    <text x="330" y="99" font-size="11" fill="#d0d4dd" text-anchor="middle">作业点</text>
+    <g class="truck"><rect x="-9" y="-6" width="18" height="12" rx="2" fill="#1E5EFF" stroke="#9FB6E0" stroke-width="1.5"/><circle cx="-4" cy="7" r="2.4" fill="#9FB6E0"/><circle cx="5" cy="7" r="2.4" fill="#9FB6E0"/></g>
   </svg>`;
 }
 /* 轨迹动画：由 JS 移动 .truck */
@@ -271,9 +315,8 @@ function startRouteAnim(tr) {
       tr.suggestArrive = Date.now(); tr.suggestSource = 'GEOFENCE'; tr.status = '已到达';
       saveDB();
       if (tr.direction === 'RETURN') {
-        const rt = DB.returns.find(r => r.transport === tr.id);
-        if (rt) arriveReturn(rt);
-        toast('退库物品已到达销售库，待库管员核销入库', true);
+        /* 到达需押运员手动确认，动画到端点只提示「已进入库区」 */
+        toast('已进入库区，请点「到达指定库房」确认后库管员方可入库', true);
       } else {
         planById(tr.plan).status = '待接收';
         pushMsg('安全员', `运输单 ${tr.no} 已到达围栏，建议到达时间 ${fmtTime(tr.suggestArrive)} 已生成，请确认接收。`);
@@ -286,16 +329,12 @@ function startRouteAnim(tr) {
   window._routeTimer = timer;
 }
 
-/* ---------- 二维码占位 ---------- */
+/* ---------- 单号二维码（服务端生成，现场可真实扫描） ---------- */
 function qrSVG(text) {
-  let cells = '';
-  const rnd = (i) => { const x = Math.sin(i * 999) * 10000; return x - Math.floor(x); };
-  for (let r = 0; r < 21; r++) for (let c = 0; c < 21; c++) {
-    const corner = (r < 7 && c < 7) || (r < 7 && c > 13) || (r > 13 && c < 7);
-    const on = corner ? (r % 6 === 0 || (r % 6) === 5 || c % 6 === 0 || (c % 6) === 5 || (r > 1 && r < 5 && c > 1 && c < 5 && !(r === 2 && c === 2))) : rnd(r * 21 + c) > 0.55;
-    if (on) cells += `<rect x="${c * 4}" y="${r * 4}" width="4" height="4"/>`;
-  }
-  return `<svg viewBox="-6 -6 96 96" width="128" height="128" class="qr"><g fill="#16191f">${cells}</g><rect x="-6" y="-6" width="96" height="96" fill="none" stroke="#dde0e6" stroke-width="2"/></svg>`;
+  const base = (typeof API_BASE === 'string' && API_BASE) ? API_BASE : '/api';
+  /* API_BASE 已带 /api 前缀，这里只拼 /qr，避免出现 /api/api/qr 导致图片加载失败 */
+  const img = `<img class="qr" width="132" height="132" alt="${esc(text)}" src="${base}/qr?text=${encodeURIComponent(text)}" style="border:1px solid #C3D4F0;border-radius:8px;background:#fff;display:block;margin:0 auto">`;
+  return img;
 }
 
 /* ---------- 空态 ---------- */
@@ -313,10 +352,12 @@ function toEntry() { DB.role = 'entry'; saveDB(); nav.reset('entry'); }
 /* ---------- 计划卡片 ---------- */
 function planCard(p, onclick) {
   const s = site(p.site), pr = project(p.project);
-  const kg = Math.round(planKg(p.items));
-  return `<div class="card plan-card" onclick="${onclick}(${p.id === 'PL1' ? `'${p.id}'` : `'${p.id}'`})">
+  const n = planSiteCount(p);
+  const kg = planTotalKg(p);
+  const siteText = n > 1 ? `${s.name} 等 ${n} 个点位` : s.name;
+  return `<div class="card plan-card" onclick="${onclick}('${p.id}')">
     <div class="pc-top"><span class="pc-no">${esc(p.planNo)}</span>${statusPill(p.status)}</div>
-    <div class="pc-name">${esc(s.name)}</div>
+    <div class="pc-name">${esc(siteText)}</div>
     <div class="pc-sub">${esc(pr.name)} · 计划量 ${kg}kg ${levelBadge(p)}<span class="pc-area">${esc(planArea(p).name)}</span></div>
     <div class="pc-time">计划爆破 ${fmtTime(p.planStart)} ~ ${fmtTime(p.planEnd)}</div>
     ${p.exceptionFlag ? '<div class="pc-warn">⚠ 存在异常单，待处置</div>' : ''}

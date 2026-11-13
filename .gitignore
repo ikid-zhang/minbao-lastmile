@@ -1,17 +1,15 @@
-# 过程产物（不入库）
-.workbuddy/
-.民爆最后一公里功能清单.ref/
-_verify/
-_shots/
-ui-design-runs/
-
-# macOS 元数据
-._*
+# 依赖与运行产物
+server/node_modules/
+server/data/*.db
+server/data/*.db-wal
+server/data/*.db-shm
+server/data/._*
 .DS_Store
-
-# 临时副本
-*copy.et
-
-# 本地过程产物（不入库）
+_*_probe*.html
+_probe*.html
+._*
+.workbuddy/
+# 交付截图与甲方资料：不入公开仓库
 output/
-*.docx
+需求沟通/
+ppt/

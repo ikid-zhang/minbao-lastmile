@@ -16,7 +16,9 @@ Object.assign(PAGES, {
     render() {
       const wa = curArea(), pol = curPolice();
       const mine = areaPlans();
-      const audit = mine.filter(x => x.status === '待审核');
+      /* 待审核：本工区 + 明确指派给本人的（提交时写的 auditPolice 优先，避免民警换了工区就看不到单） */
+      const audit = DB.plans.filter(x => x.status === '待审核' && (planInMyArea(x) || x.auditPolice === pol.id));
+      const auditOther = DB.plans.filter(x => x.status === '待审核' && !planInMyArea(x) && x.auditPolice !== pol.id);
       const verify = mine.filter(x => ['待核验', '责令整改'].includes(x.status));
       const overseen = mine.filter(x => ['运输中', '待接收', '已到场'].includes(x.status));
       const overdue = mine.filter(x => x.status === '待核验' && Date.now() - (x.blastTime || x.createdAt) > 24 * H);
@@ -35,7 +37,8 @@ Object.assign(PAGES, {
         <div class="td ${overdue.length ? 'bad' : ''}"><b>${overdue.length}</b><span>超24h督办</span></div>
       </div>
       <div class="sec-title">待审核计划（A03 · R7 开关开启）</div>
-      ${audit.length ? audit.map(x => card(x, 'policeGoAudit')).join('') : EMPTY('本工区暂无待审核计划')}
+      ${audit.length ? audit.map(x => card(x, 'policeGoAudit')).join('') : EMPTY('本工区与指派给本人的待审核计划为空')}
+      ${auditOther.length ? `<div class="f-note">另有 ${auditOther.length} 条待审核计划属于其他责任区（${Array.from(new Set(auditOther.map(x => planArea(x).name))).join('、')}），可点上方「切换工区民警」查看。</div>` : ''}
       <div class="sec-title">待远程核验（F01/F02）</div>
       ${verify.length ? verify.map(x => card(x, 'policeGoVerify')).join('') : EMPTY('本工区暂无待核验作业点')}
       <div class="sec-title">在管作业点（重点关注）</div>
@@ -90,6 +93,7 @@ Object.assign(PAGES, {
       <div class="form-card">
         <div class="fc-title">审核意见（驳回必填）</div>
         <textarea id="a_remark" class="f-ta" placeholder="通过可留空；驳回必须填写原因，将自动通知项目负责人"></textarea>
+        <div class="f-note">民警审核仅针对作业计划环节（其余环节不参与）；审核开关由治安管理员在后台配置：开启时须本责任区民警审核，关闭则提交后直接流转库管员备料（甲方确认 Q02）。出库后计划不允许变更。驳回环节具体规则待甲方明确。</div>
       </div>
       <div class="btn-row">
         <button class="btn ghost" onclick="doAudit('${pl.id}',false)">驳回</button>
@@ -385,7 +389,7 @@ Object.assign(PAGES, {
       const excList = DB.exceptions.filter(e => !scoped || !e.plan || planInMyArea(planById(e.plan)));
       const met = (label, v, unit, good) => `<div class="metric ${good ? 'good' : ''}"><b>${v}<i>${unit}</i></b><span>${label}</span></div>`;
       return `
-      <div class="page-title">监管统计（I06/K08 · 与俯瞰大屏同源）<span class="page-sub">${scoped ? esc(curArea().name) + ' · ' + esc(curPolice().name) : '全域口径（治安管理员）'}</span></div>
+      <div class="page-title">监管统计（I06/K08 · 与俯瞰大屏同源）<span class="page-sub">${scoped ? esc(curArea().name) + ' · ' + esc(curPolice().name) : '全域口径（治安管理员）'} · 指标口径待甲方确认（Q17）</span></div>
       <div class="metric-grid">
         ${met('链路闭环率', s.closedRate, '%', s.closedRate >= 95)}
         ${met('民警核验覆盖率', s.verifyRate, '%', s.verifyRate >= 100)}
@@ -504,13 +508,13 @@ Object.assign(PAGES, {
           rows: st => [`${esc(st.type)} · ${esc(st.addr || '')}`, `建库 ${esc(st.builtAt || '-')} · 面积 ${st.area || '-'}㎡ · 日均用量 ${st.dailyUse || '-'}kg · 员工 ${st.keepers.length} 人`, `围栏 ${st.fence} 米 · 库管员 ${st.keepers.map(k => esc(person(k).name)).join('、')} · 当前库存：${invSum(st)}`],
           title: st => `${esc(st.name)}`, status: st => st.status },
         person: { name: '四大员数据', j: 'J02 人员档案', src: '对接', list: MASTER.persons.filter(x => ['爆破员', '安全员', '保管员', '押运员'].includes(x.role)), form: 'person',
-          rows: x => [`${esc(x.role)} · ${esc(company(x.company).name || x.company)} · ${esc(x.idno || '')}`, `${esc(x.cert)} · 有效期至 ${esc(x.certExpire)} · ${esc(x.phone)}${x.remark ? ' · 备注：' + esc(x.remark) : ''}`],
+          rows: x => [`${esc(x.role)} · ${esc(company(x.company).name || x.company)} · ${esc(x.idno || '')}`, `${esc(certOf(x))} · 有效期至 ${esc(certExpireOf(x))} · ${esc(x.phone)}${x.remark ? ' · 备注：' + esc(x.remark) : ''}`],
           title: x => `${esc(x.name)}`, status: x => x.status },
         project: { name: '项目备案数据', j: 'J08 项目档案', src: '对接', list: MASTER.projects, form: 'project',
           rows: x => [`${esc(x.type || '')} · 工区 ${esc(workarea(x.workarea).name)}`, `作业范围 ${esc(x.area)} · 备案有效期 ${esc(x.valid)}`],
           title: x => `${esc(x.name)}`, status: x => x.status },
         leader: { name: '项目负责人数据', j: 'J01/J02 随公司档案', src: '对接', list: MASTER.persons.filter(x => x.role === '项目负责人'), form: 'leader',
-          rows: x => [`${esc(company(x.company).name || x.company)} · ${esc(x.idno || '')}`, `${esc(x.cert)} · 有效期至 ${esc(x.certExpire)} · ${esc(x.phone)}${x.remark ? ' · 备注：' + esc(x.remark) : ''}`],
+          rows: x => [`${esc(company(x.company).name || x.company)} · ${esc(x.idno || '')}`, `${esc(certOf(x))} · 有效期至 ${esc(certExpireOf(x))} · ${esc(x.phone)}${x.remark ? ' · 备注：' + esc(x.remark) : ''}`],
           title: x => `${esc(x.name)}`, status: x => x.status },
         route: { name: '路线数据', j: '押运路线 / 沿途打卡点', src: '自录', list: MASTER.routes, form: 'route',
           rows: r => [`${esc(storage(r.from).name)} → ${esc(site(r.to).name)} · 约 ${r.km} km`, `途经 ${esc(r.via)} · 打卡点 ${(r.checkPoints || []).length} 个：${esc((r.checkPoints || []).join('、'))}`],

@@ -3,74 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <title>民爆最后一公里 · PC 管理后台（L 模块原型）</title>
 <style>
   :root{
-    --red:#a31515; --red2:#c0392b; --bg:#f4f6fa; --card:#fff; --line:#e4e8f0;
-    --txt:#26334d; --sub:#8a94a8; --ok:#1a9e5c; --warn:#d98600; --bad:#d43030;
+    --dp-ground:#E8EEF7; --dp-ink:#0E1A3C; --dp-ink2:#5A6A88; --dp-muted:#DCE5F4;
+    --dp-rule:#C3D4F0; --dp-accent:#1E5EFF; --dp-field:#E4EAF5; --dp-panel:#EDF1F9;
+    --dp-on-field:#0E1A3C; --dp-on-field2:#5A6A88;
+    --red:var(--dp-accent); --red2:#2E6BFF; --bg:var(--dp-ground); --card:var(--dp-panel);
+    --line:var(--dp-rule); --txt:var(--dp-ink); --sub:var(--dp-ink2);
+    --ok:#12784A; --warn:#B26A00; --bad:#C0392B;
+    --font-display:"Host Grotesk","Instrument Sans",-apple-system,"PingFang SC",sans-serif;
+    --font-body:"Instrument Sans",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:14px}
+  body{background:linear-gradient(160deg,#E8EEF7 0%,#D6E0F0 100%);color:var(--txt);font-family:var(--font-body);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
   .app{display:flex;height:100vh;min-width:1100px}
   /* 侧边 */
-  .side{width:220px;background:linear-gradient(180deg,#8f1010,#a31515);color:#fff;display:flex;flex-direction:column;flex:none}
-  .logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.15)}
-  .logo b{font-size:16px;letter-spacing:1px}
-  .logo i{display:block;font-style:normal;font-size:11px;opacity:.7;margin-top:3px}
+  .side{width:224px;background:var(--dp-field);color:var(--dp-on-field);display:flex;flex-direction:column;flex:none;border-right:1px solid var(--dp-rule)}
+  .logo{padding:20px 18px;border-bottom:1px solid var(--dp-rule)}
+  .logo b{font-family:var(--font-display);font-size:16px;letter-spacing:-.01em;font-weight:700}
+  .logo i{display:block;font-style:normal;font-size:11px;color:var(--dp-on-field2);margin-top:4px;letter-spacing:.04em}
   .nav{flex:1;padding:10px 0;overflow:auto}
-  .ni{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;color:rgba(255,255,255,.82);border-left:3px solid transparent;font-size:14px}
-  .ni:hover{background:rgba(255,255,255,.08)}
-  .ni.on{background:rgba(255,255,255,.14);border-left-color:#ffd7d7;color:#fff;font-weight:600}
-  .ni .em{width:20px;text-align:center;opacity:.9}
-  .foot-user{padding:14px 18px;border-top:1px solid rgba(255,255,255,.15);font-size:12px;opacity:.85}
+  .ni{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;color:var(--dp-on-field2);border-left:3px solid transparent;font-size:14px}
+  .nav .ni{background:transparent}
+  .ni:hover{background:rgba(14,26,60,.07);color:var(--dp-on-field)}
+  .nav .ni.on{background:var(--dp-accent);border-left-color:var(--dp-accent);color:#fff;font-weight:600}
+  .ni .em{width:18px;flex:none;display:flex;align-items:center;justify-content:center}
+  .ni .em svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .foot-user{padding:14px 18px;border-top:1px solid var(--dp-rule);font-size:12px;color:var(--dp-on-field2);line-height:1.6}
   /* 主区 */
   .m{flex:1;display:flex;flex-direction:column;min-width:0}
-  .topbar{height:52px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:14px;flex:none}
+  .topbar{height:52px;background:#F3F7FD;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:14px;flex:none}
   .topbar .crumb{color:var(--sub);font-size:13px}
   .topbar .sp{flex:1}
   .badge{position:relative;font-size:15px;cursor:pointer}
   .badge::after{content:"5";position:absolute;top:-6px;right:-8px;background:var(--bad);color:#fff;font-size:10px;border-radius:999px;padding:1px 5px}
-  .av{width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .av{width:30px;height:30px;border-radius:50%;background:var(--dp-accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
   .content{flex:1;overflow:auto;padding:18px 20px}
   .page{display:none}.page.on{display:block}
-  h2.pg{font-size:17px;margin-bottom:4px}
+  h2.pg{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
   .desc{color:var(--sub);font-size:12px;margin-bottom:14px}
   /* 卡片 */
   .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
-  .kc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
-  .kc b{font-size:26px;font-family:"DIN Alternate",sans-serif}
+  .kc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .kc b{font-family:var(--font-display);font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.15}
   .kc i{display:block;font-style:normal;color:var(--sub);font-size:12px;margin-top:2px}
-  .kc.red b{color:var(--bad)} .kc.green b{color:var(--ok)} .kc.blue b{color:#1668dc}
+  .kc.red b{color:var(--bad)} .kc.green b{color:var(--ok)} .kc.blue b{color:var(--dp-accent)}
   .kc .tr{font-size:11px;float:right}
   .up{color:var(--ok)}.dn{color:var(--bad)}
   .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:16px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
-  .card h4{font-size:14px;margin-bottom:10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h4{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:-.01em;margin-bottom:10px}
   .card h4 a{float:right;font-size:12px;color:var(--red);text-decoration:none;font-weight:400}
   /* 表格 */
   table.tb{width:100%;border-collapse:collapse;font-size:13px}
-  .tb th{background:#f7f9fc;text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);color:var(--sub);font-weight:500;white-space:nowrap}
-  .tb td{padding:9px 10px;border-bottom:1px solid #f0f3f8;vertical-align:middle}
-  .tb tr:hover td{background:#fafcff}
+  .tb th{background:var(--dp-muted);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);color:var(--sub);font-weight:500;white-space:nowrap}
+  .tb td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .tb tr:hover td{background:#F3F7FD}
   .tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;white-space:nowrap}
-  .tag.ok{background:#e6f7ef;color:var(--ok)}
-  .tag.warn{background:#fdf3e3;color:var(--warn)}
-  .tag.bad{background:#fdeaea;color:var(--bad)}
-  .tag.gray{background:#eef1f6;color:var(--sub)}
-  .tag.red{background:#fbe9e9;color:var(--red)}
-  .op{color:var(--red);cursor:pointer;font-size:12px;white-space:nowrap}
+  .tag.ok{background:#e6f3ed;color:var(--ok)}
+  .tag.warn{background:#faf0dd;color:var(--warn)}
+  .tag.bad{background:#fbeae8;color:var(--bad)}
+  .tag.gray{background:var(--dp-muted);color:var(--sub)}
+  .tag.red{background:#eaf0fd;color:var(--red)}
+  .op{color:var(--dp-accent);cursor:pointer;font-size:12px;white-space:nowrap}
   .op.gray{color:var(--sub)}
   /* 工具条 */
   .tools{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-  .btn{background:var(--red);color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:13px}
+  .btn{background:linear-gradient(135deg,#2E6BFF 0%,#123FC8 100%);color:#fff;border:none;border-radius:8px;padding:9px 16px;cursor:pointer;font-size:13px;min-height:36px;transition:filter .16s ease-out}
+  .btn:hover{filter:brightness(1.06)}
+  .btn:active{filter:brightness(.94)}
   .btn.ghost{background:#fff;color:var(--txt);border:1px solid var(--line)}
-  .inp,select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:13px;background:#fff;min-width:150px}
+  .btn.ghost:hover{background:var(--dp-muted)}
+  .inp,select{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;background:#fff;min-width:150px;height:36px;box-sizing:border-box;font-family:inherit;color:inherit}
+  /* 公司级人员过滤提示条 / 行内链接 */
+  .pcb{display:none;align-items:center;gap:8px;margin:0 0 10px;padding:9px 12px;border:1px solid #bcd3f5;border-radius:8px;background:#f2f7ff;font-size:13px}
+  .pcb.on{display:flex}
+  .pcb a{color:var(--dp-accent);cursor:pointer;font-size:13px}
+  .pcb #pcbStat{color:var(--sub);font-size:12px}
+  .lnk{color:var(--dp-accent);cursor:pointer;font-size:13px;margin-left:8px;white-space:nowrap}
+  /* 下拉与输入框同族：统一自绘箭头，避免部分页面 select 看起来像文本框 */
+  select{-webkit-appearance:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2394a3b8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;cursor:pointer}
+  .inp:hover,select:hover{border-color:var(--dp-accent)}
+  .inp:focus,select:focus{outline:none;border-color:var(--dp-accent);box-shadow:0 0 0 2px rgba(37,99,235,.12)}
   .tools .sp{flex:1}
   .pager{display:flex;justify-content:flex-end;gap:6px;margin-top:12px;color:var(--sub);font-size:12px}
   .pager span{border:1px solid var(--line);border-radius:5px;padding:4px 10px;background:#fff}
-  .pager span.on{background:var(--red);color:#fff;border-color:var(--red)}
+  .pager span.on{background:var(--dp-accent);color:#fff;border-color:var(--dp-accent)}
   /* 待办 */
-  .todo{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed #f0f3f8;font-size:13px}
+  .todo{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed #eef0f4;font-size:13px}
   .todo b{flex:1;font-weight:500}
   .todo .t{color:var(--sub);font-size:12px}
   .lv{width:8px;height:8px;border-radius:50%;flex:none}
@@ -78,39 +102,130 @@
   .bars{display:flex;flex-direction:column;gap:10px}
   .bar{display:flex;align-items:center;gap:10px;font-size:12px}
   .bar .lb{width:110px;color:var(--sub);flex:none}
-  .bar .tk{flex:1;height:12px;background:#eef1f6;border-radius:6px;overflow:hidden}
-  .bar .fl{height:100%;border-radius:6px;background:linear-gradient(90deg,#c0392b,#a31515)}
+  .bar .tk{flex:1;height:12px;background:var(--dp-muted);border-radius:6px;overflow:hidden}
+  .bar .fl{height:100%;border-radius:6px;background:linear-gradient(90deg,#2E6BFF,#1E5EFF)}
   .bar .vl{width:52px;text-align:right;font-weight:600}
   /* 系统管理 */
   .sysgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed #f0f3f8;font-size:13px}
+  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed #eef0f4;font-size:13px}
   .kv span{color:var(--sub)}
-  .switch{width:36px;height:20px;border-radius:999px;background:var(--ok);position:relative;cursor:pointer;flex:none}
+  .switch{width:36px;height:20px;border-radius:999px;background:var(--dp-accent);position:relative;cursor:pointer;flex:none}
   .switch::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;right:2px}
   .switch.off{background:#cdd4e0}.switch.off::after{right:auto;left:2px}
+  /* 澄清详情抽屉 */
+  .mask{position:fixed;inset:0;background:rgba(22,25,31,.45);display:none;z-index:50;backdrop-filter:blur(2px)}
+  .mask.on{display:block}
+  .drawer{position:fixed;top:0;right:-820px;width:820px;max-width:92vw;height:100vh;background:var(--card);z-index:51;display:flex;flex-direction:column;box-shadow:-8px 0 24px rgba(14,26,60,.10);transition:right .22s ease-out}
+  .drawer.on{right:0}
+  .dw-head{padding:18px 24px 14px;border-bottom:1px solid var(--line);flex:none}
+  .dw-head .qno{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .dw-head .qno b{font-family:var(--font-display);font-size:18px;letter-spacing:-.01em}
+  .dw-title{color:var(--sub);font-size:13px}
+  .dw-close{position:absolute;top:16px;right:18px;width:30px;height:30px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;color:var(--sub);font-size:15px;line-height:1}
+  .dw-close:hover{background:var(--dp-muted)}
+  .dw-body{flex:1;overflow:auto;padding:18px 24px}
+  .dw-sec{margin-bottom:18px}
+  .dw-sec h5{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .dw-sec h5::before{content:"";width:3px;height:13px;background:var(--dp-accent);border-radius:2px}
+  .dw-item{display:flex;gap:8px;padding:7px 0;font-size:13px;color:var(--txt);border-bottom:1px dashed #eef0f4}
+  .dw-item .k{flex:none;color:var(--sub);font-size:12px;background:var(--dp-muted);border-radius:4px;padding:1px 7px;height:fit-content;white-space:nowrap}
+  .confirm-box{background:#f0f6ff;border:1px solid #c9dcff;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:#1b3a75;white-space:pre-wrap}
+  .confirm-box.pending{background:var(--dp-muted);border-color:var(--dp-rule);color:var(--sub);font-style:italic}
+  .landed-box{font-size:13px;line-height:1.7;color:var(--txt);background:#f4fbf6;border:1px solid #cfe9d8;border-radius:10px;padding:12px 14px}
+  .dw-foot{flex:none;border-top:1px solid var(--line);padding:14px 24px;background:#fbfcfe}
+  .dw-foot label{font-size:12px;color:var(--sub);display:block;margin-bottom:6px}
+  .dw-foot textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;font-family:var(--font-body);resize:vertical;min-height:64px}
+  .dw-foot textarea:focus{outline:2px solid #b9ccff;border-color:var(--dp-accent)}
+  .dw-foot .fr{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .dw-foot .hint{color:var(--sub);font-size:11px;flex:1}
+  .tb td.qview{cursor:pointer}
+  .tb tr.qrow:hover td{background:#f0f4ff;cursor:pointer}
+
+  /* ====== L02 子模块维护（作业点位/路线/库房/四大员）====== */
+  .rec-modal{position:fixed;inset:0;background:rgba(16,24,38,.42);display:flex;align-items:center;justify-content:center;z-index:60}
+  .rec-modal .rm{width:min(640px,92vw);max-height:86vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 12px 32px rgba(14,26,60,.16)}
+  .rec-modal .rm-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .rec-modal .rm-h b{font-size:15px}
+  .rec-modal .rm-h button{border:0;background:none;font-size:18px;cursor:pointer;color:var(--sub)}
+  .rec-modal .rm-b{padding:6px 20px 10px}
+  .rec-modal .rm-f{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
+  .rm-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .rm-row label{width:132px;flex:0 0 132px;color:var(--sub);font-size:13px}
+  .rm-row input,.rm-row select,.rm-row textarea{flex:1;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit;font-size:13px;background:#fff}
+  .rm-row textarea{min-height:64px;resize:vertical}
+
+  /* ---------- 表单控件统一基线（低权重 :where，不覆盖既有组件规则）---------- */
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="range"]), select, textarea) {
+    box-sizing: border-box;
+    min-height: 34px;
+    padding: 0 10px;
+    font: inherit;
+    font-size: 13px;
+    color: inherit;
+    background-color: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color .16s ease, box-shadow .16s ease;
+  }
+  :where(select) {
+    padding-right: 28px;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2394a3b8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    cursor: pointer;
+  }
+  :where(textarea) { min-height: 64px; padding: 8px 10px; resize: vertical; }
+  :where(input[type="date"], input[type="datetime-local"], input[type="time"], input[type="month"]) {
+    padding-right: 8px;
+    font-family: inherit;
+  }
+  :where(input[type="date"]::-webkit-calendar-picker-indicator,
+         input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+         input[type="time"]::-webkit-calendar-picker-indicator) { opacity: .55; cursor: pointer; }
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus, select:focus, textarea:focus) {
+    border-color: var(--dp-accent);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, .12);
+  }
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="side">
-    <div class="logo"><b>民爆最后一公里</b><i>PC 管理后台 · 治安管理员</i></div>
+    <div class="logo"><b>民爆最后一公里</b><i id="roleLabel">PC 管理后台 · 公安管理员</i></div>
     <nav class="nav" id="nav">
-      <div class="ni on" data-p="work"><span class="em">🏠</span>工作台（L01）</div>
-      <div class="ni" data-p="master"><span class="em">🗂️</span>主数据管理（L02）</div>
-      <div class="ni" data-p="audit"><span class="em">✅</span>主数据审核（L03）</div>
-      <div class="ni" data-p="check"><span class="em">🧾</span>检查配置（L04）</div>
-      <div class="ni" data-p="stat"><span class="em">📈</span>监管统计报表（L05）</div>
-      <div class="ni" data-p="archive"><span class="em">🗄️</span>一作业点一档（L06）</div>
-      <div class="ni" data-p="sys"><span class="em">⚙️</span>系统管理（L07）</div>
-      <div class="ni" data-p="log"><span class="em">📜</span>日志与大屏配置（L08）</div>
+      <div class="ni on" data-p="work"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></span>工作台（L01）</div>
+      <div class="ni" data-p="master"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h6l2 2h8v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 7V5.5a1 1 0 0 1 1-1h4l1.5 2"/></svg></span>主数据管理（L02）</div>
+      <div class="ni" data-p="m-companies"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V8l6-4v4l6-4v16"/><path d="M2 20h20"/><path d="M8 12h1M8 16h1M15 12h1M15 16h1"/></svg></span>民爆公司维护（L02·公司）</div>
+      <div class="ni" data-p="m-workareas"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V7l8-3 8 3v13"/><path d="M2 20h20"/><path d="M9 20v-6h6v6"/><circle cx="12" cy="9.5" r="1.4"/></svg></span>工区维护（L02·工区/点位）</div>
+      <div class="ni" data-p="bizlog"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 0 2 2H7a2 2 0 0 1-2-2z"/><path d="M9 8h7M9 12h7M9 16h4"/></svg></span>我的业务台账（历史数据）</div>
+      <div class="ni" data-p="m-routes"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M8 17h6a4 4 0 0 0 0-8H8"/></svg></span>路线维护（L02·路线）</div>
+      <div class="ni" data-p="m-storages"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10 12 4l8 6v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9 20v-6h6v6"/></svg></span>库房维护（L02·库房）</div>
+      <div class="ni" data-p="m-vehicles"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 16V9a1 1 0 0 1 1-1h8v8"/><path d="M12 11h4l4 4v1h-8"/><circle cx="7" cy="17" r="1.6"/><circle cx="17" cy="17" r="1.6"/></svg></span>运输车辆维护（L02·车辆）</div>
+      <div class="ni" data-p="m-persons"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.4-4 4.4-5.4 7-5.4s5.6 1.4 7 5.4"/></svg></span>四大员维护（L02·人员）</div>
+
+      <div class="ni" data-p="audit"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg></span>主数据审核（L03）</div>
+      <div class="ni" data-p="check"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg></span>检查配置（L04）</div>
+      <div class="ni" data-p="stat"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M7 15V9M12 15V5M17 15v-4"/></svg></span>监管统计报表（L05）</div>
+      <div class="ni" data-p="archive"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 14h4"/></svg></span>一作业点一档（L06）</div>
+      <div class="ni" data-p="sys"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M4.9 7.5 7 8.7M17 15.3l2.1 1.2M4.9 16.5 7 15.3M17 8.7l2.1-1.2"/></svg></span>系统管理（L07）</div>
+      <div class="ni" data-p="log"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 0 2 2H7a2 2 0 0 1-2-2z"/><path d="M9 8h7M9 12h7M9 16h4"/></svg></span>日志与大屏配置（L08）</div>
+      <div class="ni" data-p="clarify"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.8-2.5 2.2-2.5 3.6M12 16.8v.4"/></svg></span>需求澄清跟踪（Q01–Q24）</div>
     </nav>
-    <div class="foot-user">👮 王警官 · 治安大队<br>全域数据权限 · 2026-11-05</div>
+    <div class="foot-user" id="footUser">王警官 · 治安大队<br>公安管理员 · 全域数据权限</div>
   </aside>
 
   <main class="m">
     <div class="topbar">
       <span class="crumb" id="crumb">工作台</span><span class="sp"></span>
-      <span class="badge">🔔</span><div class="av">王</div>
+      <select id="roleSel" class="inp" style="width:150px;margin-right:12px" title="切换登录角色（菜单与数据权限随之变化）" onchange="applyRole(this.value)">
+        <option value="police">公安管理员</option>
+        <option value="biz">业务管理员</option>
+        <option value="staff">业务人员</option>
+      </select>
+      <span class="badge"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#454c58;fill:none;stroke-width:1.7;stroke-linecap:round"><path d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></span><div class="av">王</div>
     </div>
     <div class="content">
 
@@ -119,39 +234,35 @@
         <h2 class="pg">工作台</h2>
         <div class="desc">今日概览与待办直达（与小程序端、俯瞰大屏同源）</div>
         <div class="cards">
-          <div class="kc blue"><span class="tr up">▲ 12%</span><b>18</b><i>今日作业计划</i></div>
-          <div class="kc"><b>6.42 t</b><i>今日出库总量</i></div>
-          <div class="kc green"><b>94%</b><i>链路闭环率（目标≥95%）</i></div>
-          <div class="kc red"><span class="tr dn">+2</span><b>3</b><i>未闭环异常</i></div>
+          <div class="kc blue"><span class="tr up">▲ 实时</span><b id="wkPlanCount">--</b><i>今日作业计划</i></div>
+          <div class="kc"><b id="wkOutboundQty">-- t</b><i>今日出库总量</i></div>
+          <div class="kc green"><b id="wkClosedRate">--%</b><i>链路闭环率（目标≥95%）</i></div>
+          <div class="kc red"><span class="tr dn">待处置</span><b id="wkExceptionCount">0</b><i>未闭环异常</i></div>
         </div>
         <div class="row2">
           <div class="card">
             <h4>待办事项<a>全部 →</a></h4>
-            <div class="todo"><span class="lv" style="background:var(--bad)"></span><b>计划审核：兴盛砂石项目部（2.8t，须治安大队知悉）</b><span class="t">08:40</span><span class="op">处理</span></div>
-            <div class="todo"><span class="lv" style="background:var(--bad)"></span><b>差异单 DX-1105-02：水口镇 2# 点 实收差 5kg</b><span class="t">09:12</span><span class="op">处理</span></div>
-            <div class="todo"><span class="lv" style="background:var(--warn)"></span><b>整改单 ZG-1104-07：安谷 K12 警戒距离不足（今日到期）</b><span class="t">昨日</span><span class="op">催办</span></div>
-            <div class="todo"><span class="lv" style="background:var(--warn)"></span><b>资质临期：押运员 李强 从业资格证 11-20 到期</b><span class="t">自动</span><span class="op gray">查看</span></div>
-            <div class="todo"><span class="lv" style="background:#cdd4e0"></span><b>退库预警 T+2：BBCK20261103001 尚余 120kg 未退</b><span class="t">自动</span><span class="op gray">查看</span></div>
+            <div id="workbenchTodoList">
+              <div style="text-align:center;color:var(--sub);padding:18px 0;font-size:13px">暂无待办事项，系统运行平稳</div>
+            </div>
           </div>
           <div class="card">
             <h4>今日关键指标</h4>
             <div class="bars">
-              <div class="bar"><span class="lb">节点完整率</span><div class="tk"><div class="fl" style="width:98%"></div></div><span class="vl">98%</span></div>
-              <div class="bar"><span class="lb">提前6h填报率</span><div class="tk"><div class="fl" style="width:92%"></div></div><span class="vl">92%</span></div>
-              <div class="bar"><span class="lb">民警核验覆盖</span><div class="tk"><div class="fl" style="width:88%"></div></div><span class="vl">88%</span></div>
+              <div class="bar"><span class="lb">节点完整率</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
+              <div class="bar"><span class="lb">提前6h填报率</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
+              <div class="bar"><span class="lb">民警核验覆盖</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
               <div class="bar"><span class="lb">分级到场执行</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
-              <div class="bar"><span class="lb">主数据完整率</span><div class="tk"><div class="fl" style="width:97%"></div></div><span class="vl">97%</span></div>
+              <div class="bar"><span class="lb">主数据完整率</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
             </div>
           </div>
         </div>
         <div class="card">
-          <h4>在途运输实时监控<a onclick="alert('跳转俯瞰大屏（G 模块）')">俯瞰大屏 →</a></h4>
+          <h4>在途运输实时监控<a onclick="window.open('../bigscreen/index.html')">俯瞰大屏 →</a></h4>
           <table class="tb">
             <thead><tr><th>运输单</th><th>车辆/押运员</th><th>卸货点</th><th>出发</th><th>状态</th><th>操作</th></tr></thead>
-            <tbody>
-              <tr><td>BBYS20261105003</td><td>川L·8D527 / 李强</td><td>3 个（第 2 点在途）</td><td>07:35</td><td><span class="tag warn">部分到达</span></td><td class="op">轨迹 · 联单</td></tr>
-              <tr><td>BBYS20261105004</td><td>川L·3F909 / 周斌</td><td>1 个</td><td>08:10</td><td><span class="tag bad">偏航告警</span></td><td class="op">轨迹 · 处置</td></tr>
-              <tr><td>BBYS20261105005</td><td>川L·77Q31 / 郑海</td><td>2 个</td><td>08:42</td><td><span class="tag ok">运输中</span></td><td class="op">轨迹</td></tr>
+            <tbody id="workbenchTransportTb">
+              <tr><td colspan="6" style="text-align:center;color:var(--sub);padding:18px">暂无在途运输车辆</td></tr>
             </tbody>
           </table>
         </div>
@@ -160,51 +271,51 @@
       <!-- L02 主数据管理 -->
       <section class="page" id="p-master">
         <h2 class="pg">主数据管理（8 类）</h2>
-        <div class="desc">民爆公司 / 点位 / 库房 / 四大员 / 项目备案 / 项目负责人 / 车辆 / 路线 —— 与小程序端（J12）同源留痕，字段对照《民爆管理表单.et》</div>
+        <div class="desc">民爆公司 / 点位 / 库房 / 四大员 / 项目备案 / 项目负责人 / 车辆 / 路线 —— 八类主数据统一由治安管理员在此维护（Q11 已确认），支持与其他系统对接接收数据；字段对照《民爆管理表单.et》</div>
         <div class="tools">
-          <button class="btn">＋ 新增</button>
-          <button class="btn ghost">批量导入</button>
-          <button class="btn ghost">导出 Excel</button>
+          <button class="btn" onclick="openAddMasterModal()">＋ 新增主数据</button>
+          <button class="btn ghost" onclick="alert('支持导出 CSV / Excel 模版')">导出 Excel</button>
           <span class="sp"></span>
-          <select><option>全部类型（8 类）</option><option>民爆公司</option><option>点位</option><option>库房</option><option>四大员</option><option>项目备案</option><option>项目负责人</option><option>车辆</option><option>路线</option></select>
-          <select><option>全部状态</option><option>生效</option><option>停用</option></select>
-          <input class="inp" placeholder="搜索名称 / 证号 / 车牌">
+          <select id="masterFilterType" onchange="loadMasterData()">
+            <option value="all">全部类型（8 类）</option>
+            <option value="companies">民爆公司</option>
+            <option value="sites">作业点位</option>
+            <option value="storages">库房</option>
+            <option value="persons">从业人员(四大员/负责人)</option>
+            <option value="projects">项目备案</option>
+            <option value="vehicles">车辆(自录)</option>
+            <option value="routes">路线(自录)</option>
+          </select>
+          <input class="inp" id="masterSearchInp" onkeyup="filterMasterTable()" placeholder="搜索名称 / 证号 / 车牌">
         </div>
         <div class="card" style="padding:6px 12px 12px">
           <table class="tb">
             <thead><tr><th>类型</th><th>名称 / 编号</th><th>关键信息</th><th>来源</th><th>状态</th><th>最近维护</th><th>操作</th></tr></thead>
-            <tbody>
-              <tr><td>民爆公司</td><td>乐山民安爆破工程有限公司</td><td>法人 陈国安 · 爆破许可 川爆安许〔2024〕08 号</td><td><span class="tag gray">对接·本地修正</span></td><td><span class="tag ok">生效</span></td><td>11-04 张警官</td><td class="op">编辑 · 停用 · 留痕</td></tr>
-              <tr><td>点位</td><td>兴盛砂石项目部 1# 采区</td><td>围栏 300m · 所属 兴盛砂石项目</td><td><span class="tag gray">对接</span></td><td><span class="tag ok">生效</span></td><td>11-02 系统</td><td class="op">编辑 · 停用</td></tr>
-              <tr><td>库房</td><td>民安销售库</td><td>销售库 · 库管员 2 名（双人双锁）</td><td><span class="tag gray">对接</span></td><td><span class="tag ok">生效</span></td><td>10-30 张警官</td><td class="op">编辑 · 停用</td></tr>
-              <tr><td>四大员</td><td>李强（押运员）</td><td>作业证 510102********0011 · 有效期至 2026-11-20</td><td><span class="tag gray">对接</span></td><td><span class="tag warn">证照临期</span></td><td>11-01 系统</td><td class="op">编辑 · 停用</td></tr>
-              <tr><td>项目备案</td><td>岷江航电 3# 围堰爆破</td><td>工区 岷江东岸 · 有效期至 2026-12-31</td><td><span class="tag gray">对接</span></td><td><span class="tag ok">生效</span></td><td>10-28 企业申报</td><td class="op">编辑 · 停用</td></tr>
-              <tr><td>车辆</td><td>川L·8D527</td><td>危货运输车 · 核定载重 3.2t · 承运 乐山交运</td><td><span class="tag red">自录</span></td><td><span class="tag ok">生效</span></td><td>11-03 张警官</td><td class="op">编辑 · 停用</td></tr>
-              <tr><td>路线</td><td>民安销售库→兴盛 1# 采区</td><td>途经 省道104 · 23km · 打卡点 4 处</td><td><span class="tag red">自录</span></td><td><span class="tag ok">启用</span></td><td>11-04 张警官</td><td class="op">编辑 · 停用</td></tr>
-              <tr><td>路线</td><td>岷江销售库→水口 2# 点</td><td>途经 岷河大道 · 15km · 打卡点 3 处</td><td><span class="tag red">自录</span></td><td><span class="tag gray">停用</span></td><td>10-25 张警官</td><td class="op">恢复 · 留痕</td></tr>
+            <tbody id="masterTbody">
+              <tr><td colspan="7" style="text-align:center;color:var(--sub);padding:20px">正在从服务端加载主数据...</td></tr>
             </tbody>
           </table>
-          <div class="pager"><span>«</span><span class="on">1</span><span>2</span><span>3</span><span>»</span></div>
+          <div class="pager"><span>«</span><span class="on">1</span><span>»</span></div>
         </div>
       </section>
 
       <!-- L03 审核 -->
       <section class="page" id="p-audit">
         <h2 class="pg">主数据审核生效（J09）</h2>
-        <div class="desc">企业申报的新增 / 变更主数据，审核生效后方可被作业节点引用（未生效拦截）</div>
+        <div class="desc">企业申报的新增 / 变更主数据，治安管理员审核生效后方可被作业节点引用（未生效拦截）；外部系统对接数据由治安管理员维护确认（Q11）</div>
         <div class="tools">
           <button class="btn">✔ 批量通过</button>
           <button class="btn ghost">✕ 驳回（须填原因）</button><span class="sp"></span>
-          <input type="checkbox" id="ck" style="accent-color:#a31515"><label for="ck" style="color:var(--sub)">全选</label>
+          <input type="checkbox" id="ck" style="accent-color:#074ce0"><label for="ck" style="color:var(--sub)">全选</label>
         </div>
         <div class="card" style="padding:6px 12px 12px">
           <table class="tb">
             <thead><tr><th style="width:36px"></th><th>类型</th><th>申报内容</th><th>申报单位</th><th>申报时间</th><th>状态</th><th>操作</th></tr></thead>
             <tbody>
-              <tr><td><input type="checkbox" style="accent-color:#a31515"></td><td>四大员</td><td>新增 安全员 刘志明（乐山民安）</td><td>乐山民安爆破</td><td>11-05 09:20</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
-              <tr><td><input type="checkbox" style="accent-color:#a31515"></td><td>车辆</td><td>变更 川L·77Q31 核定载重 2.5t→3.0t</td><td>乐山交运</td><td>11-05 08:52</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
-              <tr><td><input type="checkbox" style="accent-color:#a31515"></td><td>项目备案</td><td>新增 竹根滩整治工程（有效期 1 年）</td><td>岷江工程公司</td><td>11-04 17:30</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
-              <tr><td><input type="checkbox" style="accent-color:#a31515"></td><td>点位</td><td>新增 棉竹采石场 5# 掌子面（围栏 400m）</td><td>乐山民安爆破</td><td>11-04 15:02</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>四大员</td><td>新增 安全员 刘志明（乐山民安）</td><td>乐山民安爆破</td><td>11-05 09:20</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>车辆</td><td>变更 川L·77Q31 核定载重 2.5t→3.0t</td><td>乐山交运</td><td>11-05 08:52</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>项目备案</td><td>新增 竹根滩整治工程（有效期 1 年）</td><td>岷江工程公司</td><td>11-04 17:30</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>点位</td><td>新增 棉竹采石场 5# 掌子面（围栏 400m）</td><td>乐山民安爆破</td><td>11-04 15:02</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
             </tbody>
           </table>
         </div>
@@ -224,12 +335,15 @@
             <div class="kv"><span>每次检查强制拍照</span><div class="switch"></div></div>
           </div>
           <div class="card">
-            <h4>检查项模板（按环节）</h4>
-            <div class="kv"><span>出库环节</span><b>三联单 · 双人双锁 · 批次台账（3 项）</b></div>
-            <div class="kv"><span>运输环节</span><b>路线一致 · 打卡完整 · 车辆资质（4 项）</b></div>
-            <div class="kv"><span>爆破环节</span><b>警戒距离 · 盲炮处置 · 共核验签名（3 项）</b></div>
-            <div class="kv"><span>库房环节</span><b>台账一致 · 双锁 · 温湿度（3 项）</b></div>
-            <div class="kv"><span>模板变更</span><span class="op">新增模板 · 变更留痕</span></div>
+            <h4>检查项模板（按环节 · 甲方口径）</h4>
+            <div class="kv"><span>出库环节（4 项）</span><b>出库单与系统上报一致（炸药 kg / 雷管 发 / 导爆索 m）</b></div>
+            <div class="kv"><span>└</span><b>双人双锁 · 批次台账一致 · 库存扣减准确</b></div>
+            <div class="kv"><span>押运环节（4 项）</span><b>驾驶员 / 押运员 / 运输车辆与系统一致</b></div>
+            <div class="kv"><span>└</span><b>运输许可证与实车一致 · 运输证（路线 / 物品 / 运量）· 荷载不超重</b></div>
+            <div class="kv"><span>爆破环节（5 项）</span><b>三大员在岗 · 安全监理在岗</b></div>
+            <div class="kv"><span>└</span><b>实际用药量核对 · 警戒距离达标 · 盲炮处置规范</b></div>
+            <div class="kv"><span>库房环节（3 项）</span><b>台账一致 · 双锁 · 温湿度</b></div>
+            <div class="kv"><span>模板变更</span><span class="op">新增模板 · 变更留痕 · 民警可增删检查项</span></div>
           </div>
         </div>
       </section>
@@ -272,11 +386,12 @@
       <!-- L06 一档 -->
       <section class="page" id="p-archive">
         <h2 class="pg">一作业点一档（F07）</h2>
-        <div class="desc">六类单据 + 检查史 + 全链日志按作业点归档，PDF 在线预览与批量下载</div>
+        <div class="desc">六类单据 + 检查史 + 全链日志按作业点归档；电子证据（手写签名 / 现场拍照 / 定位 / 操作日志）永久保存，查询与导出仅限 PC 端（Q15 已确认）</div>
         <div class="tools">
           <select><option>全部状态</option><option>已完成</option><option>进行中</option><option>异常</option></select>
           <input class="inp" placeholder="作业点 / 计划单号">
           <button class="btn">查询</button>
+          <button class="btn ghost">导出档案 PDF</button>
         </div>
         <div class="card" style="padding:6px 12px 12px">
           <table class="tb">
@@ -288,28 +403,55 @@
             </tbody>
           </table>
         </div>
+        <div class="sysgrid">
+          <div class="card">
+            <h4>电子证据管理（Q15 已确认）</h4>
+            <div class="kv"><span>证据范围</span><b>手写签名 · 现场拍照 · 定位 · 操作日志（逐环节）</b></div>
+            <div class="kv"><span>拍照来源</span><b>仅现场拍摄（水印含时间/坐标/人员）· 禁用相册照片</b></div>
+            <div class="kv"><span>操作日志</span><b>记录签名人操作日志（签名环节）</b></div>
+            <div class="kv"><span>保存期限</span><b>一直保存（永久留存）</b></div>
+          </div>
+          <div class="card">
+            <h4>证据查询与导出（仅限 PC 端）</h4>
+            <div class="kv"><span>小程序端</span><b>仅采集与上传，不提供查询 / 导出</b></div>
+            <div class="kv"><span>PC 端查询</span><b>按作业点 / 单号 / 环节检索证据明细</b></div>
+            <div class="kv"><span>PC 端导出</span><b>批量导出 · 导出动作写入操作日志留痕</b></div>
+            <div class="kv"><span>大屏展示</span><span class="op gray">仅汇总统计，不含证据原件</span></div>
+          </div>
+        </div>
       </section>
 
       <!-- L07 系统管理 -->
       <section class="page" id="p-sys">
         <h2 class="pg">系统管理</h2>
-        <div class="desc">用户 / 角色 / 权限（RBAC + 辖区数据权限）、字典与业务参数</div>
+        <div class="desc">用户 / 角色 / 权限（RBAC + 按人员做数据区分 Q10）、字典与业务参数</div>
         <div class="sysgrid">
           <div class="card"><h4>用户与角色</h4>
             <table class="tb"><thead><tr><th>用户</th><th>角色</th><th>数据权限</th><th>状态</th></tr></thead>
               <tbody>
                 <tr><td>王警官</td><td>治安管理员</td><td>全域</td><td><span class="tag ok">启用</span></td></tr>
                 <tr><td>张警官（张警长）</td><td>治安管理员</td><td>市中区</td><td><span class="tag ok">启用</span></td></tr>
-                <tr><td>各派出所民警 ×26</td><td>辖区民警</td><td>本辖区</td><td><span class="tag ok">启用</span></td></tr>
+                <tr><td>各派出所民警 ×26</td><td>辖区民警</td><td>本辖区（可配多个工区）</td><td><span class="tag ok">启用</span></td></tr>
                 <tr><td>警务室 ×8</td><td>警务室到场</td><td>本工区</td><td><span class="tag ok">启用</span></td></tr>
               </tbody></table>
+            <div class="kv"><span>兼任规则（Q10 已确认）</span><b>一人不能兼任其他角色</b></div>
+            <div class="kv"><span>工区权限（Q10）</span><b>民警可配置多个工区 · 其他角色限本工区</b></div>
+            <div class="kv"><span>离职 / 调岗（Q10）</span><span class="op">后台管理界面统一停用 · 待办移交</span></div>
           </div>
           <div class="card"><h4>业务参数（sys_config）</h4>
-            <div class="kv"><span>计划民警审核开关 plan_audit_enable</span><div class="switch"></div></div>
-            <div class="kv"><span>提前 6h 强制填报（R9）</span><div class="switch"></div></div>
-            <div class="kv"><span>作业点围栏默认半径</span><b>300 m</b></div>
-            <div class="kv"><span>跨日退库预警 T+N</span><b>T+3</b></div>
-            <div class="kv"><span>出库超量容差（R3）</span><b>5%</b></div>
+            <div class="kv"><span>计划民警审核开关 plan_audit_enable（Q02）</span><div class="switch"></div></div>
+            <div class="kv"><span>└ 开关口径（Q02）</span><b>仅作用于民警计划审核环节；关闭后负责人提交直接流转库管员备料</b></div>
+            <div class="kv"><span>计划上报时限（Q01）</span><b>24:00 前提交次日计划 + 提前 ≥6h，双规则同时生效</b></div>
+            <div class="kv"><span>超时补报（Q01）</span><b>不允许补报（节假日 / 跨日 / 紧急任务同此口径）</b></div>
+            <div class="kv"><span>超计划出库（Q03）</span><b>严禁超计划 · 严格按作业计划出库（无容差）</b></div>
+            <div class="kv"><span>退库规则（Q07）</span><b>可跨日 · 不分批 · 一次退完 · 原库退回 · 不能拒收</b></div>
+            <div class="kv"><span>定位围栏（Q13）</span><b>一期不做围栏判定，由押运员手动点击到达</b></div>
+            <div class="kv"><span>离线操作（Q14）</span><b>不支持离线，各环节联网校验</b></div>
+            <div class="kv"><span>异常预警（Q09）</span><b>一期不启用，移至 P1 阶段（待甲方确认）</b></div>
+            <div class="kv"><span>登录认证（Q18）</span><b>对接林安码统一登录 + 统一权限管理</b></div>
+            <div class="kv"><span>└ 用户 / 组织维护（Q18）</span><b>在本系统内单独维护 · 可脱离林安码独立运行</b></div>
+            <div class="kv"><span>部署架构（Q20）</span><b>小程序 + 后台服务 + 数据库 → 政务网；PC 端 → 公安网</b></div>
+            <div class="kv"><span>双网同步（Q24）</span><b>政务网 → 公安网同步展示分析 · 同步时效待甲方确认</b></div>
             <div class="kv"><span>行政区划字典（12 位编码）</span><span class="op gray">640 条 · sys_dict_item</span></div>
           </div>
         </div>
@@ -345,12 +487,268 @@
         </div>
       </section>
 
+      <!-- Q 需求澄清跟踪 -->
+      <section class="page" id="p-clarify">
+        <h2 class="pg">需求澄清跟踪（Q01–Q24）</h2>
+        <div class="desc">对应《民爆最后一公里项目-甲方需求澄清确认清单》（2026-11-05 沟通稿，已含甲方确认意见）——「已确认」＝甲方意见已回写并落地到两端原型；「原型已落地」＝原型已体现、甲方意见待回写；「待甲方确认」＝需甲方提供制度 / 规范 / 口径后补充设计</div>
+        <div class="tools">
+          <select><option>全部优先级</option><option>P0 · 建议优先讨论</option><option>P1 · 开发前确认</option><option>P2 · 细节完善时确认</option></select>
+          <select><option>全部状态</option><option>已确认</option><option>原型已落地</option><option>待甲方确认</option></select>
+          <button class="btn">导出澄清清单</button>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>编号</th><th>澄清事项</th><th>优先级</th><th>甲方确认意见（2026-11-05）</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="clarifyTb">
+              <tr class="qrow" onclick="openQ('Q01')"><td>Q01</td><td>计划上报时间要求</td><td><span class="tag bad">P0</span></td><td id="op-Q01">24:00 前提交次日计划 + 提前 ≥6h，两条件同时生效；不允许节假日 / 跨日 / 紧急任务 / 超时补报（一期不做补报）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q02')"><td>Q02</td><td>计划审核及变更</td><td><span class="tag bad">P0</span></td><td id="op-Q02">治安管理员界面设审核开关：关闭不需审核，开启须责任区民警审核；民警只审作业计划；出库后不允许变更</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q03')"><td>Q03</td><td>超计划发料</td><td><span class="tag bad">P0</span></td><td id="op-Q03">不能超，严格按照作业计划出库（取消 105% 容差口径）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q04')"><td>Q04</td><td>多点合并出库与分配</td><td><span class="tag bad">P0</span></td><td id="op-Q04">甲方意见：待考虑</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q05')"><td>Q05</td><td>双人双锁复核</td><td><span class="tag bad">P0</span></td><td id="op-Q05">登记人与复核人须为 2 个以上自然人，凭身份证验证身份；复核驳回由登记人修改重新提交；库存在复核人点击通过后扣除；不考虑复核超时 / 撤销</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q06')"><td>Q06</td><td>数量平衡与剩余物处置</td><td><span class="tag bad">P0</span></td><td id="op-Q06">本次建设范围对销毁只做登记（不纳入销毁执行流程）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q07')"><td>Q07</td><td>跨日、多次退库</td><td><span class="tag bad">P0</span></td><td id="op-Q07">退库可跨日但不能分批；必须原库退回；必须一次退完；不能拒收；中间库流程待确认</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q08')"><td>Q08</td><td>分级检查与远程核验</td><td><span class="tag bad">P0</span></td><td id="op-Q08">甲方意见：待确认（阈值 / 分级口径 / 远程核验关系均待定）</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q09')"><td>Q09</td><td>异常上报与闭环</td><td><span class="tag bad">P0</span></td><td id="op-Q09">第一阶段不考虑异常预警，移至 P1 阶段（待客户确认）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q10')"><td>Q10</td><td>角色及数据权限</td><td><span class="tag bad">P0</span></td><td id="op-Q10">按人员做数据区分；不能兼任其他角色；离职 / 调岗由系统后台管理界面维护；不能跨工区，民警可有多个工区权限</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q11')"><td>Q11</td><td>主数据来源与审核生效</td><td><span class="tag bad">P0</span></td><td id="op-Q11">八类主数据统一由治安管理员维护，并支持与其他系统对接接收数据</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q12')"><td>Q12</td><td>公安责任区与民警路由</td><td><span class="tag warn">P1</span></td><td id="op-Q12">甲方意见：待确认</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q13')"><td>Q13</td><td>定位、围栏与轨迹</td><td><span class="tag warn">P1</span></td><td id="op-Q13">第一阶段不考虑该功能，由押运员手动点击到达</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q14')"><td>Q14</td><td>弱网、离线与补传</td><td><span class="tag warn">P1</span></td><td id="op-Q14">不考虑离线（各环节联网校验）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q15')"><td>Q15</td><td>签名、照片及电子证据</td><td><span class="tag warn">P1</span></td><td id="op-Q15">每环节手写签名 + 现场拍照 + 定位 + 操作日志；不能使用相册照片；只记录签名人操作日志；证据一直保存；查询、导出仅限 PC 端</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q16')"><td>Q16</td><td>消息与超时提醒</td><td><span class="tag warn">P1</span></td><td id="op-Q16">发送系统层面的通知消息；先不考虑无人处理时的替代责任人</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q17')"><td>Q17</td><td>统计指标及大屏口径</td><td><span class="tag warn">P1</span></td><td id="op-Q17">甲方意见：统计待定</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q18')"><td>Q18</td><td>对接系统及数据共享</td><td><span class="tag warn">P1</span></td><td id="op-Q18">对接林安码统一登录 + 统一权限管理；用户 / 组织在本系统内单独维护，可脱离林安码独立运行</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q19')"><td>Q19</td><td>一期建设范围与验收</td><td><span class="tag bad">P0</span></td><td id="op-Q19">甲方意见：未填写</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q20')"><td>Q20</td><td>部署与安全要求</td><td><span class="tag warn">P1</span></td><td id="op-Q20">技术路线已定：小程序 / 后台服务 / 数据库部署政务网，数据同步至公安网，PC 端部署公安网；安全测评等仍待主管部门规范</td><td><span class="tag warn">原型已落地</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q21')"><td>Q21</td><td>页面术语与现场操作</td><td><span class="tag gray">P2</span></td><td id="op-Q21">原型已按「业务页无技术编号」落地，正式口径待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q22')"><td>Q22</td><td>发车责任人与载重边界</td><td><span class="tag warn">P1</span></td><td id="op-Q22">原型按押运员发车 / 载重须大于总重落地，等于时处理待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q23')"><td>Q23</td><td>多点卸货顺序及参与人员</td><td><span class="tag warn">P1</span></td><td id="op-Q23">原型按押运员手动调整顺序 / 参与人员自选落地，细则待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op">查看 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q24')"><td>Q24</td><td>双网数据同步时效与批处理</td><td><span class="tag warn">P1</span></td><td id="op-Q24">甲方意见：未填写（凌晨批处理窗口是否适用待定）</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
+            </tbody>
+          </table>
+          <div class="pager"><span>«</span><span class="on">1</span><span>2</span><span>»</span></div>
+        </div>
+        <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kc blue"><b>14</b><i>甲方已确认（结论已落地两端原型）</i></div>
+          <div class="kc green"><b>4</b><i>原型已落地 · 待会上确认（Q20/Q21/Q22/Q23）</i></div>
+          <div class="kc red"><b>6</b><i>待甲方确认（Q04/Q08/Q12/Q17/Q19/Q24）</i></div>
+        </div>
+      </section>
+
+      <section class="page" id="p-m-companies">
+        <h2 class="pg">民爆公司维护</h2>
+        <div class="desc">维护民爆从业单位主体：名称、注册地址、法定代表人、从业人员数、民爆作业许可证及有效期。公司是人员归属（公司→人员）、运输车辆归属（车辆→公司）与项目承接的主体，改动即时生效。</div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-companies')">＋ 新增民爆公司</button>
+          <input class="inp" id="q-m-companies" onkeyup="filterRec('m-companies')" placeholder="搜索公司名称 / 许可证 / 法人">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-m-companies"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>编号</th><th>公司名称</th><th>注册地址</th><th>法定代表人</th><th>从业人员</th><th>许可证号</th><th>许可证有效期</th><th>已关联</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tb-companies"><tr><td colspan="10" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="page" id="p-m-workareas">
+        <h2 class="pg">工区维护（工区 / 作业点位）</h2>
+        <div class="desc">工区是作业点位的上级：每个工区下可挂多个作业点位。点位是计划填报、押运到达判定、分级检查的最小作业单元。新增点位时须选择所属工区，未归属的点位单独列在页尾。</div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-workareas')">＋ 新增工区</button>
+          <button class="btn ghost" onclick="openRecForm('m-sites')">＋ 新增作业点位</button>
+          <input class="inp" id="q-wa" onkeyup="renderWorkareas()" placeholder="搜索工区 / 点位名称、编号">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-wa"></span>
+        </div>
+        <div id="waList"></div>
+      </section>
+      <section class="page" id="p-m-sites">
+        <h2 class="pg">作业面 / 作业点位维护</h2>
+        <div class="desc">维护作业面与作业点位：所属项目、所属工区、电子围栏半径。点位是计划填报、到达判定、分级检查的基础数据，改动即时生效。</div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-sites')">＋ 新增作业点位</button>
+          <input class="inp" id="q-m-sites" onkeyup="filterRec('m-sites')" placeholder="搜索名称 / 编号 / 关键信息">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-m-sites"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>编号</th><th>作业点位</th><th>所属项目</th><th>工区</th><th>围栏半径</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tb-sites"><tr><td colspan="7" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="page" id="p-m-routes">
+        <h2 class="pg">路线维护</h2>
+        <div class="desc">维护押运路线：起运库房 → 到达点位、途经道路、里程与沿途打卡点。押运签收时的「路线快选」取自这里，停用的路线不再出现在选项里。</div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-routes')">＋ 新增路线</button>
+          <input class="inp" id="q-m-routes" onkeyup="filterRec('m-routes')" placeholder="搜索名称 / 编号 / 关键信息">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-m-routes"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>编号</th><th>路线名称</th><th>起运库房</th><th>到达点位</th><th>途经</th><th>里程</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tb-routes"><tr><td colspan="8" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="page" id="p-m-storages">
+        <h2 class="pg">库房维护</h2>
+        <div class="desc">维护库房档案：销售库 / 使用库 / 中间库三类，含地址、面积、保管员、电子围栏。库房类型决定退库去向（使用库原路退回、销售库可退中间库或销毁）。</div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-storages')">＋ 新增库房</button>
+          <input class="inp" id="q-m-storages" onkeyup="filterRec('m-storages')" placeholder="搜索名称 / 编号 / 关键信息">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-m-storages"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>编号</th><th>库房名称</th><th>类型</th><th>地址</th><th>面积</th><th>保管员</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tb-storages"><tr><td colspan="8" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="page" id="p-m-vehicles">
+        <h2 class="pg">运输车辆维护</h2>
+        <div class="desc">维护危险品运输车辆：所属民爆公司（必填）、关联项目（可空）、核定载重、运输许可证与许可运输物品。负责人安排运输、押运员核验运输证时，均以本表为准即时生效。</div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-vehicles')">＋ 新增运输车辆</button>
+          <input class="inp" id="q-m-vehicles" onkeyup="filterRec('m-vehicles')" placeholder="搜索车牌 / 公司 / 车型">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-m-vehicles"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>编号</th><th>车牌 / 车型</th><th>核定载重</th><th>所属公司</th><th>关联项目</th><th>运输许可证</th><th>许可物品</th><th>年审到期</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tb-vehicles"><tr><td colspan="10" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="page" id="p-m-persons">
+        <h2 class="pg">四大员维护</h2>
+        <div class="desc">维护爆破员、安全员、保管员、押运员等全部岗位（含民警、安全监理、技术员、负责人）的从业人员档案：所属民爆公司、关联项目 / 库房 / 作业点位、联系电话、证书编号与有效期。可从「民爆公司维护」的操作栏点「查看从业人员」进入，按公司收敛到该单位全部人员。</div>
+        <div id="personCompanyBar" class="pcb"><b id="pcbName"></b><span id="pcbStat"></span><span style="flex:1"></span><a onclick="clearCompanyFilter()">显示全部公司人员</a></div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-persons')">＋ 新增人员</button>
+          <select class="inp" id="flt-m-persons" onchange="filterRec('m-persons')" title="按人员类型筛选" style="width:170px">
+            <option value="">全部岗位</option>
+          </select>
+          <input class="inp" id="q-m-persons" onkeyup="filterRec('m-persons')" placeholder="搜索名称 / 编号 / 关键信息">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-m-persons"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>编号</th><th>姓名</th><th>岗位</th><th>所属公司</th><th>电话</th><th>证书 / 有效期</th><th>关联（项目 · 库房 · 点位）</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="tb-persons"><tr><td colspan="9" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+          <section class="page" id="p-bizlog">
+        <h2 class="pg">我的业务台账（本环节历史数据）</h2>
+        <div class="desc">业务人员只看本人在本业务环节产生的历史数据：出库、运输、爆破、退库、核验各环节的单据与状态，不涉及基础数据维护与他人数据。</div>
+        <div class="tools">
+          <select class="inp" id="bizType" onchange="renderBizLog()" style="width:170px">
+            <option value="">全部环节</option>
+            <option value="outbounds">出库环节</option>
+            <option value="transports">运输环节</option>
+            <option value="blastings">爆破环节</option>
+            <option value="returns">退库环节</option>
+            <option value="verifies">核验环节</option>
+          </select>
+          <input class="inp" id="q-biz" onkeyup="renderBizLog()" placeholder="搜索单号 / 点位 / 品种">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-biz"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb">
+            <thead><tr><th>业务环节</th><th>单据编号</th><th>关联计划/点位</th><th>发生时间</th><th>关键数据</th><th>状态</th></tr></thead>
+            <tbody id="tb-bizlog"><tr><td colspan="6" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
     </div>
   </main>
 </div>
+
+<!-- 需求澄清详情抽屉 -->
+<div class="mask" id="dwMask" onclick="closeQ()"></div>
+<aside class="drawer" id="dwDrawer" aria-label="需求澄清详情">
+  <div class="dw-head" style="position:relative">
+    <div class="qno"><b id="dwQno">Q01</b><span id="dwPri" class="tag bad">P0</span><span id="dwSt" class="tag ok">已确认</span></div>
+    <div class="dw-title" id="dwTitle">计划上报时间要求</div>
+    <button class="dw-close" onclick="closeQ()" title="关闭">✕</button>
+  </div>
+  <div class="dw-body">
+    <div class="dw-sec">
+      <h5>澄清事项背景（沟通稿原文要点）</h5>
+      <div id="dwItems"></div>
+    </div>
+    <div class="dw-sec">
+      <h5>甲方确认意见（2026-11-05 会议）</h5>
+      <div class="confirm-box" id="dwConfirm"></div>
+    </div>
+    <div class="dw-sec">
+      <h5>原型落地情况</h5>
+      <div class="landed-box" id="dwLanded"></div>
+    </div>
+    <div class="dw-sec">
+      <h5>会议沟通记录（可现场填写，与甲方逐条对齐）</h5>
+      <div id="dwNotes"></div>
+    </div>
+  </div>
+  <div class="dw-foot">
+    <label for="dwNote">本次沟通补充记录（自动保存到本机浏览器）</label>
+    <textarea id="dwNote" placeholder="例：甲方 11-05 现场补充：……；待乙方提供 XXX 制度依据后二次确认。"></textarea>
+    <div class="fr">
+      <button class="btn" onclick="saveNote()">保存记录并同步到列表</button>
+      <button class="btn ghost" onclick="clearNote()">清除</button>
+      <span class="hint" id="dwHint"></span>
+    </div>
+  </div>
+</aside>
 <script>
   const names = {work:'工作台', master:'主数据管理（L02）', audit:'主数据审核（L03）', check:'检查配置（L04）',
-    stat:'监管统计报表（L05）', archive:'一作业点一档（L06）', sys:'系统管理（L07）', log:'日志与大屏配置（L08）'};
+    stat:'监管统计报表（L05）', archive:'一作业点一档（L06）', sys:'系统管理（L07）', log:'日志与大屏配置（L08）', clarify:'需求澄清跟踪（Q01–Q24）',
+    'm-companies':'民爆公司维护（L02·公司）', 'm-sites':'作业点位维护（L02·点位）', 'm-workareas':'工区维护（L02·工区/点位）', 'bizlog':'我的业务台账（历史数据）', 'm-routes':'路线维护（L02·路线）', 'm-storages':'库房维护（L02·库房）', 'm-persons':'四大员维护（L02·人员）', 'm-vehicles':'运输车辆维护（L02·车辆）'};
+  /* ===== 三类权限：公安管理员（公安特有菜单 + 业务管理员全部菜单）/ 业务管理员（基础数据维护）/ 业务人员（本环节历史数据） ===== */
+  var PERSON_COMPANY_FILTER = '';
+  const ROLE_MENU = {
+    police: null,                       /* null = 全部菜单可见（含公安特有） */
+    biz: ['work','master','m-workareas','m-companies','m-routes','m-storages','m-vehicles','m-persons'],
+    staff: ['work','bizlog']
+  };
+  const ROLE_META = {
+    police: { label:'公安管理员', user:'王警官 · 治安大队<br>公安管理员 · 全域数据权限' },
+    biz:    { label:'业务管理员', user:'李管理员 · 宏泰民爆<br>业务管理员 · 基础数据维护权限' },
+    staff:  { label:'业务人员',   user:'张技术员 · 宏泰民爆<br>业务人员 · 本环节历史数据' }
+  };
+  let CUR_ROLE = 'police';
+  function applyRole(role){
+    if (!ROLE_MENU[role]) role = 'police';
+    CUR_ROLE = role;
+    const allow = ROLE_MENU[role];
+    document.querySelectorAll('#nav .ni').forEach(ni=>{
+      ni.style.display = (!allow || allow.indexOf(ni.dataset.p) >= 0) ? '' : 'none';
+    });
+    const meta = ROLE_META[role];
+    document.getElementById('roleLabel').textContent = 'PC 管理后台 · ' + meta.label;
+    document.getElementById('footUser').innerHTML = meta.user;
+    const sel = document.getElementById('roleSel'); if (sel && sel.value !== role) sel.value = role;
+    const cur = document.querySelector('.page.on');
+    const curKey = cur ? cur.id.replace(/^p-/, '') : 'work';
+    if (allow && allow.indexOf(curKey) < 0) gotoPage(allow[0]);
+  }
+  function gotoPage(key){
+    const ni = document.querySelector('#nav .ni[data-p="' + key + '"]');
+    if (ni) ni.click();
+  }
+
   document.getElementById('nav').addEventListener('click', e=>{
     const ni = e.target.closest('.ni'); if(!ni) return;
     document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
@@ -358,7 +756,1000 @@
     document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
     document.getElementById('p-'+ni.dataset.p).classList.add('on');
     document.getElementById('crumb').textContent = names[ni.dataset.p];
+    if (ni.dataset.p === 'm-workareas' && typeof loadWorkareas === 'function') loadWorkareas();
+    if (ni.dataset.p === 'bizlog' && typeof loadBizLog === 'function') loadBizLog();
+    if (typeof SUB_CFG !== 'undefined' && SUB_CFG[ni.dataset.p]) loadSub(ni.dataset.p);
   });
+
+  /* ====== 需求澄清详情（内容源自《甲方需求澄清确认清单》沟通稿 2026-11-05）====== */
+  const QDATA = {
+    Q01:{pri:'P0',st:'ok',stTxt:'已确认',title:'计划上报时间要求',
+      items:[['待确认原因','当前小程序和功能清单要求当日24:00前提交次日计划；演示文稿要求至少提前6小时提交，两者并不等价。'],
+        ['请甲方确认','采用哪一种规则？是否两条同时生效？时限以技术员提交、安全监管签字、项目负责人提交还是民警审批完成的时间为准？以哪个系统时间及所在时区为准？'],
+        ['还需明确','节假日、跨日作业、紧急任务、超时补报是否允许及其审批流程。'],
+        ['建议','明确正常和例外两套规则，并对超时原因、审批人和审批时间留痕。']],
+      confirm:'1. 条件1：24点前提交第二天的作业计划；条件2：需提前至少6小时提交计划；两个条件是分开的且同时起效的。\n2. 不允许节假日、跨日作业、紧急任务、超时补报。第一阶段现阶段不考虑超时补报。',
+      landed:'小程序计划页新增「时限口径」提示卡（24:00 + 提前≥6h 双规则同时生效，不支持超时补报）；PC 端系统管理·业务参数同步该口径（Q01）。'},
+    Q02:{pri:'P0',st:'ok',stTxt:'已确认',title:'计划审核及变更',
+      items:[['会议中提到','纪要一处提到取消民警计划审核、由负责人提交后直接流转库管员；另一处在演示原型时提到民警审核通过后出库。可能因演示版本与会上讨论方案不同，需确认最终采用方式，以及超计划发料等特殊审批是否保留。'],
+        ['请甲方确认','技术员、安全监管、项目负责人、责任民警各自的审核职责；哪些环节可驳回、退回修改或撤销？民警审核是否始终必需，关闭审核开关的授权及适用范围是什么？'],
+        ['还需明确','计划审核后变更作业时间、地点、品种或数量是否需要重新审核；已出库或在途时是否允许变更、取消，以及已领物品如何处置。'],
+        ['建议','列明可变更字段、触发重新审核的条件及变更前后记录。']],
+      confirm:'1. 在治安管理员界面有对应开关功能：关闭则不需要审核；开启需到对应责任区民警进行审核。\n2. 驳回环节待确认。民警审核只针对作业计划，其余环节不参与，审核开关只针对该环节。\n3. 出库后不允许变更。',
+      landed:'小程序计划页支持「计划变更需重新审核」提示与变更字段展示；PC 端业务参数含 plan_audit_enable 审核开关及口径说明（仅作用于民警计划审核环节，关闭后负责人提交直接流转库管员备料）。'},
+    Q03:{pri:'P0',st:'ok',stTxt:'已确认',title:'超计划发料',
+      items:[['待确认原因','功能清单提出实发不超过计划的105%，超出需民警线上审批。'],
+        ['请甲方确认','5%按每个作业点、每个品种规格、单张计划还是合并单计算？雷管等按何种单位和口径计算？正好105%如何处理？超出审批由谁发起、谁批准、审批前是否禁止出库？'],
+        ['建议','按实际管理要求逐品种定义比较口径、精度和审批规则，并明确库存不足时的处理方式。']],
+      confirm:'不能超，严格按照作业计划出库（取消 105% 容差口径）。',
+      landed:'小程序出库环节按计划量硬校验、无容差；PC 端业务参数标注「严禁超计划 · 严格按作业计划出库（无容差）」（Q03）。'},
+    Q04:{pri:'P0',st:'gray',stTxt:'待甲方确认',title:'多点合并出库与分配',
+      items:[['请甲方确认','什么条件下允许多个计划合并出库？是否允许跨项目、跨工区、跨库房或跨作业日期合并？多点运输按什么规则分配物品与责任？'],
+        ['还需明确','中途调整卸货顺序、部分点位拒收、取消或未送达时，余量如何记录及处置。'],
+        ['建议','以出库单、运输单及作业点明细建立关联，逐点记录应送、实收、差异及剩余数量。']],
+      confirm:'甲方意见：待考虑。',
+      landed:'原型暂按「一计划一运输」落地，未实现合并出库；待甲方明确合并条件与分配规则后再行设计。'},
+    Q05:{pri:'P0',st:'ok',stTxt:'已确认',title:'双人双锁复核',
+      items:[['请甲方确认','登记人和复核人应具备哪些资格，是否必须为两个不同的自然人？如何验证身份？复核驳回后谁可修改，是否需要重新签名？库存何时扣减，复核超时或撤销如何处理？'],
+        ['建议','明确两人独立认证、复核通过后生效及完整操作留痕；具体执行要求以甲方制度为准。']],
+      confirm:'1. 登记人和复核人必须是2个或者以上的自然人；\n2. 需要根据身份证进行验证人员身份；\n3. 复核驳回，由登记人修改重新提交；\n4. 库存在复核人点击通过后扣除；\n5. 不考虑复核超时或撤销。',
+      landed:'小程序双人双锁复核流程按上述口径落地：身份证验证、驳回回到登记人重新提交、复核通过后扣库存。'},
+    Q06:{pri:'P0',st:'ok',stTxt:'已确认',title:'数量平衡与剩余物处置',
+      items:[['会议中提到','纪要一处提到原地销毁由市局支队处理，不纳入本次业务；另一处演示了现场销毁量登记。需确认本系统是否记录外部处置结果和凭证，以及相应数量如何纳入统计。'],
+        ['待确认原因','现有材料分别使用「三量平衡」「四量平衡」，对退库、销毁、损耗和盲炮的表述不完全一致。'],
+        ['请甲方确认','按品种、规格、批次分别如何计算平衡？计划量、出库量、实收量、使用量、退库量、销毁量、损耗及盲炮分别如何定义和关联？允许的精度、容差和计量单位是什么？'],
+        ['还需明确','销毁和盲炮处置是否纳入本系统，分别由谁审批、执行、见证；数量不平衡时能否继续后续业务或归档。'],
+        ['建议','由甲方提供适用的管理制度，并确认每种物品的平衡公式、异常处置规则及证据要求。']],
+      confirm:'本次建设范围对于销毁只做登记（不纳入销毁执行流程）。',
+      landed:'小程序新增「数量平衡公式」卡（计划→出库→实收→使用→退库各环节闭环，销毁仅登记）；PC 端一档页同步销毁登记口径（Q06）。'},
+    Q07:{pri:'P0',st:'ok',stTxt:'已确认',title:'跨日、多次退库',
+      items:[['会议中提到','从使用库出库的物品可原路退回；从销售库出库的物品，退库时需先经过中间库，再退回原出库库。需明确中间库如何确定、中转时由谁交接和负责库存，以及未完成中转时如何处理。'],
+        ['请甲方确认','是否允许跨日、分批、多次退库；是否必须退回原库、原批次；未退完前由谁负责保管；库房接收差异或拒收如何处理？'],
+        ['建议','每次退库关联原出库明细，记录押运、交接、入库和剩余待处置数量；库存回加以确认入库为准，最终规则请甲方确认。']],
+      confirm:'1. 中间库的流程待确认；\n2. 退库可以跨日，不能分批次；\n3. 必须原库退回；\n4. 必须一次退完；\n5. 不能拒收。',
+      landed:'小程序退库页按「可跨日 · 不可分批 · 一次退完 · 原库退回 · 不能拒收」落地；PC 端业务参数同步（Q07），中间库流程标注待确认。'},
+    Q08:{pri:'P0',st:'gray',stTxt:'待甲方确认',title:'分级检查与远程核验',
+      items:[['会议补充','纪要称分局已有各环节检查规则，具体检查项需与分局确认；原型考虑允许民警自行增加检查项。需明确模板来源、维护权限、自定义检查项的审批和适用范围。'],
+        ['待确认原因','原型同时展示远程核验及按作业量分级到场检查，需要明确两者关系。'],
+        ['请甲方确认','各级阈值、边界值、折算方法、责任单位和适用区域；分级依据计划量、实发量还是其他口径，数量变化后是否重新分级？'],
+        ['还需明确','现场检查是否可以被远程核验替代；哪些检查必须到场、签到或全程监督；24小时核验从哪个时间点开始计算，超时如何督办。'],
+        ['建议','分别建立「现场检查任务」和「远程核验任务」，明确生成、执行、超时和完成条件。']],
+      confirm:'甲方意见：待确认（阈值 / 分级口径 / 远程核验关系均待定）。',
+      landed:'甲方口径检查项已落地两端原型：出库（出库单与系统上报一致：炸药 kg / 雷管 发 / 导爆索 m）、押运（人车证与系统一致 / 运输许可证与实车一致 / 运输证三要素 / 荷载不超重）、爆破（三大员在岗 / 安全监理在岗 / 实际用药量核对）；分级阈值与远程核验关系仍待甲方确认。'},
+    Q09:{pri:'P0',st:'ok',stTxt:'已确认',title:'异常上报与闭环',
+      items:[['请甲方确认','数量差异、路线偏离、长时间停留、设备故障、证照过期、无信号等异常分别由谁接收、处理、复核和销号？哪些异常阻断后续流程？处置时限如何规定？'],
+        ['建议','按异常类型明确触发条件、责任人、通知对象、处理时限、证据要求、升级规则及销号条件。']],
+      confirm:'第一阶段先不考虑异常预警，放到 P1 阶段，待客户确认。',
+      landed:'PC 端业务参数标注「异常预警一期不启用，移至 P1 阶段」；差异单等基础异常留痕保留（Q09）。'},
+    Q10:{pri:'P0',st:'ok',stTxt:'已确认',title:'角色及数据权限',
+      items:[['请甲方确认','九类角色的岗位定义及实际使用单位；各角色可查看和操作的数据范围是否按本人、作业点、项目、库房、工区或全域划分？一人是否可兼任多个角色，有无职责分离要求？'],
+        ['还需明确','人员调岗、离职、账号停用、资格证到期时的权限处理；民警跨工区履职的授权方式。'],
+        ['建议','甲方提供组织架构及岗位授权规则，共同确认角色权限矩阵。']],
+      confirm:'1. 根据人员做数据区分；\n2. 不能兼任其他角色；\n3. 人员离职、调岗都由系统后台管理界面进行维护；\n4. 不能跨工区，但是民警可以有多个工区权限。',
+      landed:'PC 端系统管理·用户与角色按 RBAC + 按人员数据区分落地，含兼任规则与离职/调岗处理说明（Q10）。'},
+    Q11:{pri:'P0',st:'ok',stTxt:'已确认',title:'主数据来源与审核生效',
+      items:[['会议补充','纪要称历史及基础数据由其他系统录入后，由分局治安大队维护至本系统，并需PC端维护工具。需确认是人工录入、文件导入还是系统对接，以及各方式的维护和审核责任。'],
+        ['待确认原因','演示文稿强调审核后生效；功能清单和原型中部分车辆等数据标注为自录即生效。'],
+        ['请甲方确认','企业、库房、人员、项目、点位、车辆、司机和路线等数据分别由谁维护、谁审核、何时生效？企业申报、公安自录和外部系统同步的数据是否采用不同规则？'],
+        ['还需明确','外部数据与本地修正冲突时以哪方为准；停用、过期或审核驳回后，对已存在业务单据如何处理。'],
+        ['建议','按数据类别和来源分别制定维护、审核、生效及同步规则。']],
+      confirm:'都由治安管理员进行维护，并支持跟其他系统对接接收数据。',
+      landed:'PC 端主数据管理（L02）八类主数据统一维护，来源分「对接 / 自录」标注；主数据审核（L03）保留企业申报审核流（Q11）。'},
+    Q12:{pri:'P1',st:'gray',stTxt:'待甲方确认',title:'公安责任区与民警路由',
+      items:[['请甲方确认','计划应按项目、作业点、工区还是公安责任区路由？出现跨区、责任人缺岗、责任区调整或多个民警共同负责时，如何派发和移交？'],
+        ['建议','确定唯一归属或冲突处理规则，并记录路由依据及历次调整。']],
+      confirm:'甲方意见：待确认。',
+      landed:'原型暂按「作业点归属工区 → 责任区民警」的默认路由展示，路由规则待甲方确认后调整。'},
+    Q13:{pri:'P1',st:'ok',stTxt:'已确认',title:'定位、围栏与轨迹',
+      items:[['请甲方确认','定位来源、上报频率、围栏范围及精度要求；路线偏离和停留预警的阈值、持续时间、通知对象及误报处理方式。'],
+        ['还需明确','车辆实际到场但未触发围栏、定位权限被关闭、定位漂移时，是否允许人工确认，需提供什么证明及审批？'],
+        ['建议','在页面展示定位状态、时间、精度及异常原因；人工处理保留操作记录。']],
+      confirm:'第一阶段不考虑该功能，由押运员手动点击到达。',
+      landed:'小程序运输环节新增「定位 / 网络状态卡」，以押运员手动点击到达为准；PC 端业务参数同步（Q13）。'},
+    Q14:{pri:'P1',st:'ok',stTxt:'已确认',title:'弱网、离线与补传',
+      items:[['请甲方确认','哪些业务允许离线操作，哪些必须联网校验？离线期间如何处理身份、时间、签名、照片和位置？最迟补传时间、冲突及重复提交如何处理？'],
+        ['建议','区分「本地暂存」「待同步」「同步失败」和「已生效」；涉及库存、审批及其他强一致性环节的处理方式由甲方和技术方共同确认。']],
+      confirm:'不考虑离线（各环节联网校验）。',
+      landed:'小程序定位 / 网络状态卡同步标注「不支持离线，各环节联网校验」；PC 端业务参数一致（Q14）。'},
+    Q15:{pri:'P1',st:'ok',stTxt:'已确认',title:'签名、照片及电子证据',
+      items:[['请甲方确认','哪些环节必须手写签名、现场拍照、扫码或定位？能否使用相册照片？签名人的身份如何核实？证据保存期限、查询和导出要求是什么？'],
+        ['建议','逐节点列出必需证据及其采集时间、来源和保存要求，并由甲方确认电子签名及证据管理的合规要求。']],
+      confirm:'1. 每个环节都要考虑手写签名、现场拍照、定位以及操作日志留存；\n2. 不能使用相册照片；\n3. 目前只需要记录签名人的操作日志；\n4. 证据一直保存。查询、导出都只能在PC端。',
+      landed:'小程序各环节签名 + 拍照（仅现场拍摄，禁用相册）+ 定位 + 操作日志；PC 端一档页「电子证据管理」卡完整呈现该口径（Q15）。'},
+    Q16:{pri:'P1',st:'ok',stTxt:'已确认',title:'消息与超时提醒',
+      items:[['请甲方确认','审核、交接、异常和督办消息通过何种渠道发送；接收对象、提醒频率、超时升级规则及无人处理时的替代责任人是什么？'],
+        ['建议','按业务事件列消息矩阵，区分待办、通知、预警和督办，支持查看处理状态。']],
+      confirm:'发送系统层面的通知消息；先不考虑无人处理的替代责任人。',
+      landed:'小程序 notification 页按四类消息（待办 / 通知 / 预警 / 督办）过滤展示（msgTypeOf）；PC 端同步口径（Q16）。'},
+    Q17:{pri:'P1',st:'gray',stTxt:'待甲方确认',title:'统计指标及大屏口径',
+      items:[['请甲方确认','闭环率、节点完整率、24小时核验覆盖率、检查覆盖率、数量差异率等指标的分子、分母、统计周期、范围及排除项；进行中、取消、异常未销号记录如何计入？'],
+        ['还需明确','小程序、PC及大屏是否要求同源、更新频率以及明细下钻权限。'],
+        ['建议','每个指标形成口径表，页面展示统计周期、更新时间并支持按权限查看明细。']],
+      confirm:'甲方意见：统计待定。',
+      landed:'PC 端统计报表与大屏均展示「指标口径卡」（统计周期 / 更新时间 / 排除项占位），指标明细口径待甲方确认后回写。'},
+    Q18:{pri:'P1',st:'ok',stTxt:'已确认',title:'对接系统及数据共享',
+      items:[['会议补充','纪要提出小程序挂靠联码但代码独立，业务在政务网侧处理后同步至公安网展示分析。需确认跳转及身份认证方式、双网部署边界、数据摆渡审批、安全要求、同步内容与可接受延迟；同步失败、补传、对账和数据修正机制也需确认。'],
+        ['请甲方确认','需要对接的现有系统、主管单位、数据项、接口方式、数据更新频率和责任边界；是否已有统一身份认证、地图定位、短信或消息平台。'],
+        ['建议','由接口提供方提供接口文档、测试环境、联调联系人及数据安全要求；如接口尚未确定，明确临时录入方案和后续迁移方式。']],
+      confirm:'1. 需要对接林安码统一登录，对接现有林安码统一权限管理；\n2. 用户、组织、登录与林安码对接，但须在本系统内单独维护，支持脱离林安码独立运行。',
+      landed:'PC 端业务参数（Q18）已标注：林安码统一登录 + 统一权限对接，用户 / 组织在本系统内单独维护，可脱离林安码独立运行；小程序登录入口按对接方案预留。'},
+    Q19:{pri:'P0',st:'gray',stTxt:'待甲方确认',title:'一期建设范围与验收',
+      items:[['会议补充','纪要提出暂不单独进行UI设计、依据原型推进开发，技术准备与字段确认并行；同时要求完善原型流程并提供字段表。需确认可先行开发的范围、原型冻结和变更机制，以及PC端和大屏的交付标准。'],
+        ['待确认原因','现有材料包含小程序、PC后台、大屏、轨迹预警、督办等内容，不同材料展示的功能数量和分期口径存在差异。'],
+        ['请甲方确认','一期必须交付的终端、角色、功能、接口和试点范围；哪些能力仅为演示或后续建设；历史数据是否需要迁移。'],
+        ['还需明确','验收按页面、业务流程、接口、性能、安全还是试运行指标进行；每项指标的口径、数据来源、考核周期和责任主体是什么。'],
+        ['建议','以经双方确认的功能清单、流程和验收用例为准，明确不在一期范围内的事项。']],
+      confirm:'甲方意见：未填写（待会上确认）。',
+      landed:'待甲方明确一期范围后，以功能清单 + 澄清清单共同作为原型冻结与开发基线。'},
+    Q20:{pri:'P1',st:'warn',stTxt:'原型已落地',title:'部署与安全要求',
+      items:[['请甲方确认','部署环境、网络边界、账号认证、数据分级、存储位置、备份恢复、日志留存期限、安全测评及运维责任要求。'],
+        ['建议','由甲方信息化及安全主管部门提供适用规范，并在方案设计前明确外部系统访问和移动终端使用条件。']],
+      confirm:'技术路线已确定：\n1. 运行在微信小程序，后台服务、数据库部署在政务网；\n2. 数据同步到公安网；\n3. PC 端部署在公安网。\n安全测评、备份恢复等仍待信息化及安全主管部门规范。',
+      landed:'PC 端系统管理·业务参数已呈现部署架构（小程序 + 后台 + 数据库 → 政务网；PC 端 → 公安网）与双网同步方向（政务网 → 公安网）；安全规范细则待主管部门补充。'},
+    Q21:{pri:'P2',st:'warn',stTxt:'原型已落地',title:'页面术语与现场操作',
+      items:[['请甲方确认','界面是否面向非技术人员简化「模块编号／规则编号」等术语；是否有统一名称、表单、单据、字号及无障碍要求。'],
+        ['建议','业务页面突出待办、下一步操作和异常提示；技术编号保留在设计及验收文档中。']],
+      confirm:'正式口径待甲方回写；原型已按以下方式落地：',
+      landed:'两端业务页面均执行「业务页无技术编号」：界面统一使用活动名 / 场次名 / 单据名等可读字段，技术编号（L01/Q01 等）仅保留在设计与跟踪文档。'},
+    Q22:{pri:'P1',st:'warn',stTxt:'原型已落地',title:'发车责任人与载重边界',
+      items:[['待确认原因','会议演示章节称库管员点击发车，现有功能清单主要由押运员发车；纪要对车辆载重使用了「大于货物总重」和「小于总重不可选」两种说法，等于时的处理不明确。'],
+        ['请甲方确认','正向和退库运输分别由谁确认发车、谁承担运输信息真实性责任；车辆核定载重等于货物总重时是否允许选择，重量统计范围、单位及精度是什么？']],
+      confirm:'正式口径待甲方回写；原型已按以下方式落地：',
+      landed:'小程序发车按「押运员确认发车」落地，选择车辆时校验核定载重须大于货物总重（等于时二次确认提示），待甲方回写最终口径。'},
+    Q23:{pri:'P1',st:'warn',stTxt:'原型已落地',title:'多点卸货顺序及参与人员',
+      items:[['会议补充','纪要提出多点卸货顺序由押运员手动调整，不进行复杂自动计算；作业反馈时参与人员应由用户主动选择。'],
+        ['请甲方确认','是否仍需提供默认顺序或简单建议；调整是否需要审批及通知相关作业点；参与人员的可选范围、必选岗位、最低人数、签名和资格校验要求。']],
+      confirm:'正式口径待甲方回写；原型已按以下方式落地：',
+      landed:'小程序多点卸货按押运员手动调整顺序、参与人员自选落地，未做复杂自动计算；参与人员校验细则待甲方回写。'},
+    Q24:{pri:'P1',st:'gray',stTxt:'待甲方确认',title:'双网数据同步时效与批处理',
+      items:[['待确认原因','会议纪要提到凌晨1点至11点跑数据，但未说明具体任务、数据范围或是否适用于本项目。'],
+        ['请甲方确认','该时间段是否与本项目有关；业务数据同步采用实时、准实时还是定时批量方式，各类数据的最大可接受延迟和业务限制是什么？']],
+      confirm:'甲方意见：未填写（凌晨批处理窗口是否适用待定）。',
+      landed:'同步方向已随技术路线确定：政务网（业务处理与存储）→ 公安网（展示分析）；同步时效（实时 / 准实时 / 批处理）与最大可接受延迟仍待甲方确认。'}
+  };
+
+  function openQ(id){
+    const d = QDATA[id]; if(!d) return;
+    document.getElementById('dwQno').textContent = id;
+    const pri = document.getElementById('dwPri');
+    pri.textContent = d.pri; pri.className = 'tag ' + (d.pri==='P0'?'bad':d.pri==='P1'?'warn':'gray');
+    const st = document.getElementById('dwSt');
+    st.textContent = d.stTxt; st.className = 'tag ' + d.st;
+    document.getElementById('dwTitle').textContent = d.title;
+    document.getElementById('dwItems').innerHTML = d.items.map(it =>
+      '<div class="dw-item"><span class="k">'+it[0]+'</span><span>'+it[1]+'</span></div>').join('');
+    const cb = document.getElementById('dwConfirm');
+    cb.textContent = d.confirm; cb.className = 'confirm-box' + (d.st==='gray' ? ' pending' : '');
+    document.getElementById('dwLanded').innerHTML = d.landed;
+    const saved = localStorage.getItem('clarify_note_'+id) || '';
+    document.getElementById('dwNote').value = saved;
+    document.getElementById('dwHint').textContent = saved ? ('上次保存：' + (localStorage.getItem('clarify_note_ts_'+id) || '')) : '尚未保存记录';
+    renderNotes(id);
+    document.getElementById('dwMask').classList.add('on');
+    document.getElementById('dwDrawer').classList.add('on');
+  }
+  function closeQ(){
+    document.getElementById('dwMask').classList.remove('on');
+    document.getElementById('dwDrawer').classList.remove('on');
+  }
+  function renderNotes(id){
+    const box = document.getElementById('dwNotes');
+    const v = localStorage.getItem('clarify_note_'+id);
+    box.innerHTML = v
+      ? '<div class="dw-item"><span class="k">已存记录</span><span>'+v.replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</span></div>'
+      : '<div class="dw-item"><span class="k">提示</span><span>暂无记录，可在下方填写本次与甲方沟通的补充结论。</span></div>';
+  }
+  function saveNote(){
+    const id = document.getElementById('dwQno').textContent;
+    const v = document.getElementById('dwNote').value.trim();
+    const ts = new Date().toLocaleString('zh-CN',{hour12:false});
+    if(!v){ alert('请先填写沟通记录内容'); return; }
+    localStorage.setItem('clarify_note_'+id, v);
+    localStorage.setItem('clarify_note_ts_'+id, ts);
+    document.getElementById('dwHint').textContent = '已保存 ' + ts;
+    renderNotes(id);
+    const cell = document.getElementById('op-'+id);
+    if(cell) cell.textContent = '【已回写 '+ts.slice(5,10)+'】' + v;
+  }
+  function clearNote(){
+    const id = document.getElementById('dwQno').textContent;
+    localStorage.removeItem('clarify_note_'+id);
+    localStorage.removeItem('clarify_note_ts_'+id);
+    document.getElementById('dwNote').value = '';
+    document.getElementById('dwHint').textContent = '记录已清除';
+    renderNotes(id);
+    const cell = document.getElementById('op-'+id);
+    if(cell && QDATA[id]) cell.textContent = QDATA[id].confirm.replace(/\n/g,' ');
+  }
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeQ(); });
+
+  /* ====== 澄清清单筛选 ====== */
+  const priSel = document.querySelectorAll('#p-clarify .tools select');
+  if(priSel.length===2){
+    priSel[0].addEventListener('change', filterClarify);
+    priSel[1].addEventListener('change', filterClarify);
+  }
+  function filterClarify(){
+    const pv = priSel[0].value, sv = priSel[1].value;
+    document.querySelectorAll('#clarifyTb tr').forEach(tr=>{
+      const p = tr.children[2].textContent.trim();
+      const s = tr.children[4].textContent.trim();
+      const pOk = pv.startsWith('全部') || pv.startsWith(p);
+      const sOk = sv.startsWith('全部') || s === sv;
+      tr.style.display = (pOk && sOk) ? '' : 'none';
+    });
+  }
+  /* 导出澄清清单：打印当前页 */
+  const expBtn = document.querySelector('#p-clarify .tools .btn');
+  if(expBtn) expBtn.addEventListener('click', ()=>window.print());
+
+  /* ====== 真实服务端数据联动 ====== */
+  const API_BASE = (window.location.origin && window.location.origin.startsWith('http'))
+    ? (window.location.origin + '/api')
+    : 'http://localhost:8080/api';
+
+  // 1. 加载工作台真实 KPI、在途车辆及待办
+  async function loadWorkbenchKPI() {
+    try {
+      const res = await fetch(API_BASE + '/overview/kpi').then(r=>r.json()).catch(()=>null);
+      if (res && res.code === 200 && res.data) {
+        const d = res.data;
+        const elPlan = document.getElementById('wkPlanCount');
+        const elOut = document.getElementById('wkOutboundQty');
+        const elClosed = document.getElementById('wkClosedRate');
+        const elExp = document.getElementById('wkExceptionCount');
+        if (elPlan) elPlan.textContent = d.todayPlanCount;
+        if (elOut) elOut.textContent = (d.outboundQtyKg / 1000).toFixed(2) + ' t';
+        if (elClosed) elClosed.textContent = d.closingRate + '%';
+        if (elExp) elExp.textContent = d.exceptionCount || 0;
+      }
+
+      // 联动全量数据：在途监控与待办
+      const resAll = await fetch(API_BASE + '/all').then(r=>r.json()).catch(()=>null);
+      if (resAll && resAll.code === 200 && resAll.data) {
+        const all = resAll.data;
+        // 渲染在途车辆
+        const trTb = document.getElementById('workbenchTransportTb');
+        if (trTb) {
+          const inTransit = (all.transports || []).filter(t => ['待发车', '运输中'].includes(t.status));
+          if (inTransit.length > 0) {
+            trTb.innerHTML = inTransit.map(t => `
+              <tr>
+                <td><b>${t.no || t.id}</b></td>
+                <td>${t.vehiclePlate || t.vehicle || '-'} / ${t.escortName || t.escort || '-'}</td>
+                <td>${(t.route && t.route.to) || '作业点'}</td>
+                <td>${t.departTime ? String(t.departTime).slice(11, 16) : '待发车'}</td>
+                <td><span class="tag ${t.status === '运输中' ? 'ok' : 'warn'}">${t.status}</span></td>
+                <td class="op"><a onclick="window.open('../bigscreen/index.html')">查看轨迹</a></td>
+              </tr>
+            `).join('');
+          } else {
+            trTb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--sub);padding:18px">暂无在途运输车辆</td></tr>`;
+          }
+        }
+
+        // 渲染待办事项
+        const todoBox = document.getElementById('workbenchTodoList');
+        if (todoBox) {
+          const todos = [];
+          (all.plans || []).forEach(p => {
+            if (p.status === '待审核') todos.push(`计划待民警审核：${p.planNo}（${p.planKg}kg）`);
+            if (p.status === '待监管签字') todos.push(`技术员已上报待监管签字：${p.planNo}`);
+            if (p.status === '待出库') todos.push(`计划已过审待库房出库：${p.planNo}`);
+          });
+          (all.receives || []).forEach(r => {
+            if (r.diffFlag === 1) todos.push(`到场核量存在数量差异，待核实处置`);
+          });
+
+          if (todos.length > 0) {
+            todoBox.innerHTML = todos.slice(0, 5).map(td => `
+              <div class="todo">
+                <span class="lv" style="background:var(--warn)"></span>
+                <b>${td}</b>
+                <span class="t">待处理</span>
+                <span class="op">详情</span>
+              </div>
+            `).join('');
+          } else {
+            todoBox.innerHTML = `<div style="text-align:center;color:var(--sub);padding:18px 0;font-size:13px">暂无待办事项，全流程运行平稳</div>`;
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('PC后台获取数据离线模式:', e);
+    }
+  }
+
+  // 2. 加载 8 类主数据
+  let allMasterList = [];
+  async function loadMasterData() {
+    const tbody = document.getElementById('masterTbody');
+    if (!tbody) return;
+    const filterType = document.getElementById('masterFilterType') ? document.getElementById('masterFilterType').value : 'all';
+
+    try {
+      const typesToFetch = filterType === 'all'
+        ? ['companies', 'sites', 'storages', 'persons', 'vehicles', 'routes']
+        : [filterType];
+
+      let combined = [];
+      for (const t of typesToFetch) {
+        const res = await fetch(API_BASE + '/master/' + t).then(r=>r.json()).catch(()=>null);
+        if (res && res.code === 200 && res.data) {
+          res.data.forEach(item => {
+            combined.push({
+              _category: t,
+              ...item
+            });
+          });
+        }
+      }
+
+      allMasterList = combined;
+      renderMasterRows(combined);
+    } catch(e) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--bad);padding:20px">加载失败，请确认后端服务已启动</td></tr>`;
+    }
+  }
+
+  function renderMasterRows(list) {
+    const tbody = document.getElementById('masterTbody');
+    if (!tbody) return;
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--sub);padding:20px">暂无符合条件的主数据</td></tr>`;
+      return;
+    }
+
+    const typeNames = {
+      companies: '民爆公司', sites: '点位', storages: '库房',
+      persons: '从业人员', vehicles: '车辆', routes: '路线'
+    };
+
+    tbody.innerHTML = list.map(item => {
+      const cname = typeNames[item._category] || item._category;
+      let keyInfo = item.addr || item.via || (item.load ? `载重 ${item.load}kg` : '') || item.cert || '';
+      if (item._category === 'persons') keyInfo = `身份证 ${item.idno || '-'} · 电话 ${item.phone || '-'}`;
+      if (item._category === 'storages') keyInfo = `类型 ${item.type} · 管理员: ${(item.keepers||[]).join(', ')}`;
+
+      const title = item.name || item.plate || item.id;
+      const isCustom = (item._category === 'vehicles' || item._category === 'routes');
+      const srcTag = isCustom ? '<span class="tag red">自录</span>' : '<span class="tag gray">对接·系统</span>';
+
+      return `<tr>
+        <td>${cname}</td>
+        <td><b>${title}</b></td>
+        <td>${keyInfo}</td>
+        <td>${srcTag}</td>
+        <td><span class="tag ok">${item.status || '生效'}</span></td>
+        <td>刚刚 · 治安管理员</td>
+        <td class="op"><a onclick="alert('主数据 [${title}] 维护留痕记录齐全，已落库 t_bb_master_log')">详情留痕</a></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function filterMasterTable() {
+    const keyword = (document.getElementById('masterSearchInp').value || '').trim().toLowerCase();
+    if (!keyword) {
+      renderMasterRows(allMasterList);
+      return;
+    }
+    const filtered = allMasterList.filter(it => {
+      const s = (it.name || it.plate || it.id || '') + ' ' + (it.addr || it.cert || '');
+      return s.toLowerCase().includes(keyword);
+    });
+    renderMasterRows(filtered);
+  }
+
+  // 新增主数据弹窗
+  function openAddMasterModal() {
+    const plate = prompt('【治安管理员统一维护】请输入新增运输车辆车牌号 (例: 川L·88899):', '川L·');
+    if (!plate || plate.trim() === '川L·') return;
+    const loadLimit = prompt(`请输入 [${plate}] 核定载重 (kg，数字):`, '2000');
+    if (!loadLimit) return;
+
+    fetch(API_BASE + '/master/vehicles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plate: plate.trim(),
+        model: '厢式危化品运输专用车',
+        load: parseFloat(loadLimit),
+        company: 'C1',
+        status: '在用',
+        _remark: '治安管理员PC端自主录入'
+      })
+    }).then(r => r.json()).then(res => {
+      if (res.code === 200) {
+        alert(`✅ 车辆 [${plate}] 已成功录入服务端数据库，自动记录主数据维护留痕 (t_bb_master_log)！小程序端与大屏端立即可见！`);
+        loadMasterData();
+      } else {
+        alert('录入失败: ' + res.msg);
+      }
+    }).catch(err => {
+      alert('服务请求失败: ' + err);
+    });
+  }
+
+  // 页面切换时联动
+  document.getElementById('nav').addEventListener('click', e => {
+    const ni = e.target.closest('.ni');
+    if (ni) {
+      const p = ni.dataset.p;
+      if (p === 'work') loadWorkbenchKPI();
+      if (p === 'master') loadMasterData();
+    }
+  });
+
+
+  /* ====== L02 子模块：作业点位 / 路线 / 库房 / 四大员 维护 ====== */
+  const SUB_CFG = {
+    'm-companies': {
+      type: 'companies', table: 'tb-companies', label: '民爆公司',
+      fields: [
+        { k: 'id', t: '公司编号', ph: '留空自动生成，如 C3' },
+        { k: 'name', t: '公司名称', req: 1, ph: '如 宏泰民爆工程有限公司' },
+        { k: 'addr', t: '注册地址', ph: '如 乐山市市中区民爆产业园 8 号' },
+        { k: 'legal', t: '法定代表人', ph: '如 刘宏' },
+        { k: 'staff', t: '从业人员数', num: 1, ph: '86' },
+        { k: 'licence', t: '民爆作业许可证号', ph: '如 PB作许字[2026]15号' },
+        { k: 'licenceExpire', t: '许可证有效期至', ph: '2029-06-30' },
+        { k: 'status', t: '状态', sel: ['生效', '停用'] }
+      ]
+    },
+    'm-workareas': {
+      type: 'workareas', table: 'tb-workareas', label: '工区',
+      fields: [
+        { k: 'id', t: '工区编号', ph: '留空自动生成，如 WA3' },
+        { k: 'name', t: '工区名称', req: 1, ph: '如 青龙山工区' },
+        { k: 'project', t: '所属项目', ref: 'projects', req: 1 },
+        { k: 'district', t: '所在区县', ph: '如 市中区' },
+        { k: 'police', t: '责任民警', ref: 'persons', ph: '选填' },
+        { k: 'status', t: '状态', sel: ['启用', '停用'] }
+      ]
+    },
+    'm-sites': {
+      type: 'sites', table: 'tb-sites', label: '作业点位',
+      fields: [
+        { k: 'id', t: '点位编号', ph: '留空自动生成，如 Z4' },
+        { k: 'name', t: '作业点位名称', ph: '如 青龙山隧道 3# 掌子面', req: 1 },
+        { k: 'workarea', t: '所属工区', ref: 'workareas', ph: '先选工区，再填点位' },
+        { k: 'project', t: '所属项目', ref: 'projects', req: 1 },
+        { k: 'fence', t: '电子围栏半径(m)', num: 1, ph: '300' },
+        { k: 'hist', t: '历史作业次数', num: 1, ph: '0' },
+        { k: 'status', t: '状态', sel: ['启用', '停用'] }
+      ]
+    },
+    'm-routes': {
+      type: 'routes', table: 'tb-routes', label: '路线',
+      fields: [
+        { k: 'id', t: '路线编号', ph: '留空自动生成，如 R4' },
+        { k: 'name', t: '路线名称', ph: '如 中间库 → 青龙山隧道进口', req: 1 },
+        { k: 'from', t: '起运库房', ref: 'storages', req: 1 },
+        { k: 'to', t: '到达点位', ref: 'sites', req: 1 },
+        { k: 'via', t: '途经道路', ph: '如 G318 国道 → 青龙山专线' },
+        { k: 'km', t: '里程(km)', num: 1, ph: '42' },
+        { k: 'checkPoints', t: '沿途打卡点', ph: '多个用逗号分隔，如 专线入口,便道口' },
+        { k: 'status', t: '状态', sel: ['启用', '停用'] }
+      ]
+    },
+    'm-storages': {
+      type: 'storages', table: 'tb-storages', label: '库房',
+      fields: [
+        { k: 'id', t: '库房编号', ph: '留空自动生成，如 S4' },
+        { k: 'name', t: '库房名称', ph: '如 青龙山中间库', req: 1 },
+        { k: 'addr', t: '所在地址', ph: '详细地址或工区便道位置', req: 1 },
+        { k: 'builtAt', t: '建库时间', ph: '2015-06-18', req: 1 },
+        { k: 'area', t: '库房面积(㎡)', num: 1, ph: '220', req: 1 },
+        { k: 'type', t: '使用性质', sel: ['销售库', '使用库', '中间库'], req: 1 },
+        { k: 'dailyUse', t: '日均用量(kg)', num: 1, ph: '900', req: 1 },
+        { k: 'zyStock', t: '炸药存量(kg) · 自动汇总', ro: 1, get: r => sumStock(r, 'zy'), ph: '随出入库自动更新，不可手改' },
+        { k: 'lgStock', t: '雷管存量(发) · 自动汇总', ro: 1, get: r => sumStock(r, 'lg'), ph: '随出入库自动更新，不可手改' },
+        { k: 'dbStock', t: '导爆索存量(m) · 自动汇总', ro: 1, get: r => sumStock(r, 'db'), ph: '随出入库自动更新，不可手改' },
+        { k: 'staff', t: '员工人数', num: 1, ph: '12', req: 1 },
+        { k: 'supplyUnit', t: '供给单位', ph: '如 宏泰民爆工程有限公司', req: 1 },
+        { k: 'keepers', t: '保管员编号', ph: '多个用逗号分隔，如 P4,P9', req: 1 },
+        { k: 'fence', t: '电子围栏半径(m)', num: 1, ph: '150' },
+        { k: 'status', t: '状态', sel: ['生效', '停用'] }
+      ]
+    },
+    'm-vehicles': {
+      type: 'vehicles', table: 'tb-vehicles', label: '运输车辆',
+      fields: [
+        { k: 'id', t: '车辆编号', ph: '留空自动生成，如 V4' },
+        { k: 'plate', t: '车牌号', req: 1, ph: '如 川L·40617' },
+        { k: 'model', t: '车型', ph: '如 厢式危险品运输车' },
+        { k: 'load', t: '核定载重(kg)', num: 1, ph: '2000' },
+        { k: 'company', t: '所属民爆公司', ref: 'companies', req: 1 },
+        { k: 'project', t: '关联项目（选填，专车专用时填写）', ref: 'projects' },
+        { k: 'transLicence', t: '运输许可证号', ph: '如 川交运许[2024]0118号' },
+        { k: 'transGoods', t: '许可运输物品', ph: '如 炸药、雷管' },
+        { k: 'annualExpire', t: '年审有效期至', ph: '2027-06-30' },
+        { k: 'status', t: '状态', sel: ['在用', '停用'] }
+      ]
+    },
+    'm-persons': {
+      type: 'persons', table: 'tb-persons', label: '人员',
+      fields: [
+        { k: 'id', t: '人员编号', ph: '留空自动生成，如 P10' },
+        { k: 'name', t: '姓名', req: 1, ph: '如 张 明' },
+        { k: 'role', t: '岗位', sel: ['爆破员', '安全员', '保管员', '押运员', '项目负责人', '安全监理', '测量技术员', '安全监管', '民警', '治安管理员'], req: 1 },
+        { k: 'company', t: '所属民爆公司', ref: 'companies', req: 1 },
+        { k: 'project', t: '关联项目（选填）', ref: 'projects' },
+        { k: 'storages', t: '关联库房（保管员填写，可多选）', ref: 'storages', multi: 1 },
+        { k: 'sites', t: '关联作业点位（爆破员/安全员/押运员填写，可多选）', ref: 'sites', multi: 1 },
+        { k: 'phone', t: '联系电话', ph: '138****0000' },
+        { k: 'cert', t: '证书编号（涉证岗位必填）', ph: '如 GA-YY-2025-088' },
+        { k: 'certExpire', t: '证书有效期（涉证岗位必填）', ph: '2029-12-31' },
+        { k: 'status', t: '状态', sel: ['在岗', '停用'] }
+      ]
+    }
+  };
+  const SUB_CACHE = {};
+  const REF_CACHE = {};
+
+  async function refList(key) {
+    if (REF_CACHE[key]) return REF_CACHE[key];
+    try {
+      const r = await fetch(API_BASE + '/master/' + key).then(x => x.json());
+      REF_CACHE[key] = (r && r.code === 200) ? r.data : [];
+    } catch (e) { REF_CACHE[key] = []; }
+    return REF_CACHE[key];
+  }
+
+  async function loadSub(subKey) {
+    const cfg = SUB_CFG[subKey]; if (!cfg) return;
+    const tb = document.getElementById(cfg.table); if (!tb) return;
+    tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--sub);padding:20px">正在从服务端加载...</td></tr>';
+    await Promise.all([refList('projects'), refList('storages'), refList('sites'), refList('workareas'), refList('companies'), refList('vehicles'), refList('persons')]);
+    try {
+      const res = await fetch(API_BASE + '/master/' + cfg.type).then(r => r.json());
+      SUB_CACHE[subKey] = (res && res.code === 200) ? (res.data || []) : [];
+    } catch (e) { SUB_CACHE[subKey] = []; }
+    renderSub(subKey);
+  }
+
+  function renderSub(subKey, keyword) {
+    const cfg = SUB_CFG[subKey]; const tb = document.getElementById(cfg.table);
+    if (!tb) return;
+    /* 四大员维护：按人员类型（岗位）筛选，选项按当前档案动态生成 */
+    let roleFlt = '';
+    if (subKey === 'm-persons') { fillRoleFilter(); const sel = document.getElementById('flt-m-persons'); roleFlt = sel ? sel.value : ''; }
+    let list = SUB_CACHE[subKey] || [];
+    if (roleFlt) list = list.filter(x => (x.role || '') === roleFlt);
+    if (subKey === 'm-persons' && PERSON_COMPANY_FILTER) list = list.filter(x => (x.company || '') === PERSON_COMPANY_FILTER);
+    if (keyword) {
+      const q = keyword.toLowerCase();
+      list = list.filter(x => JSON.stringify(x).toLowerCase().includes(q));
+    }
+    const cnt = document.getElementById('cnt-' + subKey);
+    if (cnt) {
+      const total = (SUB_CACHE[subKey] || []).length;
+      const coFlt = (subKey === 'm-persons' && PERSON_COMPANY_FILTER);
+      cnt.textContent = (roleFlt || keyword || coFlt ? '筛选 ' + list.length + ' / ' : '') + '共 ' + total + ' 条';
+    }
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--sub);padding:20px">' +
+        (roleFlt ? '该岗位下暂无人员，可切换筛选或新增' : '暂无数据，可点右上角新增') + '</td></tr>';
+      return;
+    }
+    const type = cfg.type;
+    const row = (cells) => '<tr>' + cells + '</tr>';
+    const op = (id) => '<td class="op"><a onclick="openRecForm(\'' + subKey + '\',\'' + id + '\')">编辑</a> · <a onclick="toggleRec(\'' + subKey + '\',\'' + id + '\')">停用/恢复</a></td>';
+
+    if (type === 'companies') {
+      tb.innerHTML = list.map(x => {
+        const prs = (REF_CACHE.projects || []).filter(p => p.company === x.id).length;
+        const ps = (REF_CACHE.persons || []).filter(p => p.company === x.id).length;
+        const vs = (REF_CACHE.vehicles || []).filter(v => v.company === x.id).length;
+        return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (x.addr || '-') + '</td><td>' + (x.legal || '-') +
+          '</td><td>' + (x.staff || 0) + ' 人</td><td>' + (x.licence || '-') + '<br><span style="color:var(--sub);font-size:12px">有效期 ' + (x.licenceExpire || '-') + '</span>' +
+          '</td><td style="font-size:12px;color:var(--sub)">项目 ' + prs + ' · 人员 ' + ps + ' · 车辆 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
+          '<td class="op"><a onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">停用/恢复</a> · <a onclick="gotoCompanyPersons(\'' + x.id + '\')">查看从业人员</a></td>');
+      }).join('');
+    } else if (type === 'sites') {
+      tb.innerHTML = list.map(x => {
+        const pr = (REF_CACHE.projects || []).find(p => p.id === x.project) || {};
+        const wa = (REF_CACHE.workareas || [])[0] || {};
+        return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (pr.name || x.project || '') +
+          '</td><td>' + (pr.area || '') + '</td><td>' + (x.fence || 0) + ' m</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '启用') + '</span></td>' + op(x.id));
+      }).join('');
+    } else if (type === 'routes') {
+      tb.innerHTML = list.map(x => {
+        const st = (REF_CACHE.storages || []).find(p => p.id === x.from) || {};
+        const si = (REF_CACHE.sites || []).find(p => p.id === x.to) || {};
+        return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (st.name || x.from || '') +
+          '</td><td>' + (si.name || x.to || '') + '</td><td>' + (x.via || '') + '</td><td>' + (x.km || 0) + ' km</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '启用') + '</span></td>' + op(x.id));
+      }).join('');
+    } else if (type === 'storages') {
+      tb.innerHTML = list.map(x => row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td><span class="tag ' +
+        (x.type === '销售库' ? 'ok' : x.type === '中间库' ? 'warn' : 'gray') + '">' + (x.type || '') + '</span></td><td>' + (x.addr || '') +
+        '</td><td>' + (x.area || 0) + ' ㎡</td><td>' + ((x.keepers || []).join(', ') || '-') + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' + op(x.id))).join('');
+    } else if (type === 'vehicles') {
+      tb.innerHTML = list.map(x => {
+        const co = (REF_CACHE.companies || []).find(c => c.id === x.company) || {};
+        const pr = (REF_CACHE.projects || []).find(p => p.id === x.project) || {};
+        return row('<td>' + x.id + '</td><td><b>' + (x.plate || '') + '</b><br><span style="color:var(--sub);font-size:12px">' + (x.model || '') +
+          '</span></td><td>' + (x.load || 0) + ' kg</td><td>' + (co.name || x.company || '-') + '</td><td>' + (pr.name || '<span style="color:var(--sub)">全项目通用</span>') +
+          '</td><td>' + (x.transLicence || '-') + '</td><td>' + (x.transGoods || '-') + '</td><td>' + (x.annualExpire || '-') +
+          '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '在用') + '</span></td>' + op(x.id));
+      }).join('');
+    } else if (type === 'persons') {
+      tb.innerHTML = list.map(x => {
+        const co = (REF_CACHE.companies || []).find(c => c.id === x.company) || {};
+        const pr = (REF_CACHE.projects || []).find(p => p.id === x.project) || {};
+        const rel = [];
+        if (x.project) rel.push('项目 ' + (pr.name || x.project));
+        if ((x.storages || []).length) rel.push('库房 ' + x.storages.join('/'));
+        if ((x.sites || []).length) rel.push('点位 ' + x.sites.join('/'));
+        return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (x.role || '') +
+          '</td><td>' + (co.name || x.company || '') + '</td><td>' + (x.phone || '') + '</td><td>' + (x.cert || '-') + '<br><span style="color:var(--sub);font-size:12px">有效期 ' + (x.certExpire || '-') + '</span>' +
+          '</td><td style="font-size:12px;color:var(--sub)">' + (rel.length ? rel.join(' · ') : '未关联') +
+          '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '在岗') + '</span></td>' +
+          '<td class="op"><a onclick="openRecForm(\'m-persons\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-persons\',\'' + x.id + '\')">停用/恢复</a> · <a onclick="delMaster(\'persons\',\'' + x.id + '\',\'' + (x.name || x.id) + '\')">删除</a></td>');
+      }).join('');
+    }
+  }
+
+  /* 人员类型筛选项：按当前档案里的岗位动态生成，带人数统计，保留已选值 */
+  function fillRoleFilter() {
+    const sel = document.getElementById('flt-m-persons');
+    if (!sel) return;
+    const cur = sel.value || '';
+    const all = (SUB_CACHE['m-persons'] || []).filter(x => !PERSON_COMPANY_FILTER || (x.company || '') === PERSON_COMPANY_FILTER);
+    const stat = {};
+    all.forEach(x => { const r = x.role || '未填岗位'; stat[r] = (stat[r] || 0) + 1; });
+    const roles = Object.keys(stat).sort((a, b) => stat[b] - stat[a]);
+    sel.innerHTML = '<option value="">全部岗位（' + all.length + '）</option>' +
+      roles.map(r => '<option value="' + r + '">' + r + '（' + stat[r] + '）</option>').join('');
+    sel.value = roles.includes(cur) ? cur : '';
+  }
+  function filterRec(subKey) {
+    const el = document.getElementById('q-' + subKey);
+    renderSub(subKey, el ? el.value.trim() : '');
+  }
+
+  /* 库房存量按品种汇总（只读展示，实际值由出入库单据维护） */
+  function sumStock(rec, k) {
+    const g = (rec && rec.stock && rec.stock[k]) || {};
+    return Object.values(g).reduce((a, b) => a + (Number(b) || 0), 0);
+  }
+
+  async function openRecForm(subKey, id) {
+    const cfg = SUB_CFG[subKey];
+    const rec = id ? (SUB_CACHE[subKey] || []).find(x => x.id === id) || {} : {};
+    const refs = {};
+    for (const fd of cfg.fields) if (fd.ref) refs[fd.ref] = await refList(fd.ref);
+
+    const rows = cfg.fields.map(fd => {
+      const v = fd.get ? fd.get(rec) : (rec[fd.k] != null ? rec[fd.k] : (id ? '' : (fd.sel ? fd.sel[0] : '')));
+      let input;
+      if (fd.ro) {
+        input = '<input id="rf_' + fd.k + '" value="' + (v == null ? '' : v) + '" readonly placeholder="' + (fd.ph || '') + '" style="background:#f3f6fb;color:#5b6b82;cursor:not-allowed">';
+      } else if (fd.ref && fd.multi) {
+        const cur = Array.isArray(v) ? v : (v ? String(v).split(/[,，]/).map(x => x.trim()).filter(Boolean) : []);
+        const opts = (refs[fd.ref] || []).map(o => '<option value="' + o.id + '"' + (cur.indexOf(o.id) >= 0 ? ' selected' : '') + '>' + (o.name || o.id) + (o.id ? '（' + o.id + '）' : '') + '</option>').join('');
+        input = '<div style="flex:1;min-width:0"><select id="rf_' + fd.k + '" multiple size="5" style="width:100%;min-height:104px">' + opts + '</select>' +
+          '<div style="font-size:12px;color:#7a8ca3;margin-top:4px">按住 Ctrl / ⌘ 可多选；数据来自『' + (fd.ref === 'sites' ? '作业点位维护' : '库房维护') + '』</div></div>';
+      } else if (fd.ref) {
+        const opts = (refs[fd.ref] || []).map(o => '<option value="' + o.id + '"' + (o.id === v ? ' selected' : '') + '>' + (o.name || o.id) + '</option>').join('');
+        input = '<select id="rf_' + fd.k + '"><option value="">请选择</option>' + opts + '</select>';
+      } else if (fd.sel) {
+        input = '<select id="rf_' + fd.k + '"><option value=""' + (v ? '' : ' selected') + '>请选择</option>' + fd.sel.map(o => '<option' + (o === v ? ' selected' : '') + '>' + o + '</option>').join('') + '</select>';
+      } else if (fd.arr || fd.k === 'checkPoints' || fd.k === 'keepers') {
+        input = '<input id="rf_' + fd.k + '" value="' + ((rec[fd.k] || []).join(',')) + '" placeholder="' + (fd.ph || '') + '">';
+      } else {
+        input = '<input id="rf_' + fd.k + '" value="' + (v == null ? '' : v) + '" placeholder="' + (fd.ph || '') + '">';
+      }
+      return '<div class="rm-row"><label>' + fd.t + (fd.req ? ' <span style="color:var(--bad)">*</span>' : '') + '</label>' + input + '</div>';
+    }).join('');
+
+    const mask = document.createElement('div');
+    mask.className = 'rec-modal';
+    mask.innerHTML = '<div class="rm"><div class="rm-h"><b>' + (id ? '编辑' : '新增') + cfg.label + '</b><button onclick="this.closest(\'.rec-modal\').remove()">✕</button></div>' +
+      '<div class="rm-b">' + rows + '</div>' +
+      '<div class="rm-f"><button class="btn ghost" onclick="this.closest(\'.rec-modal\').remove()">取消</button>' +
+      '<button class="btn" data-save="1">保存并生效</button></div></div>';
+    document.body.appendChild(mask);
+    mask.addEventListener('click', e => { if (e.target === mask) mask.remove(); });
+    /* 新增人员时沿用列表上已选的人员类型，避免每次都从头选 */
+    if (subKey === 'm-persons' && !id) {
+      const flt = document.getElementById('flt-m-persons');
+      const rf = mask.querySelector('#rf_role');
+      if (flt && flt.value && rf) rf.value = flt.value;
+    }
+    mask.querySelector('[data-save]').onclick = () => saveRec(subKey, id, mask);
+  }
+
+  async function saveRec(subKey, id, mask) {
+    const cfg = SUB_CFG[subKey];
+    const body = {};
+    for (const fd of cfg.fields) {
+      if (fd.ro) continue; /* 只读汇总字段（存量）不参与提交 */
+      const el = document.getElementById('rf_' + fd.k);
+      if (!el) continue;
+      if (fd.multi) {
+        const arr = Array.from(el.selectedOptions || []).map(o => o.value).filter(Boolean);
+        if (fd.req && !arr.length) { el.focus(); return alert('请选择：' + fd.t); }
+        body[fd.k] = arr;
+        continue;
+      }
+      let v = (el.value || '').trim();
+      if (fd.req && !v) { el.focus(); return alert('请填写：' + fd.t); }
+      if (fd.num) v = v === '' ? 0 : Number(v);
+      if (fd.arr || fd.k === 'checkPoints' || fd.k === 'keepers') v = v ? v.split(/[,，]/).map(x => x.trim()).filter(Boolean) : [];
+      if (v !== '' && v !== undefined) body[fd.k] = v;
+    }
+    /* 四大员里的涉证岗位：证书编号与有效期必须维护，否则小程序选人处会缺信息 */
+    if (subKey === 'm-persons') {
+      const CERT_ROLES = ['爆破员', '安全员', '安全监理', '押运员', '保管员'];
+      if (CERT_ROLES.includes(body.role)) {
+        const miss = [];
+        if (!body.cert) miss.push('证书编号');
+        if (!body.certExpire) miss.push('证书有效期');
+        if (miss.length) {
+          const el = document.getElementById('rf_' + (body.cert ? 'certExpire' : 'cert'));
+          if (el) el.focus();
+          return alert('「' + body.role + '」为涉证岗位，请填写：' + miss.join('、') + '（错误会在作业环节被拦下）');
+        }
+      }
+    }
+    if (id) body.id = id;
+    body._operator = { id: 'ADM1', name: '治安管理员', role: '治安管理员' };
+    body._remark = id ? 'PC 端维护修正' : 'PC 端新增建档';
+
+    try {
+      const res = await fetch(API_BASE + '/master/' + cfg.type, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      }).then(r => r.json());
+      if (res.code !== 200) return alert('保存失败：' + res.msg);
+      mask.remove();
+      REF_CACHE[cfg.type] = null;
+      await loadSub(subKey);
+      if (subKey === 'm-workareas' || subKey === 'm-sites') await loadWorkareas();
+      alert((id ? '已更新' : '已新增') + cfg.label + '，已写入服务端并留痕（小程序端即时可见）');
+    } catch (e) { alert('请求失败，请确认后端服务已启动：' + e); }
+  }
+
+  async function toggleRec(subKey, id) {
+    const cfg = SUB_CFG[subKey];
+    const rec = (SUB_CACHE[subKey] || []).find(x => x.id === id);
+    if (!rec) return;
+    const pairs = { sites: ['启用', '停用'], storages: ['生效', '停用'], persons: ['在岗', '停用'], routes: ['启用', '停用'] };
+    const p = pairs[cfg.type] || ['生效', '停用'];
+    const next = rec.status === p[1] ? p[0] : p[1];
+    if (!confirm('确认把「' + (rec.name || id) + '」状态改为「' + next + '」？')) return;
+    try {
+      const res = await fetch(API_BASE + '/master/' + cfg.type, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, status: next, _operator: { id: 'ADM1', name: '治安管理员', role: '治安管理员' }, _remark: 'PC 端状态变更' })
+      }).then(r => r.json());
+      if (res.code !== 200) return alert('操作失败：' + res.msg);
+      await loadSub(subKey);
+    } catch (e) { alert('请求失败：' + e); }
+  }
+
+  // 初始加载
+  loadWorkbenchKPI();
+
+  /* ===== L02 工区维护：工区 → 作业点位（二级结构） ===== */
+  async function loadWorkareas(){
+    await Promise.all([refList('workareas'), refList('sites'), refList('projects'), refList('companies'), refList('persons')]);
+    SUB_CACHE['m-workareas'] = REF_CACHE.workareas || [];
+    SUB_CACHE['m-sites'] = REF_CACHE.sites || [];
+    renderWorkareas();
+  }
+  function waPrName(id){
+    const p = (REF_CACHE.projects || []).find(x => x.id === id);
+    return (p && p.name) || id || '—';
+  }
+  function siteRowsHTML(arr, unassigned){
+    if (!arr.length) return '<tr><td colspan="6" style="text-align:center;color:var(--sub);padding:14px">该工区下暂无作业点位，点「＋ 加点位」并选择本工区即可</td></tr>';
+    return arr.map(function(s){
+      let op = '<a onclick="openRecForm(\'m-sites\',\'' + s.id + '\')">编辑</a> · <a onclick="delMaster(\'sites\',\'' + s.id + '\',\'' + (s.name || s.id) + '\')">删除</a>';
+      if (unassigned) op += ' · <a onclick="assignWorkarea(\'' + s.id + '\')">归入工区</a>';
+      return '<tr><td>' + s.id + '</td><td><b>' + (s.name || '') + '</b></td><td style="color:var(--sub)">' + waPrName(s.project) +
+        '</td><td>' + (s.fence || 0) + ' m</td><td><span class="tag ' + (s.status === '停用' ? 'gray' : 'ok') + '">' + (s.status || '启用') +
+        '</span></td><td class="op">' + op + '</td></tr>';
+    }).join('');
+  }
+  function renderWorkareas(){
+    const box = document.getElementById('waList'); if (!box) return;
+    const qEl = document.getElementById('q-wa');
+    const q = ((qEl && qEl.value) || '').trim().toLowerCase();
+    const was = REF_CACHE.workareas || [], sites = REF_CACHE.sites || [];
+    const hit = function(o){ return !q || JSON.stringify(o || {}).toLowerCase().indexOf(q) >= 0; };
+    const unassigned = sites.filter(function(s){ return !s.workarea || !was.some(function(w){ return w.id === s.workarea; }); });
+    let shown = 0, html = '';
+    was.forEach(function(w){
+      const kids = sites.filter(function(s){ return s.workarea === w.id; });
+      const kidView = q ? kids.filter(hit) : kids;
+      if (q && !hit(w) && !kidView.length) return;
+      shown += kidView.length;
+      html += '<div class="card" style="padding:10px 14px 4px;margin-bottom:10px">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">' +
+          '<b style="font-size:14px">' + (w.name || w.id) + '</b><span class="tag">' + w.id + '</span>' +
+          '<span style="color:var(--sub);font-size:12px">' + waPrName(w.project) + (w.district ? ' · ' + w.district : '') + ' · 点位 ' + kids.length + ' 个</span>' +
+          '<span style="flex:1"></span>' +
+          '<a onclick="addSiteToWa(\'' + w.id + '\')" class="lnk">＋ 加点位</a>' +
+          '<a onclick="openRecForm(\'m-workareas\',\'' + w.id + '\')" class="lnk">编辑工区</a>' +
+          '<a onclick="delMaster(\'workareas\',\'' + w.id + '\',\'' + (w.name || w.id) + '\')" class="lnk">删除工区</a>' +
+        '</div>' +
+        '<table class="tb"><thead><tr><th>点位编号</th><th>点位名称</th><th>所属项目</th><th>围栏半径</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
+        siteRowsHTML(kidView, false) + '</tbody></table></div>';
+    });
+    if (unassigned.length && (!q || unassigned.some(hit))) {
+      shown += unassigned.length;
+      html += '<div class="card" style="padding:10px 14px 4px;margin-bottom:10px;border-color:#f0c9a0">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><b style="font-size:14px">未归属工区的点位</b>' +
+        '<span style="color:var(--sub);font-size:12px">共 ' + unassigned.length + ' 个，点「归入工区」挂到对应工区下</span></div>' +
+        '<table class="tb"><thead><tr><th>点位编号</th><th>点位名称</th><th>所属项目</th><th>围栏半径</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
+        siteRowsHTML(unassigned, true) + '</tbody></table></div>';
+    }
+    if (!html) html = '<div class="card" style="padding:26px;text-align:center;color:var(--sub)">没有匹配的工区或点位</div>';
+    box.innerHTML = html;
+    const cnt = document.getElementById('cnt-wa');
+    if (cnt) cnt.textContent = '工区 ' + was.length + ' 个 · 点位 ' + sites.length + ' 个（未归属 ' + unassigned.length + '）' + (q ? ' · 匹配 ' + shown : '');
+  }
+  function addSiteToWa(waId){
+    openRecForm('m-sites');
+    const t = setInterval(function(){
+      const el = document.getElementById('rf_workarea');
+      if (el) { el.value = waId; clearInterval(t); }
+    }, 80);
+    setTimeout(function(){ clearInterval(t); }, 5000);
+  }
+  function assignWorkarea(siteId){
+    const was = REF_CACHE.workareas || [];
+    const opts = was.map(function(w){ return '<option value="' + w.id + '">' + (w.name || w.id) + '（' + w.id + '）</option>'; }).join('');
+    const mask = document.createElement('div');
+    mask.className = 'rec-modal';
+    mask.innerHTML = '<div class="rm"><div class="rm-h"><b>把作业点位归入工区</b><button onclick="this.closest(\'.rec-modal\').remove()">✕</button></div>' +
+      '<div class="rm-b"><div class="rm-row"><label>所属工区</label><select id="asg-wa"><option value="">请选择工区</option>' + opts + '</select></div>' +
+      '<div class="rm-row"><label>点位</label><input value="' + siteId + '" readonly style="background:#f3f6fb;color:#5b6b82"></div></div>' +
+      '<div class="rm-f"><button class="btn ghost" onclick="this.closest(\'.rec-modal\').remove()">取消</button>' +
+      '<button class="btn" onclick="saveAssignWorkarea(\'' + siteId + '\',this)">保存并生效</button></div></div>';
+    document.body.appendChild(mask);
+    mask.addEventListener('click', function(e){ if (e.target === mask) mask.remove(); });
+  }
+  async function saveAssignWorkarea(siteId, btn){
+    const sel = document.getElementById('asg-wa');
+    if (!sel || !sel.value) return alert('请选择工区');
+    const site = (await refList('sites')).find(function(x){ return x.id === siteId; }) || { id: siteId };
+    site.workarea = sel.value;
+    site._operator = { id: 'ADM1', name: '治安管理员', role: '治安管理员' };
+    site._remark = 'PC 端归入工区';
+    try {
+      const res = await fetch(API_BASE + '/master/sites', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(site) }).then(function(r){ return r.json(); });
+      if (res.code !== 200) return alert('保存失败：' + res.msg);
+      REF_CACHE.sites = null; REF_CACHE.workareas = null;
+      const m = btn ? btn.closest('.rec-modal') : null; if (m) m.remove();
+      await loadWorkareas();
+      alert('已把点位 ' + siteId + ' 归入工区，服务端已留痕');
+    } catch (e) { alert('请求失败：' + e); }
+  }
+
+  /* ===== 删除主数据（服务端留痕） ===== */
+  async function delMaster(type, id, label){
+    if (type === 'workareas') {
+      const kids = (REF_CACHE.sites || []).filter(function(s){ return s.workarea === id; });
+      if (kids.length) return alert('该工区下还有 ' + kids.length + ' 个作业点位，请先把点位删除或改到其他工区后再删工区');
+    }
+    if (!confirm('确认删除「' + label + '」（' + id + '）？服务端会留痕，小程序 / 大屏同步消失。')) return;
+    try {
+      const res = await fetch(API_BASE + '/master/' + type + '/' + encodeURIComponent(id), { method: 'DELETE' }).then(function(r){ return r.json(); });
+      if (res.code !== 200) return alert('删除失败：' + res.msg);
+      REF_CACHE[type] = null;
+      if (type === 'persons') { await loadSub('m-persons'); }
+      if (type === 'sites' || type === 'workareas') { await loadWorkareas(); }
+      if (type === 'companies' || type === 'projects') { await loadSub('m-companies'); }
+      alert('已删除：' + label);
+    } catch (e) { alert('请求失败：' + e); }
+  }
+
+  /* ===== 公司 → 本公司从业人员（17 类岗位，可增删改查） ===== */
+  function gotoCompanyPersons(cid){
+    PERSON_COMPANY_FILTER = cid;
+    gotoPage('m-persons');
+    setTimeout(function(){
+      const bar = document.getElementById('personCompanyBar');
+      const co = (REF_CACHE.companies || []).find(function(x){ return x.id === cid; }) || {};
+      const list = (SUB_CACHE['m-persons'] || []).filter(function(x){ return (x.company || '') === cid; });
+      const roles = {};
+      list.forEach(function(x){ roles[x.role || '未填岗位'] = (roles[x.role || '未填岗位'] || 0) + 1; });
+      const roleTxt = Object.keys(roles).map(function(k){ return k + ' ' + roles[k]; }).join(' · ') || '暂无人员';
+      if (bar) {
+        bar.classList.add('on');
+        document.getElementById('pcbName').textContent = (co.name || cid) + '（' + cid + '）';
+        document.getElementById('pcbStat').textContent = '在册 ' + list.length + ' 人｜岗位分布：' + roleTxt;
+      }
+      const flt = document.getElementById('flt-m-persons'); if (flt) flt.value = '';
+    }, 500);
+  }
+  function clearCompanyFilter(){
+    PERSON_COMPANY_FILTER = '';
+    const bar = document.getElementById('personCompanyBar');
+    if (bar) bar.classList.remove('on');
+    loadSub('m-persons');
+  }
+
+  /* ===== 业务人员：本环节历史数据台账 ===== */
+  var BIZ_DATA = {};
+  var BIZ_LABEL = { outbounds:'出库', transports:'运输', blastings:'爆破', returns:'退库', verifies:'核验' };
+  async function loadBizLog(){
+    const tb = document.getElementById('tb-bizlog'); if (!tb) return;
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--sub);padding:20px">正在从服务端加载...</td></tr>';
+    try {
+      const res = await fetch(API_BASE + '/all').then(function(r){ return r.json(); });
+      BIZ_DATA = (res && res.data) || {};
+    } catch (e) { BIZ_DATA = {}; }
+    renderBizLog();
+  }
+  function bizTime(x){
+    return x.outTime || x.blastTime || x.submitTime || x.departTime || x.arriveTime || x.keeperConfirmTime ||
+      x.time || x.createdAt || x.createTime || x.occurTime || x.startTime || x.planStart || '';
+  }
+  function bizNo(x){ return x.no || x.outNo || x.retNo || x.docNo || x.id || '—'; }
+  function bizRel(x){
+    if (x.planNo) return x.planNo;
+    if (x.plan) return x.plan;
+    if (x.plans && x.plans.length) {
+      const names = x.plans.map(function(p){ return (p.planId || p.plan || '') + (p.site ? '/' + p.site : ''); });
+      return names.join(' · ');
+    }
+    if (x.site) return x.site;
+    if (x.outbound) return '出库 ' + x.outbound;
+    return '—';
+  }
+  function bizKey(x){
+    const items = x.items || x.used || x.outItems || x.planItems || x.inItems || [];
+    if (items.length) return items.length + ' 条明细';
+    if (x.qty != null) return x.qty + ' ' + (x.unit || '');
+    if (x.loss != null) return '盲炮/损耗 ' + x.loss;
+    return '—';
+  }
+  var BIZ_ST = { NORMAL_RETURN:'正常·已回库', NORMAL_NO_RETURN:'正常·未回库', BLIND:'盲炮待处理', PART:'部分回库' };
+  function bizStatus(x){
+    const v = x.status || x.result || x.effect || '—';
+    return BIZ_ST[v] || v;
+  }
+  function fmtBizTime(v){
+    if (!v) return '—';
+    const str = String(v);
+    if (/^\d{12,14}$/.test(str)) {
+      const d = new Date(Number(str));
+      const p2 = function(n){ return (n < 10 ? '0' : '') + n; };
+      return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
+    }
+    return str.length > 16 ? str.slice(0, 16).replace('T', ' ') : str;
+  }
+  function renderBizLog(){
+    const tb = document.getElementById('tb-bizlog'); if (!tb) return;
+    const type = ((document.getElementById('bizType') || {}).value) || '';
+    const q = (((document.getElementById('q-biz') || {}).value) || '').trim().toLowerCase();
+    const colls = type ? [type] : Object.keys(BIZ_LABEL);
+    let rows = [];
+    colls.forEach(function(c){
+      (BIZ_DATA[c] || []).forEach(function(x){ rows.push({ c: c, x: x }); });
+    });
+    if (q) rows = rows.filter(function(r){ return JSON.stringify(r.x).toLowerCase().indexOf(q) >= 0; });
+    rows.sort(function(a, b){ return String(bizTime(b.x)).localeCompare(String(bizTime(a.x))); });
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--sub);padding:20px">本环节暂无历史数据</td></tr>';
+    } else {
+      tb.innerHTML = rows.map(function(r){
+        const x = r.x;
+        const st = bizStatus(x);
+        return '<tr><td>' + (BIZ_LABEL[r.c] || r.c) + '</td><td><b>' + bizNo(x) + '</b></td><td style="color:var(--sub)">' + bizRel(x) + '</td><td>' +
+          fmtBizTime(bizTime(x)) + '</td><td>' + bizKey(x) + '</td><td><span class="tag ' + (/完成|签收|已|正常|通过|入库/.test(st) ? 'ok' : 'gray') + '">' + st + '</span></td></tr>';
+      }).join('');
+    }
+    const cnt = document.getElementById('cnt-biz');
+    if (cnt) cnt.textContent = '共 ' + rows.length + ' 条';
+  }
+
+
+  /* 启动即按「公安管理员」应用菜单权限（顶栏下拉可切换） */
+  try { applyRole('police'); } catch (e) { console.warn('applyRole init failed', e); }
 </script>
 </body>
 </html>

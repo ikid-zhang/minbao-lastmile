@@ -3,7 +3,7 @@
  * localStorage 持久化，可随时重置
  * ============================================================ */
 
-const DB_KEY = 'mb_lastmile_demo_v2';
+const DB_KEY = 'mb_lastmile_real_v1';
 
 /* ---------- 品种字典 ---------- */
 const GOODS = {
@@ -24,8 +24,16 @@ function tierOf(kg) {
   if (kg <= s.tierHigh) return { level: '工区警务室到场', unit: '工区警务室', cls: 'lv2' };
   return { level: '治安大队到场', unit: '治安大队', cls: 'lv3' };
 }
+/* 计划明细字段归一：技术员/PC 落库写 goodsType+planQty，出库/爆破用 goods+qty，统一成后者 */
+function normItem(it) {
+  return Object.assign({}, it, {
+    goods: it.goods || it.goodsType,
+    qty: it.qty !== undefined ? it.qty : (it.planQty !== undefined ? it.planQty : 0)
+  });
+}
+function normItems(items) { return (items || []).map(normItem); }
 function planKg(items) {
-  return (items || []).reduce((s, it) => s + (it.qty * (GOODS[it.goods] ? GOODS[it.goods].ratio : 1)), 0);
+  return normItems(items).reduce((s, it) => s + (it.qty * (GOODS[it.goods] ? GOODS[it.goods].ratio : 1)), 0);
 }
 
 /* ---------- 主数据 ---------- */
@@ -54,7 +62,9 @@ const MASTER = {
       stock: { zy: { '2号岩石乳化炸药': 2400, '膨化硝铵炸药': 800 }, lg: { '8#工业电雷管': 20000, '数码电子雷管': 6000 }, db: { '普通导爆索': 12000 } },
       safe: { zy: 500, lg: 5000, db: 2000 } },
     { id: 'S2', name: '青龙山使用库', type: '使用库', company: 'C1', addr: '青龙山工区 2 号便道旁', builtAt: '2024-11-02', area: 450, dailyUse: 260, keepers: ['P3'], fence: 150,
-      stock: { zy: { '2号岩石乳化炸药': 60 }, lg: { '8#工业电雷管': 400 }, db: {} }, safe: {} }
+      stock: { zy: { '2号岩石乳化炸药': 60 }, lg: { '8#工业电雷管': 400 }, db: {} }, safe: {} },
+    { id: 'S3', name: '青龙山中间库', type: '中间库', company: 'C1', addr: '青龙山工区 1 号便道（销售库与使用库之间）', builtAt: '2025-03-10', area: 220, dailyUse: 120, keepers: ['P4'], fence: 120,
+      stock: { zy: { '2号岩石乳化炸药': 0 }, lg: { '8#工业电雷管': 0 }, db: {} }, safe: {} }
   ],
   vehicles: [
     { id: 'V1', plate: '川L·10295', model: '厢式危险品运输车', load: 2000, company: 'C1', transLicence: '川交运许[2024]0118号', transGoods: '炸药、雷管', annualExpire: '2026-12-31', remark: '', status: '在用' },
@@ -111,183 +121,25 @@ function timeAgo(t) {
 const H = 3600000, MIN = 60000;
 
 /* ---------- 种子业务数据（相对当前时间生成）---------- */
+/* ---------- 初始业务数据（真实空状态，由实际业务操作生成）---------- */
 function seedDB() {
-  const now = Date.now();
-  const tm = new Date(now + 24 * H);
-  const tmStart = new Date(tm.getFullYear(), tm.getMonth(), tm.getDate(), 10, 0).getTime();
-  const tmEnd = tmStart + 3 * H;
-
-  const planA = {
-    id: 'PL1', planNo: 'BBJH20261101001', project: 'PR1', workarea: 'WA1', site: 'Z1',
-    planStart: now - 44 * H, planEnd: now - 41 * H,
-    items: [
-      { goods: 'zy', spec: '2号岩石乳化炸药', qty: 320 },
-      { goods: 'lg', spec: '8#工业电雷管', qty: 400 }
-    ],
-    officer: 'P3', supervisor: 'P2', applicant: 'P1',
-    createdAt: now - 51 * H, status: '已完成',
-    auditStatus: '通过', auditBy: 'POL1', auditTime: now - 50 * H,
-    outTime: now - 43 * H, departTime: now - 42.5 * H, arriveTime: now - 42 * H,
-    blastTime: now - 40.5 * H, returnConfirmTime: now - 38 * H, verifyTime: now - 35 * H,
-    tier: '抽查', exceptionFlag: false
-  };
-  const outA = {
-    id: 'OB1', outNo: 'BBCK20261101001', plan: 'PL1', storage: 'S1', keeper: 'P4',
-    items: [
-      { goods: 'zy', spec: '2号岩石乳化炸药', qty: 320, batch: 'ZY-2026-B120' },
-      { goods: 'lg', spec: '8#工业电雷管', qty: 400, batch: 'LG-2026-D087' }
-    ],
-    outTime: now - 43 * H, status: '已到达', signed: true, signTime: now - 43 * H,
-    signs: [{ by: 'P4', time: now - 43 * H }, { by: 'P9', time: now - 43 * H }]
-  };
-  const trA = {
-    id: 'TR1', no: 'BBYS20261101001', outbound: 'OB1', direction: 'GO', plan: 'PL1',
-    escort: 'P5', driver: 'D1', vehicle: 'V1',
-    route: { from: '城西销售库', to: '青龙山隧道进口作业点', via: 'G318 国道 → 青龙山专线' },
-    cps: [
-      { name: '青龙山专线入口', time: now - 42.3 * H, geo: 'N30.0212 E103.8534', photos: 1 },
-      { name: '隧道施工便道口', time: now - 42.1 * H, geo: 'N30.0245 E103.8601', photos: 1 }
-    ],
-    departTime: now - 42.5 * H, arriveTime: now - 42 * H, status: '已到达',
-    progress: 100, tracks: 6, suggestArrive: now - 42 * H, suggestSource: 'GEOFENCE'
-  };
-  const rcA = {
-    id: 'RC1', transport: 'TR1', plan: 'PL1', receiver: 'P3',
-    arriveTime: now - 42 * H, arriveSource: 'GEOFENCE', toStorage: null,
-    items: [
-      { goods: 'zy', spec: '2号岩石乳化炸药', sent: 320, got: 320, diff: 0 },
-      { goods: 'lg', spec: '8#工业电雷管', sent: 400, got: 400, diff: 0 }
-    ],
-    diffFlag: false, photos: 3, sign: true, time: now - 42 * H
-  };
-  const blA = {
-    id: 'BL1', plan: 'PL1', blastTime: now - 40.5 * H, method: '毫秒延时爆破', effect: '良好，块度均匀',
-    used: [
-      { goods: 'zy', spec: '2号岩石乳化炸药', qty: 268 },
-      { goods: 'lg', spec: '8#工业电雷管', qty: 400 }
-    ],
-    loss: [{ goods: 'zy', spec: '2号岩石乳化炸药', qty: 2 }],
-    result: 'NORMAL_RETURN', blind: false, submitTime: now - 40 * H, supervisor: 'P2'
-  };
-  const rtA = {
-    id: 'RT1', retNo: 'BBTK20261101001', outbound: 'OB1', plan: 'PL1',
-    items: [{ goods: 'zy', spec: '2号岩石乳化炸药', qty: 50, batch: 'ZY-2026-B120' }],
-    status: '已入库', keeper: 'P4', keeperConfirmTime: now - 38 * H,
-    transport: {
-      id: 'TR2', no: 'BBYS20261101002', direction: 'RETURN', plan: 'PL1',
-      escort: 'P5', driver: 'D1', vehicle: 'V1',
-      route: { from: '青龙山隧道进口作业点', to: '城西销售库', via: '青龙山专线 → G318 国道' },
-      departTime: now - 39 * H, arriveTime: now - 38.2 * H, status: '已到达', progress: 100, tracks: 5
-    },
-    submitTime: now - 40 * H, supervisor: 'P2'
-  };
-  const vfA = {
-    id: 'VF1', plan: 'PL1', police: 'POL1', time: now - 35 * H, conclusion: '通过',
-    items: { cert: true, cordon: true, onduty: true, camera: true, ledger: true }, remark: '六节点齐全，四量平衡，证据完整。'
-  };
-
-  const planB = {
-    id: 'PL2', planNo: 'BBJH20261103001', project: 'PR1', workarea: 'WA1', site: 'Z2',
-    planStart: now + 8 * H, planEnd: now + 11 * H,
-    items: [
-      { goods: 'zy', spec: '2号岩石乳化炸药', qty: 480 },
-      { goods: 'lg', spec: '8#工业电雷管', qty: 600 },
-      { goods: 'db', spec: '普通导爆索', qty: 800 }
-    ],
-    officer: 'P3', supervisor: 'P2', applicant: 'P1',
-    createdAt: now - 1.2 * H, status: '待审核',
-    auditStatus: '待审核', tier: '抽查', exceptionFlag: false,
-    remark: 'K4+020 段全断面开挖，请予审核。'
-  };
-
-  const planC = {
-    id: 'PL3', planNo: 'BBJH20261103002', project: 'PR2', workarea: 'WA2', site: 'Z3',
-    planStart: now + 2 * H, planEnd: now + 5 * H,
-    items: [
-      { goods: 'zy', spec: '膨化硝铵炸药', qty: 900 },
-      { goods: 'lg', spec: '8#工业电雷管', qty: 1200 }
-    ],
-    officer: 'P3', supervisor: 'P2', applicant: 'P1',
-    createdAt: now - 9 * H, status: '运输中',
-    auditStatus: '通过', auditBy: 'POL1', auditTime: now - 8.5 * H,
-    outTime: now - 1.5 * H, departTime: now - 40 * MIN,
-    tier: '工区警务室到场', exceptionFlag: false
-  };
-  const outC = {
-    id: 'OB2', outNo: 'BBCK20261103001', plan: 'PL3', storage: 'S1', keeper: 'P4',
-    items: [
-      { goods: 'zy', spec: '膨化硝铵炸药', qty: 900, batch: 'ZY-2026-B208' },
-      { goods: 'lg', spec: '8#工业电雷管', qty: 1200, batch: 'LG-2026-D092' }
-    ],
-    outTime: now - 1.5 * H, status: '运输中', signed: true, signTime: now - 1.4 * H,
-    signs: [{ by: 'P4', time: now - 1.5 * H }, { by: 'P9', time: now - 1.45 * H }]
-  };
-  const trC = {
-    id: 'TR3', no: 'BBYS20261103001', outbound: 'OB2', direction: 'GO', plan: 'PL3',
-    escort: 'P5', driver: 'D2', vehicle: 'V2',
-    route: { from: '城西销售库', to: '龙泉矿区 B2 台阶作业点', via: 'G318 国道 → 龙泉矿区道路' },
-    cps: [
-      { name: '龙泉矿区检查站', time: null, geo: null, photos: 0 },
-      { name: '矿区 B 区岔路口', time: null, geo: null, photos: 0 }
-    ],
-    departTime: now - 40 * MIN, status: '运输中', progress: 35, tracks: 4,
-    suggestArrive: null, suggestSource: null, arriveTime: null
-  };
-  const chkC = {
-    id: 'CK1', no: 'GAJC20261103001', bizType: '运输', bizId: 'PL3', plan: 'PL3',
-    level: '工区警务室到场', arriveUnit: '工区警务室', handler: null, bizNo: 'BBJH20261103002',
-    template: ['运输路线一致性', '人车证相符', '货箱封识完好', '停靠点合规'],
-    items: null, photos: 0, result: null, status: '待到场', sign: null, time: now - 30 * MIN,
-    auto: true
-  };
-
-  const planD = {
-    id: 'PL4', planNo: 'BBJH20261104001', project: 'PR1', workarea: 'WA1', site: 'Z1',
-    planStart: tmStart, planEnd: tmEnd,
-    items: [
-      { goods: 'zy', spec: '2号岩石乳化炸药', qty: 260 },
-      { goods: 'lg', spec: '数码电子雷管', qty: 300 }
-    ],
-    officer: 'P3', supervisor: 'P2', applicant: 'P7', surveyor: 'P7',
-    createdAt: now - 30 * MIN, status: '待监管签字', auditStatus: '',
-    tier: '抽查', exceptionFlag: false,
-    remark: '测量技术员现场测得 K3+500 段断面成型，按设计轮廓填报。'
-  };
-
-  const planE = {
-    id: 'PL5', planNo: 'BBJH20261104002', project: 'PR1', workarea: 'WA1', site: 'Z1',
-    planStart: now + 8 * H, planEnd: now + 10 * H,
-    items: [
-      { goods: 'zy', spec: '2号岩石乳化炸药', qty: 200 },
-      { goods: 'lg', spec: '8#工业电雷管', qty: 200 }
-    ],
-    officer: 'P3', supervisor: 'P2', applicant: 'P1',
-    createdAt: now - 2 * H, status: '待出库', auditStatus: '通过', auditBy: 'POL1', auditTime: now - 1.8 * H,
-    tier: '抽查', exceptionFlag: false,
-    remark: 'K3+300 段周边孔光面爆破，用量较小。'
-  };
-
   return {
-    v: 2, role: 'entry', policeId: 'POL2',
-    plans: [planA, planB, planC, planD, planE],
-    outbounds: [outA, outC],
-    transports: [trA, trC],
-    receives: [rcA],
-    blastings: [blA],
-    returns: [rtA],
-    verifies: [vfA],
-    checks: [chkC],
+    v: 3, role: 'entry', policeId: 'POL2',
+    plans: [],
+    outbounds: [],
+    transports: [],
+    receives: [],
+    blastings: [],
+    destroys: [],
+    returns: [],
+    verifies: [],
+    checks: [],
     exceptions: [],
     messages: [
-      { id: 'M1', to: '项目负责人', text: '计划 BBJH20261103001 已提交，等待民警审核。', time: now - 1.2 * H },
-      { id: 'M2', to: '民警', area: 'WA1', text: '【青龙山工区】新计划待审核：BBJH20261103001（青龙山隧道出口作业点，480kg）。', time: now - 1.2 * H },
-      { id: 'M3', to: '民警', area: 'WA1', text: '【青龙山工区】计划 BBJH20261103002 作业量 901kg，已自动生成"工区警务室到场"检查任务。', time: now - 8.5 * H },
-      { id: 'M4', to: '押运员', text: '出库单 BBCK20261103001 待签收。', time: now - 1.5 * H },
-      { id: 'M5', to: '测量技术员', text: '请填报明日作业计划（当日 24:00 前完成提交）。', time: now - 2 * H },
-      { id: 'M6', to: '安全监管', text: '计划 BBJH20261104001（青龙山隧道进口作业点）待安全监管签字。', time: now - 30 * MIN },
-      { id: 'M7', to: '库管员', text: '计划 BBJH20261104002 审核通过，可办理出库（可与同方向计划合并一车）。', time: now - 1.8 * H }
+      { id: 'M1', to: '测量技术员', text: '系统已初始化，请测量技术员开始填报次日作业任务。', time: Date.now() },
+      { id: 'M2', to: '全部', text: '民爆最后一公里全链路监管系统已上线运行。', time: Date.now() }
     ],
-    seq: { plan: 6, out: 3, tr: 4, rt: 2, ck: 2, m: 8, ex: 1, lg: 1, dh: 1 }
+    seq: { plan: 1, out: 1, tr: 1, rt: 1, ck: 1, m: 3, ex: 1, lg: 1, dh: 1 }
   };
 }
 
@@ -311,8 +163,26 @@ function loadDB() {
   } catch (e) { /* ignore */ }
   DB = seedDB(); saveDB();
 }
-function saveDB() { DB._stock = snapshotStock(); DB._master = JSON.parse(JSON.stringify(MASTER)); try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) {} }
-function resetDB() { Object.assign(MASTER, JSON.parse(JSON.stringify(MASTER0))); DB = seedDB(); applyStock(JSON.parse(JSON.stringify(STOCK0))); saveDB(); }
+function saveDB() {
+  DB._stock = snapshotStock();
+  DB._master = JSON.parse(JSON.stringify(MASTER));
+  /* 在线时以服务端数据库为唯一权威：本地不写缓存，所有写入走 /api/doc 接口逐条落库 */
+  if (window.IS_ONLINE !== true) {
+    try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) {}
+  }
+  if (typeof syncStocks === 'function') syncStocks();
+  window.__mbDirty = true;
+  if (typeof scheduleSync === 'function') scheduleSync(0);
+}
+function resetDB() {
+  Object.assign(MASTER, JSON.parse(JSON.stringify(MASTER0)));
+  DB = seedDB();
+  applyStock(JSON.parse(JSON.stringify(STOCK0)));
+  saveDB();
+  if (typeof httpReq === 'function') {
+    httpReq('/reset', 'POST');
+  }
+}
 
 /* ---------- 主数据审核（J09，治安管理员）---------- */
 function masterAuditList() {
@@ -396,6 +266,9 @@ const blastingByPlan = pid => DB.blastings.find(b => b.plan === pid) || null;
 const returnByPlan = pid => DB.returns.find(r => r.plan === pid) || null;
 const verifyByPlan = pid => DB.verifies.find(v => v.plan === pid) || null;
 const person = id => byId(MASTER.persons, id) || { name: id };
+/* 展示兜底：档案里没维护证书时不要显示 undefined */
+const certOf = p => (p && p.cert) ? p.cert : '证书未维护';
+const certExpireOf = p => (p && p.certExpire) ? p.certExpire : '未维护';
 const storage = id => byId(MASTER.storages, id) || { name: id };
 const vehicle = id => byId(MASTER.vehicles, id) || { plate: id };
 const driver = id => byId(MASTER.drivers, id) || { name: id };
@@ -403,6 +276,22 @@ const project = id => byId(MASTER.projects, id) || { name: id };
 const company = id => byId(MASTER.companies, id) || { name: id };
 const site = id => byId(MASTER.sites, id) || { name: id };
 const goodsName = g => GOODS[g] ? GOODS[g].name : g;
+
+/* ---------- 多点位计划：每个作业点独立报量 ---------- */
+/* 统一取点位明细，旧单点位计划自动补成 [{site, items}] */
+const planSites = p => {
+  if (!p) return [];
+  if (p.sitePlans && p.sitePlans.length) return p.sitePlans.map(x => ({ site: x.site, items: x.items || [] }));
+  return [{ site: p.site, items: p.items || [] }];
+};
+const planSiteCount = p => planSites(p).length;
+const planTotalItems = p => planSites(p).reduce((a, x) => a.concat(x.items), []);
+const planTotalKg = p => Math.round(planKg(p.items && p.items.length ? p.items : planTotalItems(p)));
+const sitePlanKg = sp => Math.round(planKg(sp.items || []));
+/* 项目负责人所辖项目 / 作业点 */
+const ownerProjects = ownerId => MASTER.projects.filter(pr => !pr.owner || pr.owner === ownerId);
+const ownerSites = ownerId => MASTER.sites.filter(s => (s.status || '生效') !== '停用' && ownerProjects(ownerId).some(pr => pr.id === s.project));
+const planInOwnerScope = (p, ownerId) => ownerSites(ownerId).some(s => planSites(p).some(x => x.site === s.id));
 /* ---------- 工区与责任民警 ---------- */
 const workarea = id => byId(MASTER.workareas, id) || { id: id || '-', name: '未划分工区', unit: '-', police: null };
 const curPoliceId = () => DB.policeId || 'POL2';
@@ -423,6 +312,23 @@ function nextNo(prefix, key) {
   return no;
 }
 function nextId(key) { DB.seq[key] = (DB.seq[key] || 1); return DB.seq[key]++; }
+/* 生成单据号时避开已存在 id：后端同步会把 seq 重置为初始值，直接自增会覆盖历史单据 */
+function safeNo(prefix, key, coll, field) {
+  const d = new Date();
+  const day = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  let n = DB.seq[key] || 1;
+  let no = '';
+  do { no = `${prefix}${day}${String(n).padStart(3, '0')}`; n++; }
+  while ((DB[coll] || []).some(x => x[field] === no));
+  DB.seq[key] = n;
+  return no;
+}
+function safeId(prefix, key, coll) {
+  let n = DB.seq[key] || 1;
+  while ((DB[coll] || []).some(x => x.id === prefix + n)) n++;
+  DB.seq[key] = n + 1;
+  return prefix + n;
+}
 
 /* ---------- 消息 ---------- */
 function pushMsg(to, text, area) {
@@ -433,7 +339,7 @@ function pushMsg(to, text, area) {
 const NODE_LABEL = { '计划': '计划上报', '出库': '出库', '运输': '押运运输', '到场': '到场接收', '爆破': '爆破作业', '退库': '退库/销毁', '核验': '民警核验', '检查': '公安检查' };
 function addLog(plan, node, action, who) {
   if (!DB.logs) DB.logs = [];
-  DB.logs.unshift({ id: 'LG' + nextId('lg'), plan: plan ? plan.id : null, planNo: plan ? plan.planNo : '-', node, action, who: who || '系统', time: Date.now() });
+  DB.logs.unshift({ id: safeId('LG', 'lg', 'logs'), plan: plan ? plan.id : null, planNo: plan ? plan.planNo : '-', node, action, who: who || '系统', time: Date.now() });
 }
 function planLogs(planId) { if (!DB.logs) DB.logs = []; return DB.logs.filter(l => l.plan === planId); }
 
@@ -455,7 +361,7 @@ function auditPlan(plan, pass, remark, police) {
    groups = [{plan, site, items}]：一单多点（同一趟押运可覆盖多个作业点），单点时仅一个分组 */
 function createOutbound(groups, keeperId) {
   const out = {
-    id: 'OB' + nextId('out'), outNo: nextNo('BBCK', 'out'), plan: groups[0].plan, storage: 'S1', keeper: keeperId,
+    id: safeId('OB', 'out', 'outbounds'), outNo: safeNo('BBCK', 'out', 'outbounds', 'outNo'), plan: groups[0].plan, storage: (planById(groups[0].plan) || {}).outStorage || 'S1', keeper: keeperId,
     plans: groups, items: groups.reduce((a, g) => a.concat(g.items), []),
     outTime: Date.now(), status: '待复核', signed: false,
     signs: [{ by: keeperId, time: Date.now() }]
@@ -468,23 +374,25 @@ function createOutbound(groups, keeperId) {
 function confirmOutbound(out, keeperId) {
   out.signs.push({ by: keeperId, time: Date.now() });
   out.status = '待签收'; out.effTime = Date.now();
-  // 复核生效后行锁扣减库存（销售库 S1）
-  const st = MASTER.storages.find(s => s.id === 'S1');
+  // 复核生效后行锁扣减库存（按实际出库库房：销售库 / 使用库 / 中间库）
+  const st = MASTER.storages.find(s => s.id === (out.storage || 'S1')) || MASTER.storages[0];
   out.items.forEach(it => { st.stock[it.goods][it.spec] -= it.qty; });
   outGroups(out).forEach(g => { const pl = planById(g.plan); pl.status = '待运输'; pl.outTime = out.effTime; });
   pushMsg('押运员', `出库单 ${out.outNo} 双人签名生效（${outGroups(out).length} 个卸货点 · ${Math.round(planKg(out.items))}kg），请扫码签收。`);
   outGroups(out).forEach(g => addLog(planById(g.plan), '出库', `复核库管员 ${person(keeperId).name} 签名确认，出库单生效（双人双锁），库存已扣减`, person(keeperId).name));
   return out;
 }
-function signTransport(out, escortId, driverId, vehicleId, via, cps, order) {
+function signTransport(out, escortId, driverId, vehicleId, via, cps, order, segs) {
   const groups = outGroups(out);
   const seq = (order && order.length) ? order : groups.map(g => g.plan);
   const stops = seq.map(pid => { const g = groups.find(x => x.plan === pid); return { plan: pid, site: g.site, arriveTime: null, done: false }; });
+  const segList = (segs || []).map(s => ({ idx: s.idx, route: s.rid || '', name: (s.rt && s.rt.name) || '', km: (s.rt && s.rt.km) || 0, plan: s.planNo || '', site: s.site }));
   const tr = {
-    id: 'TR' + nextId('tr'), no: nextNo('BBYS', 'tr'), outbound: out.id, direction: 'GO', plan: stops[0].plan,
+    id: safeId('TR', 'tr', 'transports'), no: safeNo('BBYS', 'tr', 'transports', 'no'), outbound: out.id, direction: 'GO', plan: stops[0].plan,
     plans: stops.map(s => s.plan), stops,
     escort: escortId, driver: driverId, vehicle: vehicleId,
-    route: { from: storage(out.storage).name, to: stops.map(s => site(s.site).name).join(' → '), via },
+    /* 路线与计划绑定：routeId 沿用计划路线，segs 记录多点卸货的逐段路线 */
+    route: { from: storage(out.storage).name, to: stops.map(s => site(s.site).name).join(' → '), via, segs: segList },
     cps: (cps || []).map(n => ({ name: n, time: null, geo: null, photos: 0 })),
     departTime: null, arriveTime: null, status: '待发车', progress: 0, tracks: 0, suggestArrive: null, suggestSource: null
   };
@@ -526,7 +434,7 @@ function receiveConfirm(tr, gotItems, arriveTime, arriveSource, toStorage, photo
   const plan = planById(pid);
   const out = outboundById(tr.outbound);
   const rc = {
-    id: 'RC' + nextId('tr'), transport: tr.id, plan: pid, receiver: receiverId,
+    id: safeId('RC', 'tr', 'receives'), transport: tr.id, plan: pid, receiver: receiverId,
     arriveTime, arriveSource, toStorage: toStorage || null,
     items: gotItems, diffFlag, photos, sign: true, time: Date.now()
   };
@@ -561,7 +469,7 @@ function receiveConfirm(tr, gotItems, arriveTime, arriveSource, toStorage, photo
   return rc;
 }
 function submitBlasting(plan, data) {
-  const bl = Object.assign({ id: 'BL' + nextId('tr'), plan: plan.id, submitTime: Date.now() }, data);
+  const bl = Object.assign({ id: safeId('BL', 'tr', 'blastings'), plan: plan.id, submitTime: Date.now() }, data);
   DB.blastings.push(bl);
   plan.status = data.result === 'NORMAL_RETURN' ? '待退库' : '待核验';
   plan.blastTime = data.blastTime;
@@ -573,24 +481,48 @@ function submitBlasting(plan, data) {
   }
   return bl;
 }
+
+/* ---------- 退库去向（按出库库房类型判定）----------
+ * 使用库出库：必须原路、原库退回（不可销毁、不可退销售库）
+ * 销售库出库：① 销毁 ② 退回中间库（中间库类似使用库，由库管员入库）
+ */
+function returnRoute(plan) {
+  const out = outboundByPlan(plan.id);
+  const src = (out && MASTER.storages.find(s => s.id === out.storage)) ||
+    MASTER.storages.find(s => s.id === 'S1') || { id: 'S1', name: '城西销售库', type: '销售库' };
+  const isUse = src.type === '使用库';
+  const mid = MASTER.storages.find(s => s.type === '中间库') || { id: 'S3', name: '青龙山中间库', type: '中间库' };
+  const target = isUse ? src : mid;
+  return {
+    src, isUse, target,
+    canDestroy: !isUse,
+    targetId: target.id, targetName: target.name,
+    tip: isUse
+      ? `本批物品从「${src.name}」（使用库）出库，未用完必须原路、原库退回，不可销毁、不可退往销售库或其他库房。`
+      : `本批物品从「${src.name}」（销售库）出库，未用完有两种处置：① 现场销毁登记；② 退回「${mid.name}」（中间库，由库管员入库）。`
+  };
+}
+
 function createReturn(plan, items, supervisorId) {
   const out = outboundByPlan(plan.id);
+  const rr = returnRoute(plan);
   const rt = {
-    id: 'RT' + nextId('rt'), retNo: nextNo('BBTK', 'rt'), outbound: out.id, plan: plan.id,
+    id: safeId('RT', 'rt', 'returns'), retNo: safeNo('BBTK', 'rt', 'returns', 'retNo'), outbound: out ? out.id : null, plan: plan.id,
     items, status: '待押送', keeper: null, keeperConfirmTime: null, transport: null,
+    origin: rr.src.id, target: rr.targetId, targetName: rr.targetName, useStorage: rr.isUse,
     submitTime: Date.now(), supervisor: supervisorId
   };
   DB.returns.push(rt);
   plan.status = '待退库';
-  pushMsg('押运员', `退库单 ${rt.retNo} 已生成，请扫码确认后退库物品反向押送回库。`);
-  addLog(plan, '退库', `退库单 ${rt.retNo} 生成（${items.map(i => goodsName(i.goods) + ' ' + i.qty + GOODS[i.goods].unit).join('、')}），原押运路线反向回库`, person(supervisorId).name);
+  pushMsg('押运员', `退库单 ${rt.retNo} 已生成（${rr.isUse ? '原路退回原库' : '退回中间库'}：${rr.targetName}），请扫码确认后反向押送。`);
+  addLog(plan, '退库', `退库单 ${rt.retNo} 生成（${items.map(i => goodsName(i.goods) + ' ' + i.qty + GOODS[i.goods].unit).join('、')}），${rr.isUse ? '原路原库退回 ' + rr.targetName : '退回中间库 ' + rr.targetName}`, person(supervisorId).name);
   return rt;
 }
 /* 销毁：销售库出来未用完的爆炸物两条处置路线之一（另一条为退库） */
 function createDestroy(plan, items, reason, photos, supervisorId) {
   if (!DB.destroys) DB.destroys = [];
   const dh = {
-    id: 'DH' + nextId('dh'), no: nextNo('BBXH', 'dh'), plan: plan.id,
+    id: safeId('DH', 'dh', 'destroys'), no: safeNo('BBXH', 'dh', 'destroys', 'no'), plan: plan.id,
     items, reason, photos, supervisor: supervisorId, time: Date.now(), status: '已销毁'
   };
   DB.destroys.push(dh);
@@ -603,9 +535,9 @@ function createDestroy(plan, items, reason, photos, supervisorId) {
 function departReturn(rt, escortId, driverId, vehicleId) {
   const plan = planById(rt.plan);
   const tr = {
-    id: 'TR' + nextId('tr'), no: nextNo('BBYS', 'tr'), outbound: rt.outbound, direction: 'RETURN', plan: plan.id, ret: rt.id,
+    id: safeId('TR', 'tr', 'transports'), no: safeNo('BBYS', 'tr', 'transports', 'no'), outbound: rt.outbound, direction: 'RETURN', plan: plan.id, ret: rt.id,
     escort: escortId, driver: driverId, vehicle: vehicleId,
-    route: { from: site(plan.site).name, to: '城西销售库', via: '原路返回（青龙山专线 → G318 国道）' },
+    route: { from: site(plan.site).name, to: (rt.targetName || '城西销售库'), via: rt.useStorage ? '原路返回（同一路线反向）' : '青龙山专线 → 中间库专用便道' },
     departTime: null, arriveTime: null, status: '待发车', progress: 0, tracks: 0
   };
   DB.transports.push(tr);
@@ -618,19 +550,24 @@ function arriveReturn(rt) {
   const tr = transportById(rt.transport);
   tr.status = '已到达'; tr.arriveTime = Date.now(); tr.progress = 100;
   rt.status = '待入库确认';
-  pushMsg('库管员', `退库单 ${rt.retNo} 已到库，请按批次核销入库。`);
+  const targetNm = rt.targetName || storage(rt.target || 'S1').name;
+  pushMsg('库管员', `退库单 ${rt.retNo} 已到达「${targetNm}」，请拍照核实后核销入库。`);
+  pushMsg('安全监理', `退库单 ${rt.retNo} 已到达「${targetNm}」，等待库管员拍照核销入库。`);
   addLog(planById(rt.plan), '退库', '退库物品到库，待库管员核销', '系统');
 }
-function confirmReturn(rt, keeperId) {
-  const st = MASTER.storages.find(s => s.id === 'S1');
+function confirmReturn(rt, keeperId, photos) {
+  const st = MASTER.storages.find(s => s.id === (rt.target || 'S1')) || MASTER.storages[0];
+  rt.inPhotos = photos || 0;
+  rt.inPhotoTime = photos ? Date.now() : rt.inPhotoTime;
   rt.items.forEach(it => { if (!st.stock[it.goods]) st.stock[it.goods] = {}; st.stock[it.goods][it.spec] = (st.stock[it.goods][it.spec] || 0) + it.qty; });
   rt.status = '已入库'; rt.keeper = keeperId; rt.keeperConfirmTime = Date.now();
   const plan = planById(rt.plan);
   plan.status = '待核验'; plan.returnConfirmTime = rt.keeperConfirmTime;
-  addLog(plan, '退库', `退库核销入库完成，库存回加`, person(keeperId).name);
+  addLog(plan, '退库', `退库核销入库完成，库存回加至「${st.name}」（${st.type}）+${rt.items.map(i => goodsName(i.goods) + i.qty + GOODS[i.goods].unit).join('、')}${photos ? '，入库照片 ' + photos + ' 张' : ''}`, person(keeperId).name);
+  pushMsg('民警', `退库单 ${rt.retNo} 已入库「${st.name}」，请核验。`);
 }
 function submitVerify(plan, items, conclusion, remark, policeId) {
-  const vf = { id: 'VF' + nextId('tr'), plan: plan.id, police: policeId, time: Date.now(), conclusion, items, remark: remark || '' };
+  const vf = { id: safeId('VF', 'tr', 'verifies'), plan: plan.id, police: policeId, time: Date.now(), conclusion, items, remark: remark || '' };
   DB.verifies.push(vf);
   plan.status = conclusion === '通过' ? '已完成' : '责令整改';
   plan.verifyTime = vf.time;
@@ -642,7 +579,7 @@ function createCheck(plan, bizType, items, photos, result, remark, policeId) {
   const kg = Math.round(planKg(plan.items));
   const tier = tierOf(kg);
   const ck = {
-    id: 'CK' + nextId('ck'), no: nextNo('GAJC', 'ck'), bizType, bizId: plan.id, plan: plan.id, bizNo: plan.planNo,
+    id: safeId('CK', 'ck', 'checks'), no: safeNo('GAJC', 'ck', 'checks', 'no'), bizType, bizId: plan.id, plan: plan.id, bizNo: plan.planNo,
     level: tier.level, arriveUnit: tier.unit, handler: policeId,
     template: TEMPLATES[bizType] || [], items, photos, result, remark: remark || '',
     status: result ? '已完成' : '检查中', sign: null, time: Date.now(), auto: false
@@ -663,10 +600,10 @@ function supervisorSignPlan(planId) {
 /* ---------- 检查项模板（K02 自定义）---------- */
 const TEMPLATES = {
   '计划': ['作业点与批复位置一致', '提前 6 小时填报', '安全员/监理在册', '爆破设计书附件齐全'],
-  '出库': ['出库联单齐全', '双人双锁执行', '批次登记与台账一致', '库存扣减准确'],
-  '运输': ['运输路线一致性', '人车证相符', '货箱封识完好', '停靠点合规'],
+  '出库': ['出库单与系统上报一致（炸药出库量 kg · 雷管出库量 发 · 导爆索出库量 m）', '双人双锁执行', '批次登记与台账一致', '库存扣减准确'],
+  '运输': ['驾驶员、押运员、运输车辆与系统一致', '车辆运输许可证与实际车辆一致', '运输证一致（路线 · 运输物品 · 运输量）', '车辆荷载量未超重'],
   '到场': ['到达时间与围栏判定相符', '数量核对无差异', '警戒区设置合规', '物品堆码合规'],
-  '爆破': ['警戒距离达标', '起爆前清场确认', '盲炮处置规范', '四量平衡'],
+  '爆破': ['三大员在岗', '安全监理在岗', '爆破点实际用药量与计划一致', '警戒距离达标', '盲炮处置规范'],
   '核验': ['证照齐全', '警戒设置', '人员在岗', '台账一致']
 };
 
