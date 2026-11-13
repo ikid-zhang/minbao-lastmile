@@ -57,6 +57,8 @@
   .up{color:var(--ok)}.dn{color:var(--bad)}
   .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:16px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card:has(> table.tb){overflow-x:auto}
+  table.tb{min-width:100%}
   .card h4{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:-.01em;margin-bottom:10px}
   .card h4 a{float:right;font-size:12px;color:var(--red);text-decoration:none;font-weight:400}
   /* 表格 */
@@ -212,7 +214,9 @@
   .inp,select{background:#fcfcfd;border:1px solid #dcdbd5;border-radius:8px;color:#000}
   .inp:hover,select:hover{border-color:#1e40af}
   .inp:focus,select:focus{border-color:#1e40af;box-shadow:0 0 0 2px rgba(30,64,175,.12)}
-  .tb th{background:#f2f1ec;color:#414141;border-bottom:1px solid #dcdbd5;font-weight:500}
+  .tb th{background:#f2f1ec;color:#414141;border-bottom:1px solid #dcdbd5;font-weight:500;white-space:nowrap}
+  .tb td{white-space:nowrap}
+  .tb td.wrap{white-space:normal}
   .tb td{border-bottom:1px solid #dcdbd5}
   .tb tr:hover td{background:#f7f6f0}
   .tb tr.qrow:hover td{background:#f7f6f0}
@@ -351,7 +355,7 @@
           <input class="inp" id="masterSearchInp" onkeyup="filterMasterTable()" placeholder="搜索名称 / 证号 / 车牌">
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
+          <table class="tb" style="table-layout:fixed">
             <thead><tr><th>类型</th><th>名称 / 编号</th><th>关键信息</th><th>来源</th><th>状态</th><th>最近维护</th><th>操作</th></tr></thead>
             <tbody id="masterTbody">
               <tr><td colspan="7" style="text-align:center;color:var(--sub);padding:20px">正在从服务端加载主数据...</td></tr>
@@ -608,7 +612,7 @@
         </div>
         <div class="card" style="padding:6px 12px 12px">
           <table class="tb">
-            <thead><tr><th>编号</th><th>公司名称</th><th>注册地址</th><th>法定代表人</th><th>从业人员</th><th>许可证号</th><th>许可证有效期</th><th>已关联</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:52px">编号</th><th style="width:172px;white-space:nowrap">公司名称</th><th style="width:176px">注册地址</th><th style="width:84px;white-space:nowrap">法定代表人</th><th style="width:106px;white-space:nowrap">从业人员</th><th style="width:152px;white-space:nowrap">许可证号</th><th style="width:106px;white-space:nowrap">许可证有效期</th><th style="width:140px">已关联</th><th style="width:62px">状态</th><th style="width:120px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="tb-companies"><tr><td colspan="10" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
@@ -1438,11 +1442,11 @@
         const prs = (REF_CACHE.projects || []).filter(p => p.company === x.id).length;
         const ps = (REF_CACHE.persons || []).filter(p => p.company === x.id).length;
         const vs = (REF_CACHE.vehicles || []).filter(v => v.company === x.id).length;
-        return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (x.addr || '-') + '</td><td>' + (x.legal || '-') +
+        return row('<td>' + x.id + '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b>' + (x.name || '') + '</b></td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.addr || '') + '">' + (x.addr || '-') + '</td><td style="white-space:nowrap">' + (x.legal || '-') +
           '</td><td><a class="op" style="font-size:13px" onclick="gotoCompanyPersons(\'' + x.id + '\')" title="查看本公司从业人员（点击进入人员列表）">' + ps + ' 人</a>' +
-          (Number(x.staff) ? '<br><span style="color:var(--sub);font-size:12px">备案 ' + x.staff + ' 人</span>' : '') +
-          '</td><td>' + (x.licence || '-') + '<br><span style="color:var(--sub);font-size:12px">有效期 ' + (x.licenceExpire || '-') + '</span>' +
-          '</td><td style="font-size:12px;color:var(--sub)">项目 ' + prs + ' · 人员 ' + ps + ' · 车辆 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
+          (Number(x.staff) ? '<br><span style="color:var(--sub);font-size:12px;white-space:nowrap">备案 ' + x.staff + ' 人</span>' : '') +
+          '</td><td style="white-space:nowrap">' + (x.licence || '-') + '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">' + (x.licenceExpire || '-') + '</td>' +
+          '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">项目 ' + prs + ' · 人员 ' + ps + ' · 车辆 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
           '<td class="op"><a onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">停用/恢复</a></td>');
       }).join('');
     } else if (type === 'sites') {
