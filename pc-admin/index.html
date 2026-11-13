@@ -265,6 +265,7 @@
       <div class="ni on" data-p="work"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></span>工作台</div>
       <div class="ni" data-p="master"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h6l2 2h8v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 7V5.5a1 1 0 0 1 1-1h4l1.5 2"/></svg></span>主数据管理</div>
       <div class="ni" data-p="m-companies"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V8l6-4v4l6-4v16"/><path d="M2 20h20"/><path d="M8 12h1M8 16h1M15 12h1M15 16h1"/></svg></span>民爆公司维护</div>
+      <div class="ni" data-p="m-projects"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h6l1.6 2H20v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M8 11h8M8 15h5"/></svg></span>项目维护</div>
       <div class="ni" data-p="m-workareas"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V7l8-3 8 3v13"/><path d="M2 20h20"/><path d="M9 20v-6h6v6"/><circle cx="12" cy="9.5" r="1.4"/></svg></span>工区维护</div>
       <div class="ni" data-p="bizlog"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 0 2 2H7a2 2 0 0 1-2-2z"/><path d="M9 8h7M9 12h7M9 16h4"/></svg></span>我的业务台账</div>
       <div class="ni" data-p="m-routes"><span class="em" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M8 17h6a4 4 0 0 0 0-8H8"/></svg></span>路线维护</div>
@@ -336,19 +337,19 @@
 
       <!-- L02 主数据管理 -->
       <section class="page" id="p-master">
-        <h2 class="pg">主数据管理（8 类）</h2>
-        <div class="desc">民爆公司 / 点位 / 库房 / 四大员 / 项目备案 / 项目负责人 / 车辆 / 路线 —— 八类主数据统一由治安管理员在此维护（Q11 已确认），支持与其他系统对接接收数据；字段对照《民爆管理表单.et》</div>
+        <h2 class="pg">主数据管理（9 类）</h2>
+        <div class="desc">民爆公司 / 项目 / 工区 / 点位 / 库房 / 四大员 / 车辆 / 路线 / 项目负责人 —— 九类主数据统一由治安管理员在此维护（Q11 已确认），支持与其他系统对接接收数据；字段对照《民爆管理表单.et》</div>
         <div class="tools">
           <button class="btn" onclick="openAddMasterModal()">＋ 新增主数据</button>
           <button class="btn ghost" onclick="alert('支持导出 CSV / Excel 模版')">导出 Excel</button>
           <span class="sp"></span>
           <select id="masterFilterType" onchange="loadMasterData()">
-            <option value="all">全部类型（8 类）</option>
+            <option value="all">全部类型（9 类）</option>
             <option value="companies">民爆公司</option>
             <option value="sites">作业点位</option>
             <option value="storages">库房</option>
             <option value="persons">从业人员(四大员/负责人)</option>
-            <option value="projects">项目备案</option>
+            <option value="projects">项目</option>
             <option value="vehicles">车辆(自录)</option>
             <option value="routes">路线(自录)</option>
           </select>
@@ -617,6 +618,22 @@
           </table>
         </div>
       </section>
+      <section class="page" id="p-m-projects">
+        <h2 class="pg">项目维护</h2>
+        <div class="desc">项目是工区与作业点位的上级：一个项目下可挂多个工区，工区下再挂作业点位。项目须绑定民爆公司与许可证，停用后不再出现在工区、点位与车辆的可选项目里。</div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-projects')">＋ 新增项目</button>
+          <input class="inp" id="q-m-projects" onkeyup="filterRec('m-projects')" placeholder="搜索项目名称 / 编号 / 作业区域">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-m-projects"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb" style="table-layout:fixed">
+            <thead><tr><th style="width:66px">编号</th><th style="width:180px;white-space:nowrap">项目名称</th><th style="width:170px">所属公司</th><th style="width:120px;white-space:nowrap">工区 / 点位</th><th style="width:196px">作业区域</th><th style="width:88px;white-space:nowrap">类型</th><th style="width:176px;white-space:nowrap">有效期</th><th style="width:52px">状态</th><th style="width:96px;white-space:nowrap">操作</th></tr></thead>
+            <tbody id="tb-projects"><tr><td colspan="9" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
       <section class="page" id="p-m-workareas">
         <h2 class="pg">工区维护（工区 / 作业点位）</h2>
         <div class="desc">工区是作业点位的上级：每个工区下可挂多个作业点位。点位是计划填报、押运到达判定、分级检查的最小作业单元。新增点位时须选择所属工区，未归属的点位单独列在页尾。</div>
@@ -813,12 +830,12 @@
   })();
   const names = {work:'工作台', master:'主数据管理', audit:'主数据审核', check:'检查配置',
     stat:'监管统计报表', archive:'一作业点一档', sys:'系统管理', log:'日志与大屏配置', clarify:'需求澄清跟踪',
-    'm-companies':'民爆公司维护', 'm-sites':'作业点位维护', 'm-workareas':'工区维护', 'bizlog':'我的业务台账', 'm-routes':'路线维护', 'm-storages':'库房维护', 'm-persons':'四大员维护', 'm-vehicles':'运输车辆维护'};
+    'm-companies':'民爆公司维护', 'm-projects':'项目维护', 'm-sites':'作业点位维护', 'm-workareas':'工区维护', 'bizlog':'我的业务台账', 'm-routes':'路线维护', 'm-storages':'库房维护', 'm-persons':'四大员维护', 'm-vehicles':'运输车辆维护'};
   /* ===== 三类权限：公安管理员（公安特有菜单 + 业务管理员全部菜单）/ 业务管理员（基础数据维护）/ 业务人员（本环节历史数据） ===== */
   var PERSON_FILT = { company: '', storage: '' };
   const ROLE_MENU = {
     police: null,                       /* null = 全部菜单可见（含公安特有） */
-    biz: ['work','master','m-workareas','m-companies','m-routes','m-storages','m-vehicles','m-persons'],
+    biz: ['work','master','m-projects','m-workareas','m-companies','m-routes','m-storages','m-vehicles','m-persons'],
     staff: ['work','bizlog']
   };
   const ROLE_META = {
@@ -1294,6 +1311,20 @@
         { k: 'status', t: '状态', sel: ['生效', '停用'] }
       ]
     },
+    'm-projects': {
+      type: 'projects', table: 'tb-projects', label: '项目',
+      fields: [
+        { k: 'id', t: '项目编号', ph: '留空自动生成，如 PR3' },
+        { k: 'name', t: '项目名称', req: 1, ph: '如 青龙山隧道爆破项目' },
+        { k: 'company', t: '所属民爆公司', ref: 'companies', req: 1 },
+        { k: 'workarea', t: '主工区', ref: 'workareas', ph: '选填，可后续在工区维护里挂多个工区' },
+        { k: 'area', t: '作业区域', ph: '如 青龙山工区 K3+200 ~ K5+800' },
+        { k: 'type', t: '作业类型', sel: ['隧道开挖', '露天台阶', '拆除爆破', '其他'] },
+        { k: 'valid', t: '有效期', ph: '2026-03-01 ~ 2027-02-28' },
+        { k: 'head', t: '项目负责人', ref: 'persons', ph: '选填' },
+        { k: 'status', t: '状态', sel: ['生效', '停用'] }
+      ]
+    },
     'm-workareas': {
       type: 'workareas', table: 'tb-workareas', label: '工区',
       fields: [
@@ -1437,7 +1468,21 @@
     const row = (cells) => '<tr>' + cells + '</tr>';
     const op = (id) => '<td class="op"><a onclick="openRecForm(\'' + subKey + '\',\'' + id + '\')">编辑</a> · <a onclick="toggleRec(\'' + subKey + '\',\'' + id + '\')">停用/恢复</a></td>';
 
-    if (type === 'companies') {
+    if (type === 'projects') {
+      tb.innerHTML = list.map(x => {
+        const co = (REF_CACHE.companies || []).find(function(c){ return c.id === x.company; }) || {};
+        const wc = (REF_CACHE.workareas || []).filter(function(w){ return w.project === x.id; }).length;
+        const sc = (REF_CACHE.sites || []).filter(function(s){ return s.project === x.id; }).length;
+        return row('<td>' + x.id + '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.name || '') + '"><b>' + (x.name || '') + '</b></td>' +
+          '<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (co.name || '') + '">' + (co.name || x.company || '-') + '</td>' +
+          '<td style="white-space:nowrap"><a class="op" onclick="gotoProjectItems(\'' + x.id + '\')" title="查看该项目下的工区与作业点位">工区 ' + wc + ' · 点位 ' + sc + '</a></td>' +
+          '<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.area || '') + '">' + (x.area || '-') + '</td>' +
+          '<td style="white-space:nowrap">' + (x.type || '-') + '</td>' +
+          '<td style="font-size:12px;color:var(--sub);white-space:nowrap">' + (x.valid || '-') + '</td>' +
+          '<td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
+          '<td class="op"><a onclick="openRecForm(\'m-projects\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-projects\',\'' + x.id + '\')">' + (x.status === '停用' ? '恢复' : '停用') + '</a></td>');
+      }).join('');
+    } else if (type === 'companies') {
       tb.innerHTML = list.map(x => {
         const prs = (REF_CACHE.projects || []).filter(p => p.company === x.id).length;
         const ps = (REF_CACHE.persons || []).filter(p => p.company === x.id).length;
@@ -1447,8 +1492,7 @@
           (Number(x.staff) ? '<br><span style="color:var(--sub);font-size:12px;white-space:nowrap">备案 ' + x.staff +
             (ps > Number(x.staff) ? ' · <span style="color:var(--bad);font-weight:600">超编 ' + (ps - Number(x.staff)) + '</span>'
                                   : ' · 未建档 ' + (Number(x.staff) - ps)) + '</span>' : '') +
-          '</td><td style="white-space:nowrap">' + (x.licence || '-') + '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">' + (x.licenceExpire || '-') + '</td>' +
-          '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">项目 ' + prs + ' · 人 ' + ps + ' · 车 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
+          '</td><td style="white-space:nowrap">' + (x.licence || '-') + '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">' + (x.licenceExpire || '-') + '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">项目 ' + prs + ' · 人 ' + ps + ' · 车 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
           '<td class="op"><a onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">' + (x.status === '生效' ? '停用' : '恢复') + '</a></td>');
       }).join('');
     } else if (type === 'sites') {
@@ -1626,7 +1670,7 @@
       mask.remove();
       REF_CACHE[cfg.type] = null;
       await loadSub(subKey);
-      if (subKey === 'm-workareas' || subKey === 'm-sites') await loadWorkareas();
+      if (subKey === 'm-workareas' || subKey === 'm-sites' || subKey === 'm-projects') await loadWorkareas();
       let okMsg = (id ? '已更新' : '已新增') + cfg.label + '，已写入服务端并留痕（小程序端即时可见）';
       if (subKey === 'm-persons') okMsg += staffOverflowMsg(body.company);
       alert(okMsg);
@@ -1777,7 +1821,8 @@
       REF_CACHE[type] = null;
       if (type === 'persons') { await loadSub('m-persons'); }
       if (type === 'sites' || type === 'workareas') { await loadWorkareas(); }
-      if (type === 'companies' || type === 'projects') { await loadSub('m-companies'); }
+      if (type === 'projects') { await loadSub('m-projects'); await loadWorkareas(); }
+      if (type === 'companies') { await loadSub('m-companies'); }
       alert('已删除：' + label);
     } catch (e) { alert('请求失败：' + e); }
   }
@@ -1841,6 +1886,16 @@
   }
 
   /* 公司 → 本公司从业人员 */
+  /* 项目维护：点工区/点位数跳到工区维护，并按项目名过滤 */
+  function gotoProjectItems(pid){
+    const pr = (SUB_CACHE['m-projects'] || []).find(function(x){ return x.id === pid; }) || {};
+    gotoPage('m-workareas');
+    setTimeout(function(){
+      const el = document.getElementById('q-wa');
+      if (el && pr.name) { el.value = pr.name; if (typeof renderWorkareas === 'function') renderWorkareas(); }
+    }, 260);
+  }
+
   function gotoCompanyPersons(cid){
     PERSON_FILT.company = cid;
     PERSON_FILT.storage = '';
