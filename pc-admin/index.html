@@ -190,6 +190,7 @@
     box-shadow: 0 0 0 2px rgba(37, 99, 235, .12);
   }
 </style>
+<script src="demo-data.js"></script>
 </head>
 <body>
 <div class="app">
@@ -713,6 +714,25 @@
   </div>
 </aside>
 <script>
+  /* ===== GitHub Pages 静态演示（只读）：仅 github.io 生效，本地/内网后端不受影响 ===== */
+  (function(){
+    if (!/\.github\.io$/.test(location.hostname)) return;
+    const toJSON = function(obj){ return Promise.resolve(new Response(JSON.stringify(obj), { status: 200, headers: { 'Content-Type': 'application/json' } })); };
+    const method = function(opt){ return (opt && opt.method ? String(opt.method) : 'GET').toUpperCase(); };
+    const demo = function(){ return window.__PC_DEMO__ || {}; };
+    window.fetch = function(url, opt){
+      const u = String(url), m = method(opt);
+      if (m !== 'GET') return toJSON({ code: 403, msg: '当前是 GitHub Pages 静态演示（只读）：写操作请在本机启动后端（cd server && node --experimental-sqlite server.js）后访问 localhost:8080' });
+      if (u.indexOf('/api/all') >= 0) return toJSON({ code: 200, data: demo() });
+      if (u.indexOf('/api/health') >= 0) return toJSON({ code: 200, msg: 'static demo' });
+      if (u.indexOf('/api/master/') >= 0) {
+        const t = u.split('/api/master/')[1].split('?')[0].split('/')[0];
+        return toJSON({ code: 200, data: demo()[t] || [] });
+      }
+      if (u.indexOf('/api/qr') >= 0) return toJSON({ code: 404, msg: '静态演示不生成二维码' });
+      return toJSON({ code: 200, data: {} });
+    };
+  })();
   const names = {work:'工作台', master:'主数据管理（L02）', audit:'主数据审核（L03）', check:'检查配置（L04）',
     stat:'监管统计报表（L05）', archive:'一作业点一档（L06）', sys:'系统管理（L07）', log:'日志与大屏配置（L08）', clarify:'需求澄清跟踪（Q01–Q24）',
     'm-companies':'民爆公司维护（L02·公司）', 'm-sites':'作业点位维护（L02·点位）', 'm-workareas':'工区维护（L02·工区/点位）', 'bizlog':'我的业务台账（历史数据）', 'm-routes':'路线维护（L02·路线）', 'm-storages':'库房维护（L02·库房）', 'm-persons':'四大员维护（L02·人员）', 'm-vehicles':'运输车辆维护（L02·车辆）'};
