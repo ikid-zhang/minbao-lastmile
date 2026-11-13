@@ -620,7 +620,7 @@
       </section>
       <section class="page" id="p-m-projects">
         <h2 class="pg">项目维护</h2>
-        <div class="desc">项目是工区与作业点位的上级：一个项目下可挂多个工区，工区下再挂作业点位。项目须绑定民爆公司与许可证，停用后不再出现在工区、点位与车辆的可选项目里。</div>
+        <div class="desc">项目是工区与作业点位的上级：一个项目下可挂多个工区，工区下再挂作业点位。「工区 / 点位」列是该项目下已挂的真实数量与名称，口径与「工区维护」一致，点开可跳过去维护。</div>
         <div class="tools">
           <button class="btn" onclick="openRecForm('m-projects')">＋ 新增项目</button>
           <input class="inp" id="q-m-projects" onkeyup="filterRec('m-projects')" placeholder="搜索项目名称 / 编号 / 作业区域">
@@ -1317,7 +1317,6 @@
         { k: 'id', t: '项目编号', ph: '留空自动生成，如 PR3' },
         { k: 'name', t: '项目名称', req: 1, ph: '如 青龙山隧道爆破项目' },
         { k: 'company', t: '所属民爆公司', ref: 'companies', req: 1 },
-        { k: 'workarea', t: '主工区', ref: 'workareas', ph: '选填，可后续在工区维护里挂多个工区' },
         { k: 'area', t: '作业区域', ph: '如 青龙山工区 K3+200 ~ K5+800' },
         { k: 'type', t: '作业类型', sel: ['隧道开挖', '露天台阶', '拆除爆破', '其他'] },
         { k: 'valid', t: '有效期', ph: '2026-03-01 ~ 2027-02-28' },
@@ -1471,11 +1470,12 @@
     if (type === 'projects') {
       tb.innerHTML = list.map(x => {
         const co = (REF_CACHE.companies || []).find(function(c){ return c.id === x.company; }) || {};
-        const wc = (REF_CACHE.workareas || []).filter(function(w){ return w.project === x.id; }).length;
+        const was = (REF_CACHE.workareas || []).filter(function(w){ return w.project === x.id; });
         const sc = (REF_CACHE.sites || []).filter(function(s){ return s.project === x.id; }).length;
+        const waTxt = (!was.length ? '未挂工区' : (was.length === 1 ? was[0].name : was.length + ' 个工区'));
         return row('<td>' + x.id + '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.name || '') + '"><b>' + (x.name || '') + '</b></td>' +
           '<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (co.name || '') + '">' + (co.name || x.company || '-') + '</td>' +
-          '<td style="white-space:nowrap"><a class="op" onclick="gotoProjectItems(\'' + x.id + '\')" title="查看该项目下的工区与作业点位">工区 ' + wc + ' · 点位 ' + sc + '</a></td>' +
+          '<td style="white-space:nowrap"><a class="op" onclick="gotoProjectItems(\'' + x.id + '\')" title="查看该项目下的工区与作业点位">' + waTxt + '<br><span style="font-size:12px;font-weight:400;color:var(--sub)">' + sc + ' 个作业点位</span></a></td>' +
           '<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.area || '') + '">' + (x.area || '-') + '</td>' +
           '<td style="white-space:nowrap">' + (x.type || '-') + '</td>' +
           '<td style="font-size:12px;color:var(--sub);white-space:nowrap">' + (x.valid || '-') + '</td>' +
@@ -1579,7 +1579,7 @@
     for (const fd of cfg.fields) if (fd.ref) refs[fd.ref] = await refList(fd.ref);
 
     const rows = cfg.fields.map(fd => {
-      const v = fd.get ? fd.get(rec) : (rec[fd.k] != null ? rec[fd.k] : (id ? '' : (fd.sel ? fd.sel[0] : '')));
+      const v = fd.get ? fd.get(rec) : (rec[fd.k] != null && rec[fd.k] !== '' ? rec[fd.k] : (fd.sel ? fd.sel[0] : ''));
       let input;
       if (fd.ro) {
         input = '<input id="rf_' + fd.k + '" value="' + (v == null ? '' : v) + '" readonly placeholder="' + (fd.ph || '') + '" style="background:#f2f1ec;color:#595858;cursor:not-allowed">';
@@ -1601,10 +1601,24 @@
       return '<div class="rm-row"><label>' + fd.t + (fd.req ? ' <span style="color:var(--bad)">*</span>' : '') + '</label>' + input + '</div>';
     }).join('');
 
+    let extra = '';
+    if (subKey === 'm-projects') {
+      const was = id ? (REF_CACHE.workareas || []).filter(function(w){ return w.project === id; }) : [];
+      const ss = id ? (REF_CACHE.sites || []).filter(function(x){ return x.project === id; }) : [];
+      extra =
+        '<div class="rm-row" style="align-items:flex-start"><label>关联工区</label><div style="flex:1;min-width:0;font-size:13px;line-height:1.8">' +
+        (was.length ? was.map(function(w){ return w.name + '（' + w.id + '）'; }).join('、') : '<span style="color:var(--sub)">暂未挂工区</span>') + '</div></div>' +
+        '<div class="rm-row" style="align-items:flex-start"><label>作业点位</label><div style="flex:1;min-width:0;font-size:13px;line-height:1.8">' +
+        (ss.length ? ss.map(function(x){ return x.name + '（' + x.id + '）'; }).join('<br>') : '<span style="color:var(--sub)">暂未挂点位</span>') +
+        '<div style="font-size:12px;color:var(--sub);margin-top:6px">工区与点位在「工区维护」里挂到本项目，此处只做汇总。' +
+        (id ? ' <a class="op" onclick="document.querySelector(\'.rec-modal\').remove();gotoProjectItems(\'' + id + '\')">去维护</a>' : '') +
+        '</div></div></div>';
+    }
+
     const mask = document.createElement('div');
     mask.className = 'rec-modal';
     mask.innerHTML = '<div class="rm"><div class="rm-h"><b>' + (id ? '编辑' : '新增') + cfg.label + '</b><button onclick="this.closest(\'.rec-modal\').remove()">✕</button></div>' +
-      '<div class="rm-b">' + rows + '</div>' +
+      '<div class="rm-b">' + rows + extra + '</div>' +
       '<div class="rm-f"><button class="btn ghost" onclick="this.closest(\'.rec-modal\').remove()">取消</button>' +
       '<button class="btn" data-save="1">保存并生效</button></div></div>';
     document.body.appendChild(mask);
