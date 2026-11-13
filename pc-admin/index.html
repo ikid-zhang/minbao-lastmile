@@ -730,7 +730,18 @@
         return toJSON({ code: 200, data: demo()[t] || [] });
       }
       if (u.indexOf('/api/qr') >= 0) return toJSON({ code: 404, msg: '静态演示不生成二维码' });
-      return toJSON({ code: 200, data: {} });
+      if (u.indexOf('/api/overview/kpi') >= 0) {
+        const d = demo();
+        return toJSON({ code: 200, data: {
+          todayPlanCount: (d.plans || []).length,
+          outboundQtyKg: 0,
+          closingRate: 0,
+          exceptionCount: 0,
+          nodeRate: 100, reportRate: 100, verifyCover: 100, arriveRate: 100, masterRate: 100
+        } });
+      }
+      if (u.indexOf('/api/plan/list') >= 0) return toJSON({ code: 200, data: (demo().plans || []).slice().reverse() });
+      return toJSON({ code: 200, data: [] });
     };
   })();
   const names = {work:'工作台', master:'主数据管理（L02）', audit:'主数据审核（L03）', check:'检查配置（L04）',
