@@ -220,6 +220,7 @@
   .bar .fl{background:#1e40af;border-radius:4px}
   .pcb{border:1px solid #dcdbd5;background:#f2f1ec;border-radius:8px}
   .pcb a,.lnk,.op{color:#1e40af}
+  .op:hover,.lnk:hover,.pcb a:hover{text-decoration:underline}
   .tag{border-radius:4px}
   .tag.red{background:#eaeefb;color:#1e40af}
   .tag.gray{background:#eae8e0;color:#595858}
@@ -690,7 +691,7 @@
       </section>
       <section class="page" id="p-m-persons">
         <h2 class="pg">四大员维护</h2>
-        <div class="desc">维护爆破员、安全员、保管员、押运员等全部岗位（含民警、安全监理、技术员、负责人）的从业人员档案：所属民爆公司、关联项目 / 库房 / 作业点位、联系电话、证书编号与有效期。可从「民爆公司维护」的操作栏点「查看从业人员」进入，按公司收敛到该单位全部人员。</div>
+        <div class="desc">维护爆破员、安全员、保管员、押运员等全部岗位（含民警、安全监理、技术员、负责人）的从业人员档案：所属民爆公司、关联项目 / 库房 / 作业点位、联系电话、证书编号与有效期。可从「民爆公司维护」点该公司的「从业人员」数字进入，按公司收敛到该单位全部人员。</div>
         <div id="personCompanyBar" class="pcb"><b id="pcbName"></b><span id="pcbStat"></span><span style="flex:1"></span><a onclick="clearCompanyFilter()">显示全部公司人员</a></div>
         <div class="tools">
           <button class="btn" onclick="openRecForm('m-persons')">＋ 新增人员</button>
@@ -1438,9 +1439,11 @@
         const ps = (REF_CACHE.persons || []).filter(p => p.company === x.id).length;
         const vs = (REF_CACHE.vehicles || []).filter(v => v.company === x.id).length;
         return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (x.addr || '-') + '</td><td>' + (x.legal || '-') +
-          '</td><td>' + (x.staff || 0) + ' 人</td><td>' + (x.licence || '-') + '<br><span style="color:var(--sub);font-size:12px">有效期 ' + (x.licenceExpire || '-') + '</span>' +
+          '</td><td><a class="op" style="font-size:13px" onclick="gotoCompanyPersons(\'' + x.id + '\')" title="查看本公司从业人员（点击进入人员列表）">' + ps + ' 人</a>' +
+          (Number(x.staff) ? '<br><span style="color:var(--sub);font-size:12px">备案 ' + x.staff + ' 人</span>' : '') +
+          '</td><td>' + (x.licence || '-') + '<br><span style="color:var(--sub);font-size:12px">有效期 ' + (x.licenceExpire || '-') + '</span>' +
           '</td><td style="font-size:12px;color:var(--sub)">项目 ' + prs + ' · 人员 ' + ps + ' · 车辆 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
-          '<td class="op"><a onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">停用/恢复</a> · <a onclick="gotoCompanyPersons(\'' + x.id + '\')">查看从业人员</a></td>');
+          '<td class="op"><a onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">停用/恢复</a></td>');
       }).join('');
     } else if (type === 'sites') {
       tb.innerHTML = list.map(x => {
