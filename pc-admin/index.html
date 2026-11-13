@@ -636,10 +636,11 @@
       </section>
       <section class="page" id="p-m-workareas">
         <h2 class="pg">工区维护（工区 / 作业点位）</h2>
-        <div class="desc">工区是作业点位的上级：每个工区下可挂多个作业点位。点位是计划填报、押运到达判定、分级检查的最小作业单元。新增点位时须选择所属工区，未归属的点位单独列在页尾。</div>
+        <div class="desc">工区是作业点位的上级：每个工区下可挂多个作业点位。点位是计划填报、押运到达判定、分级检查的最小作业单元。可用顶部「全部项目」下拉按项目查询工区与点位；新增点位时须选择所属工区，未归属的点位单独列在页尾。</div>
         <div class="tools">
           <button class="btn" onclick="openRecForm('m-workareas')">＋ 新增工区</button>
           <button class="btn ghost" onclick="openRecForm('m-sites')">＋ 新增作业点位</button>
+          <select id="flt-wa-project" class="inp" onchange="renderWorkareas()" title="按项目查询工区与作业点位" style="width:200px"><option value="">全部项目</option></select>
           <input class="inp" id="q-wa" onkeyup="renderWorkareas()" placeholder="搜索工区 / 点位名称、编号">
           <span class="sp"></span>
           <span class="hint" id="cnt-wa"></span>
@@ -1746,11 +1747,26 @@
         '</span></td><td class="op">' + op + '</td></tr>';
     }).join('');
   }
+  function fillWaProjectFilter(){
+    const sel = document.getElementById('flt-wa-project');
+    if (!sel) return '';
+    const cur = sel.value || '';
+    const prs = REF_CACHE.projects || [];
+    sel.innerHTML = '<option value="">全部项目</option>' + prs.map(function(p){
+      return '<option value="' + p.id + '"' + (p.id === cur ? ' selected' : '') + '>' + (p.name || p.id) + '</option>';
+    }).join('');
+    if (cur && !prs.some(function(p){ return p.id === cur; })) { sel.value = ''; return ''; }
+    return cur;
+  }
+
   function renderWorkareas(){
     const box = document.getElementById('waList'); if (!box) return;
     const qEl = document.getElementById('q-wa');
     const q = ((qEl && qEl.value) || '').trim().toLowerCase();
-    const was = REF_CACHE.workareas || [], sites = REF_CACHE.sites || [];
+    const pid = fillWaProjectFilter();
+    const allWa = REF_CACHE.workareas || [], allSites = REF_CACHE.sites || [];
+    const was = pid ? allWa.filter(function(w){ return w.project === pid; }) : allWa;
+    const sites = pid ? allSites.filter(function(s){ return s.project === pid; }) : allSites;
     const hit = function(o){ return !q || JSON.stringify(o || {}).toLowerCase().indexOf(q) >= 0; };
     const unassigned = sites.filter(function(s){ return !s.workarea || !was.some(function(w){ return w.id === s.workarea; }); });
     let shown = 0, html = '';
@@ -1782,7 +1798,7 @@
     if (!html) html = '<div class="card" style="padding:26px;text-align:center;color:var(--sub)">没有匹配的工区或点位</div>';
     box.innerHTML = html;
     const cnt = document.getElementById('cnt-wa');
-    if (cnt) cnt.textContent = '工区 ' + was.length + ' 个 · 点位 ' + sites.length + ' 个（未归属 ' + unassigned.length + '）' + (q ? ' · 匹配 ' + shown : '');
+    if (cnt) cnt.textContent = (pid ? '项目：' + waPrName(pid) + ' · ' : '') + '工区 ' + was.length + ' 个 · 点位 ' + sites.length + ' 个（未归属 ' + unassigned.length + '）' + (q ? ' · 匹配 ' + shown : '');
   }
   function addSiteToWa(waId){
     openRecForm('m-sites');
@@ -1902,11 +1918,13 @@
   /* 公司 → 本公司从业人员 */
   /* 项目维护：点工区/点位数跳到工区维护，并按项目名过滤 */
   function gotoProjectItems(pid){
-    const pr = (SUB_CACHE['m-projects'] || []).find(function(x){ return x.id === pid; }) || {};
     gotoPage('m-workareas');
     setTimeout(function(){
-      const el = document.getElementById('q-wa');
-      if (el && pr.name) { el.value = pr.name; if (typeof renderWorkareas === 'function') renderWorkareas(); }
+      const sel = document.getElementById('flt-wa-project');
+      const q = document.getElementById('q-wa');
+      if (q) q.value = '';
+      if (sel) sel.value = pid;
+      if (typeof renderWorkareas === 'function') renderWorkareas();
     }, 260);
   }
 
