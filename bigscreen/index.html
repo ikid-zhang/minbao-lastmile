@@ -2,407 +2,1779 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<title>民爆最后一公里 · 俯瞰大屏（自建 · 系统建设内容）</title>
+<meta name="viewport" content="width=1920">
+<title>民爆最后一公里 · 全域态势俯瞰大屏</title>
 <style>
-  :root{
-    --bg:#16191f; --panel:#1c2028; --panel2:#22262f; --line:#2e333d;
-    --cyan:#5b82ff; --ok:#3ddc97; --warn:#ffc24d; --bad:#ff6b6b;
-    --txt:#fcfcfd; --sub:#a9b1bf; --on-field2:#c3cad6;
-    --font-display:"Host Grotesk","Instrument Sans",-apple-system,"PingFang SC",sans-serif;
-    --font-body:"Instrument Sans",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--txt);font-family:var(--font-body);overflow:hidden;-webkit-font-smoothing:antialiased}
-  .screen{width:100vw;height:100vh;display:flex;flex-direction:column}
-  /* ---------- 顶部 ---------- */
-  .top{height:76px;display:flex;align-items:center;padding:0 24px;position:relative;
-    background:linear-gradient(180deg,#0d2a52 0%,rgba(13,42,82,0) 100%);border-bottom:1px solid var(--line)}
-  .top h1{font-family:var(--font-display);font-size:25px;letter-spacing:3px;font-weight:700;color:var(--txt);text-align:center;flex:1;
-    text-shadow:0 0 22px rgba(91,130,255,.28)}
-  .top .corner{font-size:12px;color:var(--sub);width:220px}
-  .top .corner.r{text-align:right}
-  .kpis{position:absolute;left:50%;transform:translateX(-50%);top:64px;display:flex;gap:14px;z-index:20}
-  .kpi{min-width:128px;padding:8px 18px;border:1px solid var(--line);border-radius:8px;text-align:center;
-    background:rgba(28,32,40,.92);box-shadow:0 4px 18px rgba(0,0,0,.35)}
-  .kpi b{display:block;font-family:var(--font-display);font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--cyan)}
-  .kpi i{font-style:normal;font-size:11px;color:var(--sub)}
-  .kpi.bad b{color:var(--bad);animation:breath 1.6s ease-in-out infinite}
-  .kpi.ok b{color:var(--ok)}
-  /* ---------- 主体三栏 ---------- */
-  .main{flex:1;display:flex;gap:14px;padding:14px 20px 8px;min-height:0}
-  .col-l,.col-r{width:336px;display:flex;flex-direction:column;gap:14px;min-height:0}
-  .col-c{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-  .panel h3{font-family:var(--font-display);font-size:14px;font-weight:700;letter-spacing:.06em;padding:10px 14px;border-bottom:1px solid var(--line);
-    background:linear-gradient(90deg,rgba(91,130,255,.12),transparent);color:#fff}
-  .panel h3 em{font-style:normal;color:var(--cyan);font-size:11px;margin-left:8px;letter-spacing:0;font-weight:400;opacity:.9}
-  .panel .bd{flex:1;overflow:auto;padding:10px 12px;min-height:0}
-  .bd::-webkit-scrollbar{width:4px}.bd::-webkit-scrollbar-thumb{background:var(--line)}
-  /* 左侧：作业点列表 */
-  .site{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;margin-bottom:8px;background:var(--panel2);border:1px solid transparent;cursor:pointer}
-  .site:hover{border-color:var(--cyan)}
-  .dot{width:10px;height:10px;border-radius:50%;flex:none}
-  .dot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-  .dot.warn{background:var(--warn);box-shadow:0 0 8px var(--warn)}
-  .dot.bad{background:var(--bad);box-shadow:0 0 8px var(--bad);animation:breath 1.2s infinite}
-  .site .nm{flex:1;min-width:0}.site .nm b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .site .nm i{font-style:normal;font-size:11px;color:var(--sub)}
-  .site .st{font-size:11px;padding:2px 8px;border-radius:999px;flex:none}
-  .st.ok{color:var(--ok);border:1px solid rgba(61,220,151,.4)}
-  .st.warn{color:var(--warn);border:1px solid rgba(255,194,77,.4)}
-  .st.bad{color:var(--bad);border:1px solid rgba(255,107,107,.5)}
-  /* 左侧：库存 */
-  table.stock{width:100%;border-collapse:collapse;font-size:12px}
-  table.stock th{color:var(--sub);font-weight:400;text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
-  table.stock td{padding:6px 4px;border-bottom:1px dashed rgba(46,51,61,.6)}
-  table.stock td b{color:var(--cyan);font-weight:600}
-  /* ---------- 中央地图 ---------- */
-  .mapwrap{flex:1;position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#111419;min-height:0}
-  svg.map{width:100%;height:100%;display:block}
-  .map-title{position:absolute;top:10px;left:14px;font-size:13px;color:var(--sub);letter-spacing:1px;z-index:5}
-  .legend{position:absolute;bottom:12px;left:14px;display:flex;gap:16px;font-size:12px;color:var(--sub);z-index:5;
-    background:rgba(22,25,31,.8);padding:8px 14px;border-radius:8px;border:1px solid var(--line)}
-  .legend span{display:flex;align-items:center;gap:6px}
-  .lg{width:10px;height:10px;border-radius:50%}
-  .mapctl{position:absolute;top:10px;right:14px;display:flex;gap:8px;z-index:5}
-  .mapctl button{background:var(--panel);border:1px solid var(--line);color:var(--sub);font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer}
-  .mapctl button.on{color:var(--cyan);border-color:var(--cyan)}
-  /* 抽屉 */
-  .drawer{position:absolute;top:0;right:0;width:330px;height:100%;background:rgba(28,32,40,.97);border-left:1px solid var(--cyan);
-    transform:translateX(105%);transition:transform .3s;z-index:30;display:flex;flex-direction:column}
-  .drawer.open{transform:none}
-  .drawer .dh{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700}
-  .drawer .dh a{color:var(--sub);cursor:pointer;text-decoration:none;font-size:18px;line-height:1}
-  .tl{position:relative;margin:14px 0 0 10px;padding-left:20px;flex:1;overflow:auto}
-  .tl::before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--line)}
-  .tn{position:relative;margin-bottom:16px}
-  .tn::before{content:"";position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--panel);border:2px solid var(--sub)}
-  .tn.done::before{background:var(--ok);border-color:var(--ok)}
-  .tn.miss::before{border-color:var(--bad);background:var(--bad)}
-  .tn b{font-size:13px}.tn i{display:block;font-style:normal;font-size:11px;color:var(--sub);margin-top:2px}
-  .tn .tm{float:right;font-size:11px;color:var(--cyan)}
-  /* 右侧：事件墙 */
-  .evt{padding:9px 10px;border-radius:8px;background:var(--panel2);margin-bottom:8px;border-left:3px solid var(--warn);cursor:pointer}
-  .evt.bad{border-left-color:var(--bad)}
-  .evt .et{display:flex;justify-content:space-between;font-size:12px}
-  .evt .et b{color:#fff}
-  .evt .et span{color:var(--sub);font-size:11px}
-  .evt p{font-size:11px;color:var(--sub);margin-top:3px}
-  .evt.fresh{animation:slidein .5s ease}
-  /* 底部趋势 */
-  .trend{height:170px}
-  /* 动画 */
-  @keyframes breath{0%,100%{opacity:1}50%{opacity:.45}}
-  @keyframes slidein{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
-  @keyframes ripple{from{r:6;opacity:.9}to{r:26;opacity:0}}
-  @keyframes dash{to{stroke-dashoffset:-40}}
-  .ripple{animation:ripple 1.8s ease-out infinite}
-  .flow{stroke-dasharray:8 6;animation:dash 1.6s linear infinite}
-  /* 时钟 */
-  .clock{font-family:var(--font-display);font-size:16px;font-weight:500;letter-spacing:.04em;color:var(--cyan)}
-  /* 尊重减少动效偏好 */
-  @media (prefers-reduced-motion:reduce){
-    .ripple,.flow,.kpi.bad b,.evt.fresh{animation:none!important}
-    .drawer{transition:none!important}
-  }
+:root{
+  /* 定尺画布：几何写死 1920×1080，靠 JS 写 --k 缩放塞进任何窗口 */
+  --bg:#070b13;
+  --panel:linear-gradient(180deg,rgba(18,28,48,.90),rgba(12,20,36,.90));
+  --line:rgba(91,130,255,.16);
+  --line-hi:rgba(91,130,255,.38);
+  --ink:#e9effc;
+  --dim:#8a99b4;
+  --dim2:#5f6d86;
+  --blue:#5b82ff;          /* 常态：结构、链路、数据 */
+  --cyan:#45d8ff;          /* 常态：重点数值 */
+  --amber:#ffbe4d;         /* 预警：需处置 */
+  --red:#ff5d63;           /* 异常：阻断闭环，全屏只给这一类 */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#02040a}
+body{
+  color:var(--ink);
+  font-family:-apple-system,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.num,time,.kpi b,.stk-num{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.fit{position:fixed;inset:0;overflow:hidden;background:#02040a}
+.stage{
+  position:absolute;left:50%;top:50%;width:1920px;height:1080px;
+  transform:translate(-50%,-50%) scale(var(--k,1));transform-origin:center;
+  background:
+    radial-gradient(1400px 620px at 50% -6%, rgba(24,62,124,.34), transparent 66%),
+    radial-gradient(900px 420px at 8% 102%, rgba(18,48,96,.22), transparent 62%),
+    radial-gradient(900px 420px at 92% 102%, rgba(18,48,96,.20), transparent 62%),
+    var(--bg);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+/* 底纹：经纬细网，只做质感 */
+.stage::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background-image:linear-gradient(rgba(91,130,255,.05) 1px,transparent 1px),
+                  linear-gradient(90deg,rgba(91,130,255,.05) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(120% 80% at 50% 40%,#000 40%,transparent 92%);
+}
+
+/* ── 顶栏 88 ─────────────────────────────────────── */
+.top{position:absolute;left:0;right:0;top:0;height:88px;z-index:6;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 28px;
+  background:linear-gradient(180deg,rgba(12,30,60,.62),rgba(10,20,38,.18) 72%,transparent)}
+.top::after{content:"";position:absolute;left:28px;right:28px;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(91,130,255,.5),transparent)}
+.brand{display:flex;align-items:center;gap:10px;font-size:14px;letter-spacing:.12em;color:#cbd8ee}
+.brand-mark{width:0;height:0;border:7px solid transparent;border-left-color:var(--blue);
+  border-right:0;filter:drop-shadow(0 0 8px rgba(91,130,255,.6))}
+.scope{margin-top:7px;font-size:11.5px;color:var(--dim2);letter-spacing:.04em}
+.title-wrap{text-align:center}
+h1{font-size:34px;font-weight:700;letter-spacing:.22em;line-height:1;
+  background:linear-gradient(180deg,#ffffff 30%,#9fc4ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 32px rgba(91,130,255,.30)}
+.sub{margin-top:9px;font-size:12px;color:var(--dim);letter-spacing:.3em}
+.top-r{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.live{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--dim);letter-spacing:.06em}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--cyan);
+  box-shadow:0 0 10px var(--cyan);animation:pulse 2s infinite}
+.live.off i{background:var(--red);box-shadow:0 0 10px var(--red);animation:none}
+.live.off{color:#ffb3b6}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.clock{font-size:26px;font-weight:600;letter-spacing:.06em;color:#dbe7ff}
+.today{font-size:11px;color:var(--dim2);letter-spacing:.06em}
+
+/* ── KPI 带 86 ────────────────────────────────────── */
+.kpis{position:absolute;left:0;right:0;top:88px;height:86px;z-index:5;
+  display:grid;grid-template-columns:repeat(5,1fr);padding:0 28px;gap:0;
+  background:linear-gradient(180deg,rgba(7,11,19,.72),rgba(7,11,19,.30) 62%,transparent)}
+.kpi{display:flex;flex-direction:column;justify-content:center;padding:0 26px;position:relative;
+  cursor:pointer;transition:background .14s}
+.kpi:hover{background:rgba(91,130,255,.07)}
+.kpi+.kpi::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:1px;
+  background:linear-gradient(180deg,transparent,var(--line-hi),transparent)}
+.kpi b{font-size:34px;font-weight:700;line-height:1;color:var(--cyan);
+  display:flex;align-items:baseline;gap:6px}
+.kpi b em{font-style:normal;font-size:12px;font-weight:500;color:var(--dim);letter-spacing:.02em}
+.kpi-main{display:flex;align-items:baseline;gap:12px}
+.kpi-hist{font-size:11.5px;letter-spacing:.05em;color:rgba(150,170,205,.62);white-space:nowrap}
+.kpi-hist b{display:inline;font-size:13px;font-weight:600;color:rgba(186,210,255,.85);text-shadow:none}
+.kpi i{font-style:normal;margin-top:8px;font-size:11.5px;color:var(--dim);letter-spacing:.08em;
+  display:flex;align-items:center;gap:7px}
+/* 可点提示：默认淡，hover 时亮起，明确「这块能点开看明细」 */
+.kpi-more{font-size:9px;letter-spacing:.08em;color:rgba(140,160,195,.30);
+  border:1px solid rgba(96,140,240,.22);border-radius:3px;padding:1px 5px;transition:.14s}
+.kpi:hover .kpi-more{color:#bcd2ff;border-color:rgba(96,140,240,.6);background:rgba(91,130,255,.14)}
+.kpi.warn b{color:var(--amber)}
+.kpi.bad b{color:var(--red)}
+.kpi b.hipri{text-shadow:0 0 24px rgba(69,216,255,.28)}
+
+/* ── 顶部环节流转条（自原右轨节点流转面板拆出，并入统计带） ── */
+.flowbar{position:absolute;left:0;right:0;top:176px;height:30px;z-index:5;
+  display:flex;align-items:center;justify-content:center;gap:10px;padding:0 28px}
+.fb-item{display:flex;align-items:baseline;gap:6px;padding:4px 13px;border-radius:4px;cursor:pointer;
+  background:rgba(20,33,58,.42);border:1px solid rgba(120,166,250,.14);transition:background .14s,border-color .14s}
+.fb-item:hover{background:rgba(91,130,255,.14);border-color:rgba(91,130,255,.4)}
+.fb-k{font-size:11px;color:#c6d3ea;white-space:nowrap}
+.fb-v{font-size:12.5px;font-weight:600;color:var(--cyan);font-variant-numeric:tabular-nums}
+.fb-v em{font-style:normal;font-size:9.5px;color:var(--dim2);margin-left:1px}
+
+/* ── 主体：地图独占画布主角位，两侧信息贴边浮起、朝屏幕中心渐隐 ── */
+.main{position:absolute;inset:0;z-index:4}
+.rail{position:absolute;top:210px;bottom:18px;width:380px;z-index:3;
+  display:flex;flex-direction:column;gap:14px;min-height:0;
+  opacity:.92;transition:opacity .18s}
+/* 渐隐方向：靠屏幕外缘清晰，越靠画面中心越淡，让地图不受切割 */
+.rail:first-of-type{left:14px;padding-right:54px;   /* 左轨：左缘清晰，右缘朝画面中心淡出 */
+  mask-image:linear-gradient(to right,#000 84%,rgba(0,0,0,.55) 95%,rgba(0,0,0,.08) 100%)}
+.rail:last-of-type{right:14px;padding-left:54px;   /* 右轨镜像 */
+  mask-image:linear-gradient(to left,#000 84%,rgba(0,0,0,.55) 95%,rgba(0,0,0,.08) 100%)}
+
+.panel{background:linear-gradient(180deg,rgba(20,33,58,.50),rgba(9,15,28,.60));
+  border:1px solid rgba(120,166,250,.10);border-radius:6px;
+  box-shadow:0 0 20px rgba(16,52,120,.10);
+  display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden}
+/* 只在顶上留一道极淡亮线交代层级，不再画整圈边框与竖光 */
+.panel::before{content:"";position:absolute;left:14px;right:14px;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(170,210,255,.30) 22%,rgba(170,210,255,.18) 70%,transparent)}
+.panel::after{display:none}
+.p-head{flex:none;height:40px;display:flex;align-items:center;gap:9px;padding:0 14px;
+  position:relative;
+  background:linear-gradient(90deg,rgba(91,130,255,.15),transparent 74%)}
+.p-head::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,rgba(130,180,255,.55),rgba(91,130,255,.16) 52%,transparent)}
+.p-head::before{content:"";width:3px;height:13px;background:var(--blue);
+  box-shadow:0 0 8px rgba(91,130,255,.8);flex:none}
+.p-head h3{font-size:13.5px;font-weight:600;letter-spacing:.1em;color:#e2eafb;white-space:nowrap}
+.p-head .cnt{margin-left:auto;font-size:11px;color:var(--dim2);letter-spacing:.04em;white-space:nowrap;
+  transition:color .12s}
+.p-head .cnt:hover{color:#bcd2ff;text-decoration:underline dotted;text-underline-offset:3px}
+.p-body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+
+/* 作业点行 */
+.site-row{padding:6px 12px;border-bottom:1px solid rgba(91,130,255,.07);flex:none}
+.site-row:last-child{border-bottom:0}
+.site-row:hover{background:rgba(91,130,255,.08)}
+.sr-top{display:grid;grid-template-columns:1fr 54px 62px;align-items:center;gap:8px}
+.sr-main{min-width:0}
+.sr-name{font-size:12.5px;color:#dfe8f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-sub{margin-top:2px;font-size:10.5px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-plan{text-align:right;font-size:15px;font-weight:600;color:var(--cyan);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sr-plan small{font-size:10px;font-weight:400;color:var(--dim2);margin-left:2px}
+.sr-plan.mute{font-size:10.5px;font-weight:400;color:var(--dim2)}
+.sr-plans{margin-top:5px;display:flex;flex-direction:column;gap:3px}
+.sp-item{display:flex;align-items:center;gap:6px;padding:1px 7px;background:rgba(91,130,255,.07);border-radius:3px;cursor:default}
+.sp-no{flex:1;min-width:0;font-size:10.5px;color:#c9dcff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-kg{flex:none;font-size:10.5px;color:var(--cyan);font-variant-numeric:tabular-nums}
+.sp-st{flex:none}
+.chip{font-size:10.5px;padding:3px 0;text-align:center;border-radius:4px;letter-spacing:.04em;
+  border:1px solid;white-space:nowrap;overflow:hidden}
+.chip.on{color:#8fe4ff;border-color:rgba(69,216,255,.4);background:rgba(69,216,255,.10)}
+.chip.plan{color:#a9bcff;border-color:rgba(91,130,255,.4);background:rgba(91,130,255,.12)}
+.chip.none{color:var(--dim2);border-color:rgba(120,134,160,.28);background:rgba(120,134,160,.06)}
+
+/* 库房行：紧凑两行水位 */
+.stk{padding:7px 12px 8px;border-bottom:1px solid rgba(91,130,255,.07);flex:none}
+.stk:last-child{border-bottom:0}
+.stk-top{display:flex;align-items:center;gap:7px;height:16px}
+.stk-name{font-size:12.5px;color:#dfe8f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stk-tag{margin-left:auto;font-size:10px;color:var(--dim2);white-space:nowrap;flex:none}
+.stk-tag.hi{color:var(--amber)}
+.stk-bar{display:grid;grid-template-columns:26px 1fr 86px;align-items:center;gap:7px;margin-top:5px;height:12px}
+.stk-k{font-size:9.5px;color:var(--dim2);letter-spacing:0;line-height:12px;white-space:nowrap}
+.stk-track{height:4px;background:rgba(91,130,255,.12);position:relative;border-radius:1px;overflow:hidden}
+.stk-track i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(91,130,255,.55),var(--blue));border-radius:1px}
+.stk-track i.hi{background:linear-gradient(90deg,rgba(255,190,77,.45),var(--amber))}
+.stk-num{text-align:right;font-size:11px;color:#c6d3ea;white-space:nowrap}
+.stk-num b{font-weight:600}
+.stk-num s{text-decoration:none;color:var(--dim2);font-size:9.5px;margin-left:3px}
+
+/* 车辆行 */
+.veh-row{display:grid;grid-template-columns:1fr 60px 76px;align-items:center;gap:6px;
+  padding:0 12px;min-height:50px;border-bottom:1px solid rgba(91,130,255,.07);flex:none}
+.veh-row:last-child{border-bottom:0}
+.veh-row:hover{background:rgba(91,130,255,.08)}
+.vh-main{min-width:0}
+.vh-plate{font-size:12.5px;color:#dfe8f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vh-sub{margin-top:3px;font-size:10px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vh-co{margin-top:2px;font-size:10px;color:#9fb6dd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vh-load{text-align:right;font-size:12px;color:#c6d3ea;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vh-exp{text-align:right;font-size:10.5px;color:var(--dim2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.vh-exp.near{color:var(--amber)}
+
+/* ── 地图 ─────────────────────────────────────────── */
+.mapwrap{position:absolute;left:50%;transform:translateX(-50%);
+  top:210px;bottom:18px;width:1920px;z-index:2;
+  /* 80% 区域内实心，两侧 20% 自画面中心向外渐淡、一直延伸到屏幕边缘 */
+  mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.18) 46px,rgba(0,0,0,.45) 96px,
+    rgba(0,0,0,.72) 148px,#000 192px,#000 calc(100% - 192px),
+    rgba(0,0,0,.72) calc(100% - 148px),rgba(0,0,0,.45) calc(100% - 96px),rgba(0,0,0,.18) calc(100% - 46px),transparent 100%);
+  display:flex;flex-direction:column;min-height:0;overflow:visible}
+/* 地图不再画边框：底图自身向四周消散，只留中心一束高光当主角 */
+.mapwrap::before,.mapwrap::after{display:none}
+.map-head{height:44px;flex:none;display:flex;align-items:center;gap:12px;padding:0 396px;
+  position:relative;z-index:4;background:none}
+.map-head::before{content:"";width:3px;height:13px;background:var(--blue);box-shadow:0 0 8px rgba(91,130,255,.7)}
+.map-head h3{font-size:13.5px;font-weight:600;letter-spacing:.1em;color:#e2eafb;white-space:nowrap}
+.map-head .hint{font-size:10.5px;color:var(--dim2);letter-spacing:.04em;white-space:nowrap;overflow:hidden}
+.legend{margin-left:auto;display:flex;align-items:center;gap:14px;flex:none}
+.lg{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--dim);white-space:nowrap}
+.lg i{width:7px;height:7px;border-radius:50%;flex:none}
+.lg i.sq{border-radius:1px}
+.lg i.dash{border-radius:50%;border:1px dashed rgba(91,130,255,.8);background:none;width:9px;height:9px}
+.lg i.ln{width:13px;height:1px;border-radius:0;background:rgba(88,200,255,.72)}
+.lg i.ln.out{background:rgba(110,154,246,.95)}
+.lg i.ln.ret{background:rgba(74,214,164,.95)}
+.lg i.ln.bad{background:rgba(255,93,99,.95)}
+
+.map-body{flex:1;min-height:0;position:relative;
+  mask-image:linear-gradient(to bottom,transparent 0,#000 34px,#000 calc(100% - 60px),transparent 100%);
+  background:radial-gradient(1100px 800px at 50% 46%,rgba(34,96,164,.30),transparent 74%),
+    radial-gradient(1900px 1200px at 50% 46%,rgba(13,30,56,.86),rgba(5,9,17,.28) 78%,transparent)}
+#map{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* 图层工具条 */
+.tools{position:absolute;left:396px;top:46px;display:flex;gap:6px;z-index:5}
+.tool{height:30px;padding:0 11px;display:flex;align-items:center;gap:6px;cursor:pointer;
+  font-size:11.5px;letter-spacing:.04em;color:var(--dim);user-select:none;
+  background:rgba(12,21,38,.9);border:1px solid rgba(96,140,240,.30);border-radius:5px;
+  transition:color .12s,border-color .12s,background .12s}
+.tool:hover{color:#dfe8f9;border-color:var(--line-hi)}
+.tool.on{color:#c9dcff;border-color:rgba(91,130,255,.62);background:rgba(91,130,255,.14)}
+.tool i{width:9px;height:9px;border-radius:50%;background:var(--blue);opacity:.35;flex:none}
+.tool.on i{opacity:1;box-shadow:0 0 8px rgba(91,130,255,.8)}
+.tool i.sq{border-radius:1px}
+.tool i.dashrc{border-radius:50%;border:1px dashed var(--blue);background:none}
+
+.map-foot{height:34px;flex:none;display:flex;align-items:center;gap:16px;padding:0 396px;
+  font-size:10.5px;color:rgba(150,168,196,.72);letter-spacing:.03em}
+.map-foot .sp{margin-left:auto}
+/* 链路流光：像参考图一那样沿线跑光点，不动 SMIL，纯 CSS dash 位移 */
+@keyframes linkflow{from{stroke-dashoffset:0}to{stroke-dashoffset:-19}}
+@media (prefers-reduced-motion:reduce){#map .flow{animation:none}}
+/* 节点呼吸：只做极轻的亮度起伏，不放大尺寸以免干扰读数 */
+@keyframes nodePulse{0%,100%{opacity:.55}50%{opacity:.9}}
+.node .halo{animation:nodePulse 3.4s ease-in-out infinite}
+
+/* ── Leaflet 深色真实地图 ─────────────────────────────── */
+#map{background:#070b13;font-family:-apple-system,PingFang SC,sans-serif}
+#map .leaflet-container{background:#070b13;outline:none}
+#map .leaflet-control-attribution{display:none}
+/* 深色压暗：滤镜作用于瓦片层，业务图层在其上不受影响 */
+#map .leaflet-tile-pane{filter:brightness(.5) saturate(.5) contrast(1.06)}
+/* 点位 DivIcon */
+.mk-node{position:relative;cursor:pointer}
+.mk-node .halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none}
+.mk-node .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}
+.mk-node .lbl{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap;pointer-events:none;
+  font-size:11.5px;color:#c9d7ee;text-shadow:0 0 3px #070d18,0 0 3px #070d18;letter-spacing:.02em;
+  background:rgba(7,13,24,.72);padding:2px 7px;border-radius:3px}
+.mk-node .lbl .sub{display:block;font-size:9.5px;color:#5f6d86}
+.mk-node .lbl.left{right:18px;text-align:right}
+.mk-node .lbl.right{left:18px;text-align:left}
+.mk-node.abn .lbl{color:#ff9fa2}
+/* 链路流动动画（Leaflet SVG renderer） */
+#map .flow{animation:linkflow 1.15s linear infinite}
+/* 区名标注 */
+.bound-name{color:rgba(132,210,255,.40);font-size:12.5px;letter-spacing:.22em;white-space:nowrap;
+  text-shadow:0 0 4px #06101d,0 0 4px #06101d;pointer-events:none}
+/* 重点监控域框：弱化，不抢地图视线 */
+.focus-box{background:rgba(44,118,200,.02);border:1px dashed rgba(100,160,240,.08)}
+
+
+/* ── 事件墙 ───────────────────────────────────────── */
+.alert{display:grid;grid-template-columns:3px 1fr auto;gap:10px;padding:12px 12px 13px 11px;
+  border-bottom:1px solid rgba(91,130,255,.07);cursor:pointer;flex:none;align-items:start}
+.alert:last-child{border-bottom:0}
+.alert:hover{background:rgba(91,130,255,.07)}
+.al-lv{height:100%;min-height:34px;border-radius:1px}
+.al-lv.red{background:var(--red);box-shadow:0 0 10px rgba(255,93,99,.5)}
+.al-lv.amber{background:var(--amber)}
+.al-lv.blue{background:rgba(91,130,255,.75)}
+.al-t{font-size:13px;color:#e9eff9;line-height:1.4;overflow:hidden;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical}
+.al-s{margin-top:5px;font-size:10.5px;color:var(--dim2);line-height:1.5;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.al-tm{font-size:10px;color:var(--dim2);white-space:nowrap;padding-top:2px;letter-spacing:.02em}
+
+/* 流转条：六条均分面板高度，不让内容堆在顶端 */
+/* 作业四员：四类角色分组卡片 */
+.staff{padding:6px 12px 6px;border-bottom:1px solid rgba(91,130,255,.06);flex:none}
+.staff:last-child{border-bottom:0}
+.staff-cat{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--blue);
+  letter-spacing:.08em;margin-bottom:3px}
+.staff-cat b{font-size:11.5px;color:#dbe5f8;font-weight:600}
+.staff-cat .cnt{margin-left:auto;color:var(--dim2);font-weight:400;letter-spacing:0}
+.staff-row{display:flex;align-items:center;gap:8px;padding:1px 0;cursor:pointer;border-radius:3px}
+.staff-row:hover{background:rgba(91,130,255,.08)}
+.staff-ava{width:23px;height:23px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:#c9dcff;background:rgba(91,130,255,.18);border:1px solid rgba(91,130,255,.30)}
+.staff-info{min-width:0;flex:1}
+.staff-name{font-size:12px;color:#dfe8f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.staff-meta{font-size:10px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:0}
+.staff-st{font-size:10px;color:var(--cyan);flex:none}
+
+/* 公安检查环节视图 */
+.pol-flow{display:flex;gap:5px;padding:9px 12px 8px;flex:none;border-bottom:1px solid rgba(91,130,255,.07)}
+.pf{flex:1;text-align:center;padding:5px 2px;border-radius:4px;background:rgba(20,33,58,.4);border:1px solid rgba(120,166,250,.10);cursor:pointer;transition:all .15s}
+.pf:hover{border-color:rgba(120,166,250,.28)}
+.pf.on{background:rgba(91,130,255,.22);border-color:rgba(120,166,250,.55)}
+.pf.on .pf-k{color:#dbe5f8}
+.pf.on .pf-v{color:#7fd4ff}
+.pf-k{font-size:9.5px;color:var(--dim2)}
+.pf-v{font-size:13px;font-weight:600;color:var(--cyan);margin-top:1px;font-variant-numeric:tabular-nums}
+.pol{padding:10px 12px;border-bottom:1px solid rgba(91,130,255,.07);flex:none;cursor:pointer;transition:background .12s}
+.pol:last-child{border-bottom:0}
+.pol:hover{background:rgba(91,130,255,.07)}
+.pol-top{display:flex;align-items:baseline;gap:8px}
+.pol-no{font-size:12px;color:#e9eff9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pol-kg{margin-left:auto;font-size:11.5px;color:#c6d3ea;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pol-tag{font-size:9.5px;padding:1px 6px;border-radius:3px;border:1px solid;margin-left:5px;white-space:nowrap}
+.pol-tag.major{color:#ffce7a;border-color:rgba(255,190,77,.42);background:rgba(255,190,77,.10)}
+.pol-tag.special{color:#ffa4a7;border-color:rgba(255,93,99,.45);background:rgba(255,93,99,.10)}
+.pol-site{margin-top:4px;font-size:10.5px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pol-meta{margin-top:5px;font-size:10.5px;color:#9fb6dd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pol-concl{margin-top:4px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--dim2)}
+.pol-concl .tg{font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid}
+.empty-tip{padding:22px 14px;font-size:11.5px;color:var(--dim2);line-height:1.7}
+
+/* ── 抽屉 ─────────────────────────────────────────── */
+.drawer{position:absolute;top:0;right:0;bottom:0;width:472px;z-index:20;
+  background:linear-gradient(180deg,rgba(13,23,40,.985),rgba(9,16,29,.985));
+  border-left:1px solid var(--line-hi);box-shadow:-24px 0 60px rgba(0,0,0,.55);
+  transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.dr-head{flex:none;padding:20px 20px 14px;border-bottom:1px solid var(--line);position:relative}
+.dr-kicker{font-size:10.5px;color:var(--blue);letter-spacing:.16em}
+.dr-title{margin-top:7px;font-size:19px;font-weight:600;color:#f1f5ff;line-height:1.35}
+.dr-sub{margin-top:6px;font-size:11.5px;color:var(--dim);line-height:1.5}
+.dr-close{position:absolute;right:16px;top:18px;width:26px;height:26px;cursor:pointer;
+  border:1px solid rgba(91,130,255,.25);border-radius:2px;display:grid;place-items:center;
+  color:var(--dim);line-height:1}
+.dr-close::before,.dr-close::after{content:"";position:absolute;width:11px;height:1px;
+  background:var(--dim);transition:background .12s}
+.dr-close::before{transform:rotate(45deg)}
+.dr-close::after{transform:rotate(-45deg)}
+.dr-close:hover{border-color:var(--line-hi)}
+.dr-close:hover::before,.dr-close:hover::after{background:#fff}
+.dr-body{flex:1;min-height:0;overflow:auto;padding:14px 20px 26px}
+.dr-body::-webkit-scrollbar{width:4px}
+.dr-body::-webkit-scrollbar-thumb{background:rgba(91,130,255,.3)}
+/* ── 数据列表抽屉：点开任意数字 → 明细表 + 筛选 ─────── */
+.drawer.wide{width:782px}
+.lf{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:2px 0 12px}
+.lf-inp{flex:1 1 170px;height:30px;padding:0 10px;border-radius:5px;outline:none;
+  background:rgba(10,18,32,.92);border:1px solid rgba(96,140,240,.30);
+  color:#dfe8f9;font-size:11.5px;font-family:inherit}
+.lf-inp:focus{border-color:rgba(91,130,255,.72);box-shadow:0 0 0 2px rgba(91,130,255,.12)}
+.lf-inp::placeholder{color:#5a6780}
+.lf-chip{height:26px;padding:0 10px;display:inline-flex;align-items:center;cursor:pointer;white-space:nowrap;
+  font-size:11px;color:#93a2ba;border:1px solid rgba(96,140,240,.24);border-radius:5px;
+  background:rgba(12,21,38,.72);transition:color .12s,border-color .12s,background .12s}
+.lf-chip:hover{color:#dfe8f9;border-color:rgba(96,140,240,.5)}
+.lf-chip.on{color:#c9dcff;border-color:rgba(91,130,255,.65);background:rgba(91,130,255,.16)}
+.lf-cnt{margin-left:auto;font-size:11px;color:#728099;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ltb{width:100%;border-collapse:collapse;table-layout:fixed}
+.ltb th{font-size:10.5px;font-weight:500;color:#8e9cb2;text-align:left;padding:7px 8px;
+  border-bottom:1px solid rgba(91,130,255,.24);letter-spacing:.04em;white-space:nowrap;overflow:hidden}
+.ltb td{font-size:11.5px;color:#d1dbea;padding:8px;border-bottom:1px solid rgba(91,130,255,.07);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ltb th.num,.ltb td.num{text-align:right;font-variant-numeric:tabular-nums}
+.ltb tbody tr:hover td{background:rgba(91,130,255,.09)}
+.ltb td.wrap{white-space:normal;line-height:1.5;word-break:break-word}
+.ltb th{position:sticky;top:0;z-index:2;background:rgba(14,23,40,.98)}
+.dr-body.list{display:flex;flex-direction:column;overflow:hidden}
+.dr-body.list #lfTbl{flex:1;min-height:0;overflow:auto}
+.dr-body.list .lf{flex:none}
+.ltb .tg{font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid rgba(120,134,160,.3);color:#9dabc2}
+.ltb .tg.cy{color:#8fe4ff;border-color:rgba(69,216,255,.4)}
+.ltb .tg.am{color:#ffce7a;border-color:rgba(255,190,77,.42)}
+.ltb .tg.rd{color:#ffa4a7;border-color:rgba(255,93,99,.45)}
+.ltb .tg.gr{color:#8fe0b4;border-color:rgba(80,210,140,.4)}
+.sec{margin-bottom:18px}
+.sec h4{font-size:11.5px;color:var(--dim);letter-spacing:.12em;font-weight:500;margin-bottom:9px;
+  display:flex;align-items:center;gap:8px}
+.sec h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:7px 10px;font-size:12px;line-height:1.55}
+.kv dt{color:var(--dim2);white-space:nowrap}
+.kv dd{color:#dde6f7;word-break:break-all}
+.tl{position:relative;padding-left:16px}
+.tl::before{content:"";position:absolute;left:4px;top:4px;bottom:6px;width:1px;background:var(--line-hi)}
+.tl-i{position:relative;padding:0 0 14px 0}
+.tl-i::before{content:"";position:absolute;left:-15px;top:3px;width:7px;height:7px;border-radius:50%;
+  background:var(--blue);box-shadow:0 0 8px rgba(91,130,255,.6)}
+.tl-i.gap::before{background:var(--dim2);box-shadow:none}
+.tl-n{font-size:12px;color:#e1e9f9}
+.tl-a{margin-top:3px;font-size:11px;color:var(--dim);line-height:1.5}
+.tl-w{margin-top:3px;font-size:10px;color:var(--dim2)}
+
+/* 点位抽屉：多计划卡片与按计划分组链路 */
+.plan-tabs{display:flex;flex-direction:column;gap:8px}
+.plan-card{padding:9px 11px;background:rgba(91,130,255,.07);border:1px solid rgba(120,166,250,.14);border-radius:4px;cursor:pointer;transition:all .15s}
+.plan-card:hover{border-color:rgba(120,166,250,.32)}
+.plan-card.on{background:rgba(91,130,255,.16);border-color:rgba(120,166,250,.5)}
+.pc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pc-no{font-size:12px;color:#dfe8f9;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-line{margin-top:4px;font-size:11px;color:var(--dim);line-height:1.6}
+.chain-block{margin-bottom:12px}
+.chain-block:last-child{margin-bottom:0}
+.cb-title{font-size:11px;color:var(--blue);letter-spacing:.06em;margin-bottom:6px}
+.cb-body .tl-i{padding-bottom:10px}
+
+.offline{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:30;
+  display:none;align-items:center;gap:8px;padding:9px 16px;font-size:11.5px;color:#ffc9cb;
+  background:rgba(60,16,20,.92);border:1px solid rgba(255,93,99,.45);border-radius:2px}
+.offline.show{display:flex}
+/* 未连接数据服务时展示内置快照，不让整屏空白 */
+.offline.demo{border-color:rgba(255,190,77,.45);background:rgba(44,30,8,.94);color:#ffe2ad}
+.live.demo i{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.live.demo{color:#ffd79a}
 </style>
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
 </head>
 <body>
-<div class="screen">
-  <div class="top">
-    <div class="corner">民警远程核验 · 分级检查 · 全链留痕</div>
-    <h1>民爆“最后一公里”监管 · 俯瞰大屏</h1>
-    <div class="corner r"><span class="clock" id="clk">--:--:--</span><br>乐山市中区 · 值班模式</div>
-    <div class="kpis">
-      <div class="kpi"><b id="kpiPlan">--</b><i>今日计划</i></div>
-      <div class="kpi"><b id="kpiOutbound">--</b><i>出库总量</i></div>
-      <div class="kpi"><b id="kpiTransit">--</b><i>在途车辆</i></div>
-      <div class="kpi ok"><b id="kpiClosed">--%</b><i>闭环率</i></div>
-      <div class="kpi bad"><b id="kpiException">0</b><i>异常事件</i></div>
-    </div>
-  </div>
+<div class="fit">
+<div class="stage" id="stage">
 
-  <div class="main">
-    <!-- 左列 -->
-    <div class="col-l">
-      <div class="panel" style="flex:1.4">
-        <h3>作业点列表<em>点击定位地图</em></h3>
-        <div class="bd" id="siteList"></div>
-      </div>
-      <div class="panel" style="flex:1">
-        <h3>库房库存概览<em>kg / 发 / m</em></h3>
-        <div class="bd">
-          <table class="stock">
-            <thead><tr><th>库房</th><th>炸药</th><th>雷管</th><th>导爆索</th></tr></thead>
-            <tbody id="storageStockTb">
-              <tr><td>城西销售库</td><td><b>3,200</b></td><td><b>26,000</b></td><td><b>12,000</b></td></tr>
-              <tr><td>青龙山使用库</td><td><b>60</b></td><td><b>400</b></td><td><b>0</b></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+  <header class="top">
+    <div class="top-l">
+      <div class="brand"><span class="brand-mark"></span>民爆「最后一公里」全链监管</div>
+      <div class="scope">数据域 · 林芝市　巴宜区</div>
     </div>
+    <div class="title-wrap">
+      <h1>全域态势俯瞰大屏</h1>
+      <div class="sub">作业点 · 库房 · 在途车辆　一张图</div>
+    </div>
+    <div class="top-r">
+      <div class="live" id="live"><i></i><span id="liveTxt">数据服务连接中</span></div>
+      <div class="clock num" id="clock">--:--:--</div>
+      <div class="today" id="today"></div>
+    </div>
+  </header>
 
-    <!-- 中央地图 -->
-    <div class="col-c">
-      <div class="mapwrap">
-        <div class="map-title">全域一张图 · 作业点 / 库房 / 在途车辆（GIS 图层同源 /bb/overview/map）</div>
-        <div class="mapctl"><button class="on">图层：作业点</button><button>库房</button><button>车辆</button><button>围栏</button></div>
-        <svg class="map" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid slice">
-          <!-- 底图：抽象水系/路网/区县 -->
-          <defs>
-            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#5b82ff" stop-opacity=".18"/><stop offset="100%" stop-color="#5b82ff" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-          <rect width="1000" height="640" fill="#111419"/>
-          <ellipse cx="500" cy="330" rx="470" ry="300" fill="url(#glow)"/>
-          <!-- 区县边界 -->
-          <path d="M120,150 L340,90 L560,110 L780,80 L920,190 L900,400 L760,560 L480,600 L220,540 L100,360 Z"
-                fill="rgba(255,255,255,.05).35)" stroke="#2e333d" stroke-width="2"/>
-          <path d="M340,90 L400,300 L360,540 M560,110 L520,330 L560,580 M780,80 L740,300 L760,560"
-                stroke="#262b34" stroke-width="1" fill="none"/>
-          <text x="170" y="200" fill="#6b7484" font-size="16">棉竹镇</text>
-          <text x="620" y="150" fill="#6b7484" font-size="16">全福镇</text>
-          <text x="700" y="470" fill="#6b7484" font-size="16">安谷镇</text>
-          <text x="200" y="470" fill="#6b7484" font-size="16">水口镇</text>
-          <!-- 江河 -->
-          <path d="M60,420 C240,380 360,440 520,400 C680,360 800,420 960,380"
-                stroke="#2b3a4a" stroke-width="16" fill="none" opacity=".8" stroke-linecap="round"/>
-          <path d="M430,60 C440,180 380,300 420,430" stroke="#2b3a4a" stroke-width="9" fill="none" opacity=".7"/>
-          <text x="70" y="398" fill="#7c8fa6" font-size="13">大渡河</text>
-          <!-- 道路 -->
-          <path d="M140,180 C300,240 420,220 560,260 C700,300 820,280 900,340" stroke="#2e333d" stroke-width="5" fill="none"/>
-          <path d="M200,520 C360,470 520,500 700,440 C800,410 880,430 940,470" stroke="#2e333d" stroke-width="5" fill="none"/>
-          <path d="M480,120 L520,620" stroke="#2e333d" stroke-width="4" fill="none"/>
-          <!-- 电子围栏（虚线圆） -->
-          <circle cx="300" cy="300" r="52" fill="rgba(61,220,151,.05)" stroke="#3ddc97" stroke-width="1.5" stroke-dasharray="6 5" opacity=".8"/>
-          <circle cx="700" cy="230" r="48" fill="rgba(255,194,77,.06)" stroke="#ffc24d" stroke-width="1.5" stroke-dasharray="6 5" opacity=".85"/>
-          <circle cx="560" cy="470" r="50" fill="rgba(255,107,107,.07)" stroke="#ff6b6b" stroke-width="1.8" stroke-dasharray="6 5"/>
-          <!-- 库房（堡垒方块） -->
-          <g font-size="11" fill="#a9b1bf">
-            <rect x="216" y="150" width="18" height="14" fill="none" stroke="#5b82ff" stroke-width="1.6"/><text x="206" y="182">民安销售库</text>
-            <rect x="620" y="330" width="18" height="14" fill="none" stroke="#5b82ff" stroke-width="1.6"/><text x="610" y="362">岷江销售库</text>
-          </g>
-          <!-- 作业点：正常 -->
-          <g>
-            <circle class="ripple" cx="300" cy="300" r="6" fill="none" stroke="#3ddc97" stroke-width="2"/>
-            <circle cx="300" cy="300" r="6" fill="#3ddc97"/><circle cx="300" cy="300" r="2.5" fill="#062"/>
-          </g>
-          <g>
-            <circle class="ripple" cx="430" cy="210" r="6" fill="none" stroke="#3ddc97" stroke-width="2"/>
-            <circle cx="430" cy="210" r="6" fill="#3ddc97"/>
-          </g>
-          <!-- 作业点：预警（琥珀） -->
-          <g>
-            <circle class="ripple" cx="700" cy="230" r="6" fill="none" stroke="#ffc24d" stroke-width="2"/>
-            <circle cx="700" cy="230" r="6" fill="#ffc24d"/>
-          </g>
-          <!-- 作业点：异常（红，告警呼吸） -->
-          <g>
-            <circle class="ripple" cx="560" cy="470" r="6" fill="none" stroke="#ff6b6b" stroke-width="2" style="animation-duration:1.1s"/>
-            <circle cx="560" cy="470" r="6.5" fill="#ff6b6b"/>
-            <text x="578" y="466" fill="#ff8b8b" font-size="12">数量不符 · 待处置</text>
-          </g>
-          <g><circle cx="820" cy="180" r="5.5" fill="#3ddc97"/></g>
-          <g><circle cx="180" cy="360" r="5.5" fill="#3ddc97"/></g>
-          <!-- 在途路线 + 车辆动画 -->
-          <path id="rt1" d="M234,158 C280,240 320,300 300,300" stroke="#5b82ff" stroke-width="2.5" fill="none" class="flow" opacity=".9"/>
-          <path id="rt2" d="M629,338 C660,300 700,270 700,230" stroke="#ffc24d" stroke-width="2.5" fill="none" class="flow" opacity=".9"/>
-          <path id="rt3" d="M629,338 C560,400 580,440 560,470" stroke="#ff6b6b" stroke-width="2.5" fill="none" class="flow" opacity=".9"/>
-          <!-- 车标（沿轨迹运动） -->
-          <g><rect width="16" height="9" x="-8" y="-4.5" rx="2" fill="#5b82ff"/><animateMotion dur="6s" repeatCount="indefinite" rotate="auto"><mpath href="#rt1"/></animateMotion></g>
-          <g><rect width="16" height="9" x="-8" y="-4.5" rx="2" fill="#ffc24d"/><animateMotion dur="8s" repeatCount="indefinite" rotate="auto"><mpath href="#rt2"/></animateMotion></g>
-          <g><rect width="16" height="9" x="-8" y="-4.5" rx="2" fill="#ff6b6b"/><animateMotion dur="7s" repeatCount="indefinite" rotate="auto"><mpath href="#rt3"/></animateMotion></g>
-          <!-- 偏航段红色高亮示例 -->
-          <path d="M660,318 C640,340 620,356 600,372" stroke="#ff6b6b" stroke-width="3.5" fill="none" stroke-dasharray="2 4" opacity=".95"/>
-          <text x="646" y="352" fill="#ff8b8b" font-size="11">偏航 620m</text>
-        </svg>
+  <section class="kpis" id="kpis"></section>
+  <section class="flowbar" id="flowbar"></section>
+
+  <main class="main">
+    <aside class="rail">
+      <section class="panel" style="height:350px;flex:none">
+        <div class="p-head"><h3>作业点态势</h3><span class="cnt" id="siteCnt"></span></div>
+        <div class="p-body" id="siteList"></div>
+      </section>
+      <section class="panel" style="height:250px;flex:none">
+        <div class="p-head"><h3>库房存量 / 安全水位</h3><span class="cnt" id="stkCnt"></span></div>
+        <div class="p-body" id="stkList"></div>
+      </section>
+      <section class="panel" style="flex:1;min-height:0">
+        <div class="p-head"><h3>在册运输车辆</h3><span class="cnt" id="vehCnt"></span></div>
+        <div class="p-body" id="vehList"></div>
+      </section>
+    </aside>
+
+    <section class="mapwrap">
+      <div class="map-head">
+        <h3>全域地理态势</h3>
+        <span class="hint">真实经纬度投影</span>
         <div class="legend">
-          <span><i class="lg" style="background:var(--ok)"></i>正常作业点</span>
-          <span><i class="lg" style="background:var(--warn)"></i>预警</span>
-          <span><i class="lg" style="background:var(--bad)"></i>异常/告警</span>
-          <span><i class="lg" style="border:2px solid var(--cyan);background:none"></i>库房</span>
-          <span><i class="lg" style="border:1.5px dashed var(--ok);border-radius:3px;background:none"></i>电子围栏</span>
-        </div>
-        <!-- 下钻抽屉 -->
-        <div class="drawer" id="drawer">
-          <div class="dh"><span id="drTitle">作业点详情</span><a onclick="document.getElementById('drawer').classList.remove('open')">✕</a></div>
-          <div id="drInfo" style="padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--sub);line-height:1.6">
-            正在获取作业点实时流转单据...
-          </div>
-          <div class="tl" id="drTimeline">
-            <div class="tn done"><span class="tm">--</span><b>计划上报</b><i>获取中...</i></div>
-          </div>
+          <span class="lg"><i class="ln"></i>行政边界</span>
+          <span class="lg"><i class="sq" style="background:#5b82ff"></i>库房</span>
+          <span class="lg"><i style="background:#45d8ff"></i>作业点</span>
+          <span class="lg"><i class="dash"></i>电子围栏</span>
+          <span class="lg"><i class="ln out"></i>出库路线</span>
+          <span class="lg"><i class="ln ret"></i>退库路线</span>
+          <span class="lg"><i class="ln bad"></i>异常路线</span>
+          <span class="lg"><i style="background:#ff5d63"></i>异常</span>
         </div>
       </div>
-    </div>
+      <div class="map-body">
+        <div id="map"></div>
+      </div>
+      <div class="map-foot">
+        <span id="mapScale">比例尺 1 : —</span>
+        <span>底图为巴宜区行政边界</span>
+        <span class="sp" id="mapNote"></span>
+      </div>
+      <div class="tools" id="tools"></div>
+    </section>
 
-    <!-- 右列 -->
-    <div class="col-r">
-      <div class="panel" style="flex:1.5">
-        <h3>异常预警事件墙<em>五类异常 · 实时推送</em></h3>
-        <div class="bd" id="evtList"></div>
-      </div>
-      <div class="panel trend">
-        <h3>近 7 日趋势<em>计划 / 闭环率 / 异常</em></h3>
-        <div class="bd" style="padding:6px 8px">
-          <svg viewBox="0 0 320 110" width="100%" height="100%">
-            <g stroke="#2e333d" stroke-width="1">
-              <line x1="30" y1="15" x2="310" y2="15"/><line x1="30" y1="55" x2="310" y2="55"/><line x1="30" y1="95" x2="310" y2="95"/>
-            </g>
-            <g fill="#a9b1bf" font-size="9">
-              <text x="4" y="18">20</text><text x="4" y="58">10</text><text x="8" y="98">0</text>
-              <text x="30" y="108">10-29</text><text x="84" y="108">10-30</text><text x="138" y="108">10-31</text>
-              <text x="192" y="108">11-01</text><text x="246" y="108">11-02</text><text x="296" y="108">11-03</text>
-            </g>
-            <polyline points="30,55 82,42 134,48 186,35 238,40 284,30" fill="none" stroke="#5b82ff" stroke-width="2"/>
-            <polyline points="30,75 82,60 134,66 186,58 238,62 284,52" fill="none" stroke="#3ddc97" stroke-width="2"/>
-            <polyline points="30,95 82,90 134,92 186,84 238,88 284,78" fill="none" stroke="#ff6b6b" stroke-width="2"/>
-            <circle cx="284" cy="30" r="3" fill="#5b82ff"/><circle cx="284" cy="52" r="3" fill="#3ddc97"/><circle cx="284" cy="78" r="3" fill="#ff6b6b"/>
-          </svg>
-        </div>
-      </div>
+    <aside class="rail">
+      <section class="panel" style="height:430px;flex:none">
+        <div class="p-head"><h3>公安检查环节</h3><span class="cnt" id="alertCnt"></span></div>
+        <div class="p-body" id="alertList"></div>
+      </section>
+      <section class="panel" style="height:408px;flex:none">
+        <div class="p-head"><h3>作业四员</h3><span class="cnt" id="staffCnt"></span></div>
+        <div class="p-body" id="staffList"></div>
+      </section>
+    </aside>
+  </main>
+
+  <aside class="drawer" id="drawer">
+    <div class="dr-head">
+      <div class="dr-kicker" id="drKicker">作业点</div>
+      <div class="dr-title" id="drTitle">—</div>
+      <div class="dr-sub" id="drSub"></div>
+      <div class="dr-close" id="drClose" title="关闭"></div>
     </div>
-  </div>
+    <div class="dr-body" id="drBody"></div>
+  </aside>
+
+  <div class="offline" id="offline"><i style="width:7px;height:7px;border-radius:50%;background:#ff5d63"></i>
+    <span id="offlineTxt">未连接到数据服务，请确认后端 8080 已启动</span></div>
 </div>
+</div>
+
+<script type="application/json" id="geoBound">[{"n":"市中区","c":[103.7969,29.5988],"r":[[[103.89789,29.74746],[103.8945,29.74301],[103.88859,29.74198],[103.87986,29.74208],[103.87612,29.7441],[103.86763,29.74412],[103.86039,29.74683],[103.85622,29.747],[103.85449,29.74414],[103.85363,29.73823],[103.84623,29.73481],[103.8423,29.73108],[103.83555,29.73047],[103.83037,29.73231],[103.82127,29.73032],[103.81328,29.7243],[103.80756,29.71896],[103.79926,29.71401],[103.79663,29.714],[103.79349,29.71567],[103.78489,29.71226],[103.77895,29.71162],[103.77751,29.71033],[103.77647,29.7042],[103.77459,29.70442],[103.77459,29.70325],[103.76422,29.7071],[103.75866,29.71667],[103.75541,29.72023],[103.74676,29.72023],[103.73972,29.7285],[103.73636,29.73024],[103.7313,29.73058],[103.73071,29.73006],[103.73289,29.7276],[103.73368,29.7253],[103.73165,29.72198],[103.7237,29.72087],[103.71936,29.71691],[103.72095,29.71139],[103.72089,29.70823],[103.72017,29.70715],[103.70684,29.69799],[103.70559,29.69752],[103.70256,29.69854],[103.70079,29.69819],[103.69718,29.69405],[103.70648,29.68567],[103.70672,29.68449],[103.70606,29.6834],[103.69906,29.68292],[103.69704,29.68191],[103.69694,29.68034],[103.69844,29.67878],[103.70386,29.67884],[103.70643,29.6782],[103.70709,29.67505],[103.70479,29.67245],[103.69986,29.67089],[103.6942,29.67292],[103.69302,29.67166],[103.69129,29.66259],[103.68849,29.66078],[103.68725,29.66087],[103.68355,29.66363],[103.68245,29.66346],[103.68128,29.66152],[103.68231,29.65825],[103.68188,29.65607],[103.68088,29.65498],[103.67085,29.65094],[103.66338,29.65106],[103.64639,29.65481],[103.6365,29.65406],[103.6288,29.65131],[103.62188,29.64106],[103.62097,29.63743],[103.61671,29.63461],[103.61528,29.63105],[103.61383,29.63057],[103.61826,29.62082],[103.62037,29.61876],[103.62287,29.61791],[103.62313,29.61693],[103.62169,29.61516],[103.62268,29.61206],[103.6223,29.61058],[103.61507,29.61285],[103.61237,29.61186],[103.61009,29.60957],[103.60989,29.60802],[103.61148,29.60511],[103.60945,29.6035],[103.61097,29.60075],[103.61104,29.59909],[103.60666,29.59153],[103.60211,29.57842],[103.59923,29.57447],[103.59708,29.57401],[103.5936,29.57594],[103.59111,29.57428],[103.58652,29.57278],[103.58437,29.56872],[103.5834,29.56825],[103.58103,29.56837],[103.57677,29.57048],[103.57442,29.56974],[103.57311,29.5683],[103.57306,29.564],[103.57398,29.56182],[103.5812,29.55764],[103.58383,29.55414],[103.58378,29.55146],[103.57419,29.5412],[103.57275,29.53872],[103.57191,29.53511],[103.57035,29.53309],[103.56374,29.53139],[103.56119,29.53149],[103.55929,29.53253],[103.55876,29.53558],[103.55692,29.5361],[103.54981,29.5307],[103.54949,29.52723],[103.55528,29.51853],[103.55354,29.51257],[103.55171,29.51069],[103.54908,29.50953],[103.53684,29.50098],[103.53592,29.49915],[103.53612,29.49718],[103.53816,29.49489],[103.54035,29.4951],[103.54395,29.49398],[103.54909,29.49514],[103.55472,29.49832],[103.55723,29.49883],[103.55707,29.49823],[103.558,29.49828],[103.55958,29.49662],[103.56145,29.48693],[103.5605,29.47152],[103.5709,29.47983],[103.57262,29.49211],[103.5735,29.4934],[103.57608,29.49431],[103.57728,29.49679],[103.57597,29.50239],[103.57684,29.50427],[103.57997,29.50598],[103.58793,29.50803],[103.59184,29.51004],[103.59939,29.51766],[103.60192,29.52231],[103.60451,29.52293],[103.6097,29.51431],[103.61378,29.512],[103.6171,29.50829],[103.62133,29.50506],[103.62194,29.50136],[103.62411,29.50002],[103.62921,29.50048],[103.63117,29.49901],[103.6313,29.49789],[103.62712,29.49264],[103.62647,29.49076],[103.62766,29.48604],[103.63118,29.48401],[103.63797,29.48301],[103.64312,29.48592],[103.65425,29.48891],[103.6617,29.48851],[103.66454,29.48736],[103.67184,29.48099],[103.67889,29.47694],[103.68154,29.47293],[103.68152,29.46912],[103.69582,29.46923],[103.71201,29.47316],[103.71572,29.47428],[103.71795,29.47588],[103.72098,29.48676],[103.72112,29.49356],[103.72534,29.49853],[103.72643,29.5015],[103.72843,29.50339],[103.73722,29.50407],[103.74148,29.50569],[103.7436,29.50719],[103.74492,29.50996],[103.74659,29.51136],[103.75158,29.51252],[103.752,29.51131],[103.75726,29.50891],[103.76076,29.50287],[103.7622,29.50154],[103.77539,29.49478],[103.77896,29.49376],[103.78175,29.49388],[103.79239,29.49521],[103.80043,29.49841],[103.81058,29.50519],[103.81258,29.50708],[103.81423,29.51014],[103.81613,29.51114],[103.8177,29.51096],[103.82099,29.50871],[103.82189,29.50882],[103.825,29.51199],[103.83198,29.51086],[103.83658,29.51099],[103.83848,29.51179],[103.84322,29.52079],[103.84477,29.52218],[103.85039,29.52212],[103.85243,29.52125],[103.85552,29.51648],[103.85812,29.51543],[103.86193,29.51575],[103.86551,29.51735],[103.86951,29.52162],[103.87187,29.52232],[103.87414,29.51593],[103.876,29.50755],[103.87963,29.50351],[103.8838,29.49653],[103.88535,29.49518],[103.88718,29.49022],[103.88874,29.48932],[103.89285,29.48979],[103.89261,29.48754],[103.89339,29.48618],[103.89705,29.48701],[103.8969,29.48916],[103.89528,29.49276],[103.89595,29.49741],[103.89784,29.49777],[103.90153,29.49636],[103.90297,29.49661],[103.90375,29.49718],[103.90409,29.50149],[103.90838,29.49924],[103.91087,29.49983],[103.91108,29.50362],[103.91467,29.5068],[103.91467,29.50771],[103.91181,29.51153],[103.91205,29.51356],[103.91849,29.51584],[103.91952,29.51676],[103.91994,29.51848],[103.92741,29.52694],[103.93268,29.52492],[103.93401,29.52356],[103.93443,29.52213],[103.92985,29.52036],[103.93037,29.51991],[103.93511,29.51973],[103.93713,29.52084],[103.93625,29.5284],[103.93405,29.53182],[103.93466,29.53398],[103.9378,29.53363],[103.94312,29.53058],[103.94536,29.53078],[103.94783,29.53276],[103.94814,29.53517],[103.94514,29.53886],[103.94468,29.54448],[103.94624,29.54644],[103.9522,29.54794],[103.95389,29.54898],[103.95342,29.55024],[103.94937,29.55416],[103.94862,29.55684],[103.95372,29.55804],[103.96063,29.5584],[103.96914,29.56199],[103.96781,29.56381],[103.95843,29.56529],[103.95722,29.56772],[103.95929,29.56841],[103.95995,29.56961],[103.9681,29.5723],[103.96835,29.57357],[103.96543,29.57588],[103.96429,29.57868],[103.96125,29.57939],[103.9583,29.57867],[103.9545,29.57662],[103.95129,29.57699],[103.94755,29.57638],[103.94688,29.5766],[103.94629,29.57916],[103.94778,29.58396],[103.95081,29.58982],[103.95747,29.59465],[103.95964,29.59445],[103.96176,29.59327],[103.96689,29.58725],[103.96861,29.58664],[103.97189,29.59309],[103.971,29.59635],[103.97088,29.60094],[103.97222,29.60444],[103.98438,29.61232],[103.98739,29.61546],[103.98629,29.61719],[103.98054,29.62042],[103.97625,29.6218],[103.97405,29.62402],[103.9719,29.62817],[103.97273,29.63081],[103.97179,29.63282],[103.97224,29.63362],[103.97851,29.63215],[103.98131,29.63304],[103.98188,29.63596],[103.98141,29.63722],[103.97989,29.63801],[103.9764,29.63814],[103.97362,29.63988],[103.9728,29.64257],[103.97332,29.64842],[103.96915,29.65009],[103.96882,29.65077],[103.97006,29.65217],[103.97327,29.65289],[103.97444,29.65411],[103.97301,29.65902],[103.97598,29.67069],[103.97629,29.67803],[103.97736,29.68285],[103.97405,29.68447],[103.97394,29.68837],[103.97249,29.6883],[103.9706,29.68673],[103.96987,29.68753],[103.97257,29.69334],[103.97732,29.69225],[103.97779,29.69747],[103.97696,29.70107],[103.97768,29.70183],[103.98898,29.70453],[103.99307,29.71099],[103.99312,29.71203],[103.98966,29.71503],[103.98882,29.71932],[103.9875,29.71988],[103.98634,29.71943],[103.98377,29.72143],[103.98394,29.72563],[103.9822,29.72842],[103.97936,29.72895],[103.97824,29.72848],[103.97881,29.72488],[103.97784,29.72373],[103.97461,29.72334],[103.96804,29.72408],[103.96452,29.72532],[103.95735,29.72978],[103.95304,29.72993],[103.95032,29.73109],[103.95051,29.73464],[103.95379,29.74271],[103.95464,29.74749],[103.95815,29.75176],[103.95659,29.75559],[103.95337,29.75865],[103.95325,29.76014],[103.95095,29.75903],[103.95075,29.75703],[103.94662,29.75267],[103.94235,29.75159],[103.93968,29.74962],[103.93816,29.74931],[103.93539,29.75027],[103.923,29.75163],[103.91648,29.74796],[103.90983,29.74836],[103.90595,29.74773],[103.90225,29.74496],[103.90015,29.74523],[103.89789,29.74746]]]},{"n":"沙湾区","c":[103.5992,29.3449],"r":[[[103.68152,29.46912],[103.68154,29.47293],[103.67889,29.47694],[103.67184,29.48099],[103.66454,29.48736],[103.6617,29.48851],[103.65425,29.48891],[103.64312,29.48592],[103.63797,29.48301],[103.63119,29.48401],[103.62766,29.48604],[103.62647,29.49076],[103.62712,29.49263],[103.6313,29.49789],[103.63117,29.49902],[103.62921,29.50048],[103.62411,29.50002],[103.62194,29.50136],[103.62133,29.50506],[103.6171,29.50829],[103.61378,29.51199],[103.60969,29.51431],[103.6045,29.52293],[103.60192,29.52231],[103.5994,29.51766],[103.59184,29.51004],[103.58793,29.50803],[103.57997,29.50598],[103.57684,29.50427],[103.57596,29.50239],[103.57728,29.49679],[103.57608,29.49431],[103.5735,29.4934],[103.57262,29.49211],[103.5709,29.47983],[103.5605,29.47152],[103.55383,29.46481],[103.526,29.44772],[103.52056,29.44071],[103.51818,29.43477],[103.51577,29.43121],[103.5087,29.42327],[103.50647,29.42226],[103.5024,29.4223],[103.50018,29.42417],[103.50121,29.43008],[103.50087,29.43265],[103.49735,29.4405],[103.4961,29.44117],[103.49554,29.43763],[103.4978,29.43072],[103.49706,29.42895],[103.48982,29.42112],[103.48834,29.41598],[103.48802,29.40944],[103.4865,29.40699],[103.48334,29.40375],[103.47869,29.40305],[103.471,29.3951],[103.46739,29.38619],[103.46666,29.37754],[103.45864,29.37687],[103.45668,29.37763],[103.45274,29.38135],[103.44165,29.37489],[103.43386,29.37378],[103.43309,29.36883],[103.43751,29.36529],[103.43741,29.36122],[103.43557,29.35911],[103.42698,29.35512],[103.42565,29.35323],[103.42537,29.35014],[103.42572,29.34641],[103.42826,29.3373],[103.42776,29.33384],[103.43069,29.33238],[103.43027,29.32854],[103.43452,29.31998],[103.43425,29.31771],[103.42957,29.3133],[103.43294,29.30947],[103.43332,29.30255],[103.4344,29.29896],[103.43762,29.29288],[103.43773,29.28817],[103.44521,29.28906],[103.44937,29.29083],[103.45329,29.29361],[103.4577,29.29769],[103.46027,29.30143],[103.46283,29.30805],[103.4638,29.31408],[103.46512,29.31634],[103.47078,29.31681],[103.47375,29.31444],[103.48283,29.29828],[103.49186,29.28006],[103.50119,29.26923],[103.50344,29.25812],[103.50501,29.25666],[103.51045,29.25498],[103.52232,29.25308],[103.52591,29.25331],[103.52758,29.25442],[103.53278,29.26281],[103.53423,29.26338],[103.53702,29.26272],[103.54998,29.25204],[103.55374,29.24766],[103.55446,29.24543],[103.55369,29.23992],[103.55413,29.23516],[103.56044,29.22606],[103.56217,29.22219],[103.56714,29.21643],[103.56839,29.21371],[103.574,29.20816],[103.59273,29.1942],[103.60083,29.18945],[103.60526,29.18844],[103.63074,29.18636],[103.64132,29.18719],[103.65206,29.18651],[103.66125,29.18904],[103.66492,29.19111],[103.66642,29.19252],[103.66687,29.19513],[103.66628,29.20416],[103.66414,29.20656],[103.65594,29.21004],[103.65378,29.21222],[103.65336,29.2146],[103.6539,29.21749],[103.65562,29.22024],[103.65908,29.223],[103.66198,29.22337],[103.66394,29.22221],[103.66888,29.21563],[103.67221,29.21329],[103.67493,29.21366],[103.67663,29.2146],[103.67785,29.21651],[103.67798,29.22448],[103.67755,29.22648],[103.67548,29.22875],[103.67656,29.23129],[103.67921,29.23287],[103.68642,29.23275],[103.69099,29.23408],[103.69189,29.23477],[103.69138,29.23832],[103.69842,29.2444],[103.70911,29.24386],[103.71116,29.2463],[103.71421,29.24766],[103.71547,29.25044],[103.71262,29.25796],[103.71021,29.26132],[103.70798,29.26233],[103.69984,29.26383],[103.69706,29.26592],[103.69511,29.26911],[103.69477,29.27065],[103.69645,29.27222],[103.70318,29.27368],[103.70509,29.27783],[103.7047,29.28173],[103.69471,29.28969],[103.69468,29.29117],[103.7006,29.29446],[103.71172,29.29574],[103.71568,29.30335],[103.71861,29.30499],[103.72602,29.30421],[103.7264,29.30049],[103.72714,29.29901],[103.72786,29.29908],[103.73462,29.30736],[103.73792,29.31031],[103.73987,29.3134],[103.7264,29.32155],[103.72522,29.32543],[103.72844,29.32862],[103.72842,29.33006],[103.72728,29.33147],[103.72195,29.33324],[103.71783,29.33685],[103.71549,29.34014],[103.7118,29.34147],[103.70904,29.34077],[103.70262,29.33689],[103.69696,29.33505],[103.69166,29.32887],[103.68921,29.32803],[103.67595,29.34312],[103.67404,29.34815],[103.67467,29.3526],[103.6785,29.36072],[103.67753,29.36394],[103.67096,29.37214],[103.66928,29.37676],[103.66989,29.40119],[103.66585,29.40983],[103.66535,29.41245],[103.66873,29.4343],[103.66869,29.43994],[103.67028,29.44238],[103.67772,29.44818],[103.67564,29.45628],[103.67701,29.4573],[103.68001,29.45794],[103.68149,29.45978],[103.67776,29.46205],[103.67316,29.46059],[103.67199,29.46118],[103.67163,29.46299],[103.67242,29.46431],[103.68152,29.46912]]]},{"n":"五通桥区","c":[103.8351,29.407],"r":[[[103.9441,29.44716],[103.94238,29.44981],[103.94162,29.45403],[103.93737,29.45801],[103.93664,29.45954],[103.93751,29.46334],[103.93031,29.46281],[103.92772,29.45878],[103.92623,29.45774],[103.922,29.45928],[103.91977,29.45919],[103.91057,29.45709],[103.90729,29.45528],[103.90585,29.45645],[103.90395,29.46302],[103.90282,29.46398],[103.9001,29.46098],[103.89774,29.46153],[103.89594,29.46387],[103.89507,29.46627],[103.89566,29.47224],[103.8944,29.47291],[103.88466,29.47134],[103.88253,29.4743],[103.87957,29.476],[103.87884,29.4768],[103.87823,29.4839],[103.87828,29.48528],[103.87964,29.48649],[103.88428,29.48681],[103.89164,29.48505],[103.89622,29.48572],[103.89705,29.48701],[103.8934,29.48618],[103.89261,29.48754],[103.89285,29.48979],[103.88874,29.48932],[103.88718,29.49022],[103.88535,29.49518],[103.8838,29.49653],[103.87963,29.50351],[103.876,29.50755],[103.87414,29.51593],[103.87187,29.52232],[103.86952,29.52162],[103.86551,29.51735],[103.86194,29.51575],[103.85811,29.51543],[103.85552,29.51648],[103.85243,29.52125],[103.85039,29.52212],[103.84477,29.52218],[103.84322,29.52079],[103.83848,29.51179],[103.83658,29.51099],[103.83198,29.51086],[103.825,29.51199],[103.82189,29.50882],[103.82099,29.50871],[103.8177,29.51096],[103.81613,29.51114],[103.81423,29.51014],[103.81258,29.50708],[103.81058,29.50519],[103.80043,29.49842],[103.79239,29.49521],[103.78175,29.49388],[103.77896,29.49376],[103.77539,29.49479],[103.7622,29.50154],[103.76076,29.50287],[103.75726,29.50891],[103.752,29.51131],[103.75158,29.51252],[103.74659,29.51136],[103.74492,29.50996],[103.7436,29.50719],[103.74148,29.50569],[103.73722,29.50407],[103.72843,29.50339],[103.72643,29.5015],[103.72534,29.49853],[103.72112,29.49356],[103.72098,29.48676],[103.71905,29.47836],[103.71795,29.47588],[103.71572,29.47428],[103.69909,29.46956],[103.68152,29.46912],[103.67242,29.46431],[103.67162,29.46299],[103.67199,29.46118],[103.67316,29.46059],[103.67776,29.46205],[103.68149,29.45977],[103.68001,29.45794],[103.67701,29.4573],[103.67564,29.45627],[103.67772,29.44817],[103.67027,29.44238],[103.66869,29.43994],[103.66874,29.4343],[103.66535,29.41245],[103.66585,29.40983],[103.66989,29.4012],[103.66928,29.37676],[103.67096,29.37214],[103.67753,29.36394],[103.6785,29.36072],[103.67468,29.3526],[103.67404,29.34815],[103.67595,29.34312],[103.68921,29.32803],[103.69166,29.32887],[103.69696,29.33505],[103.70262,29.33689],[103.71058,29.34146],[103.71285,29.34125],[103.71549,29.34014],[103.71783,29.33685],[103.72195,29.33324],[103.72728,29.33147],[103.72842,29.33006],[103.72844,29.32862],[103.7256,29.32618],[103.72552,29.32291],[103.72792,29.32025],[103.73671,29.31503],[103.73987,29.3134],[103.74258,29.31609],[103.74349,29.31943],[103.74185,29.32219],[103.74213,29.32328],[103.74849,29.32477],[103.75084,29.32417],[103.75284,29.32562],[103.75519,29.32537],[103.76394,29.31703],[103.77206,29.31787],[103.77295,29.31704],[103.77515,29.31083],[103.78123,29.30374],[103.78188,29.30446],[103.78193,29.30677],[103.78046,29.31935],[103.78137,29.32296],[103.78516,29.32427],[103.79136,29.32443],[103.79647,29.3266],[103.7985,29.32653],[103.8059,29.3231],[103.80952,29.31921],[103.82094,29.31897],[103.82342,29.32472],[103.82613,29.3268],[103.83562,29.32649],[103.83664,29.32723],[103.83681,29.32929],[103.83108,29.33338],[103.83041,29.33487],[103.83236,29.33563],[103.83981,29.33465],[103.84506,29.33285],[103.84993,29.32934],[103.85207,29.32539],[103.85596,29.31132],[103.85828,29.30778],[103.86454,29.30359],[103.87181,29.29196],[103.87401,29.29198],[103.87736,29.29335],[103.883,29.29281],[103.88357,29.29413],[103.88181,29.29704],[103.88525,29.30093],[103.88631,29.308],[103.88422,29.31541],[103.88453,29.31734],[103.89422,29.32172],[103.89837,29.31713],[103.90102,29.31644],[103.90693,29.31893],[103.91572,29.31991],[103.91717,29.32146],[103.91671,29.32294],[103.91479,29.32466],[103.9152,29.32697],[103.92106,29.33186],[103.92171,29.33552],[103.92042,29.33815],[103.91563,29.34074],[103.91273,29.33936],[103.91151,29.33422],[103.91079,29.33402],[103.90972,29.34116],[103.91098,29.34658],[103.9107,29.34883],[103.90811,29.3522],[103.90981,29.3559],[103.91324,29.35745],[103.91729,29.36137],[103.91921,29.36517],[103.9191,29.36907],[103.92589,29.37201],[103.92645,29.37419],[103.92551,29.37658],[103.92452,29.37658],[103.9233,29.37485],[103.92102,29.37362],[103.91382,29.37281],[103.91322,29.37412],[103.91358,29.37717],[103.90918,29.38394],[103.90712,29.38562],[103.90278,29.38671],[103.90122,29.38805],[103.90492,29.38866],[103.90554,29.39242],[103.90744,29.39519],[103.90805,29.39937],[103.91429,29.40143],[103.91941,29.39913],[103.91773,29.40242],[103.92234,29.40346],[103.92505,29.40282],[103.92677,29.39972],[103.9304,29.4005],[103.93401,29.40272],[103.93658,29.39946],[103.9399,29.39821],[103.94544,29.40477],[103.94878,29.40674],[103.9494,29.41041],[103.94865,29.41163],[103.94648,29.41234],[103.94392,29.41438],[103.93907,29.41569],[103.93761,29.41835],[103.93497,29.41894],[103.93556,29.42252],[103.9345,29.42613],[103.93501,29.42748],[103.93333,29.42969],[103.93891,29.43172],[103.93754,29.43855],[103.94165,29.44083],[103.9441,29.44716]]]}]</script>
+<script type="application/json" id="demoSnap">{"all":{"companies":[{"id":"C1","name":"宏泰民爆工程有限公司"},{"id":"C2","name":"宏安爆破有限责任公司"}],"projects":[{"id":"PR1","name":"青龙山隧道爆破项目","company":"C1"},{"id":"PR2","name":"龙泉矿山台阶爆破项目","company":"C2"}],"workareas":[{"id":"WA1","name":"青龙山工区","project":"PR1"},{"id":"WA2","name":"龙泉工区","project":"PR2"}],"persons":[{"id":"ADM1","name":"马国平","role":"治安管理员","company":"治安支队","cert":"GA-ZA-2022-018"},{"id":"P1","name":"陈志远","role":"项目负责人","company":"C1","cert":"GA-PM-2024-011"},{"id":"P10","name":"何志强","role":"押运员","company":"C1","cert":"GA-YY-2027-102"},{"id":"P11","name":"邓海军","role":"押运员","company":"C2","cert":"GA-YY-2026-118"},{"id":"P2","name":"李建国","role":"安全监理","company":"C1","cert":"GA-JL-2023-052"},{"id":"P3","name":"赵铁柱","role":"安全员","company":"C1","cert":"GA-AQ-2024-103"},{"id":"P4","name":"钱有德","role":"保管员","company":"C1","cert":"GA-BG-2022-077"},{"id":"P5","name":"孙立冬","role":"押运员","company":"C1","cert":"GA-YY-2024-066"},{"id":"P6","name":"周大河","role":"爆破员","company":"C1","cert":"GA-BP-2023-019"},{"id":"P7","name":"张明","role":"测量技术员","company":"C1","cert":"GA-CS-2025-014"},{"id":"P8","name":"郑安","role":"安全监管","company":"C1","cert":"GA-AQ-2025-141"},{"id":"P9","name":"吴秀英","role":"保管员","company":"C1","cert":"GA-BG-2023-031"},{"id":"PE2105","name":"张安全员","role":"安全员","company":"C1"},{"id":"PE8946","name":"张三","role":"安全监理","company":"C1"},{"id":"POL1","name":"王卫民","role":"民警","company":"城关派出所","cert":"GA-ZA-2022-018"},{"id":"POL2","name":"刘峰","role":"民警","company":"工区警务室","cert":"GA-ZA-2022-018"},{"id":"POL3","name":"高志强","role":"民警","company":"治安大队","cert":"GA-ZA-2022-018"}],"storages":[{"id":"S1","name":"城西销售库","type":"销售库","company":"C1","addr":"市中区城西路 66 号","area":3200,"fence":200,"keepers":["P4","P9"],"lng":103.72589,"lat":29.56234,"status":"生效","stock":{"zy":{"2号岩石乳化炸药":2210,"膨化硝铵炸药":800},"lg":{"8#工业电雷管":19780,"数码电子雷管":6000},"db":{"普通导爆索":12000}},"safe":{"zy":500,"lg":5000,"db":2000},"builtAt":"2015-06-18","staff":12},{"id":"S2","name":"青龙山使用库","type":"使用库","company":"C1","addr":"青龙山工区 2 号便道旁","area":450,"fence":150,"keepers":["P3"],"lng":103.8124,"lat":29.6105,"status":"生效","stock":{"zy":{"2号岩石乳化炸药":88},"lg":{"8#工业电雷管":430},"db":{}},"safe":{"zy":20,"lg":100,"db":0},"builtAt":"2024-11-02","staff":5},{"id":"S3","name":"待补录库房（S3）","status":"生效","stock":{"zy":{},"lg":{},"db":{}}},{"id":"S4","name":"待补录库房（S4）","status":"生效","stock":{"zy":{},"lg":{},"db":{}}}],"sites":[{"id":"SI2396","name":"测试第5个点位","project":"PR1","workarea":"WA1","fence":0,"hist":0,"status":"启用"},{"id":"Z1","name":"青龙山隧道进口作业点","project":"PR1","workarea":"WA1","lng":103.821,"lat":29.615,"fence":300,"hist":12,"status":"启用"},{"id":"Z2","name":"青龙山隧道出口作业点","project":"PR1","workarea":"WA1","lng":103.835,"lat":29.621,"fence":300,"hist":8,"status":"启用"},{"id":"Z3","name":"龙泉矿区 B2 台阶作业点","project":"PR2","workarea":"WA2","lng":103.91,"lat":29.489,"fence":500,"hist":21,"status":"启用"},{"id":"Z4","name":"龙泉矿区 B3 台阶作业点","project":"PR2","workarea":"WA2","fence":400,"hist":0,"status":"启用"}],"vehicles":[{"id":"V1","plate":"川L·10295","model":"厢式危险品运输车","load":2000,"company":"C1","transLicence":"川交运许[2024]0118号","transGoods":"炸药、雷管","annualExpire":"2026-12-31","status":"在用"},{"id":"V2","plate":"川L·20847","model":"厢式危险品运输车","load":1500,"company":"C1","transLicence":"川交运许[2024]0119号","transGoods":"炸药、雷管","annualExpire":"2027-05-31","status":"在用"},{"id":"V3","plate":"川L·33201","model":"小型危险品运输车","load":600,"company":"C1","transLicence":"川交运许[2025]0043号","transGoods":"雷管","annualExpire":"2026-11-30","status":"在用"},{"id":"V4","plate":"川L·40617","model":"厢式危险品运输车","load":3000,"company":"C2","transLicence":"川交运许[2026]0087号","transGoods":"炸药、雷管、导爆索","annualExpire":"2028-03-31","status":"在用"}],"routes":[{"id":"R1","name":"城西销售库 → 青龙山隧道群","from":"S1","to":"Z1","via":"G318 国道 → 青龙山专线"},{"id":"R2","name":"城西销售库 → 龙泉矿区","from":"S1","to":"Z3","via":"G318 国道 → 龙泉矿区专用道"},{"id":"R3","name":"青龙山使用库 → 青龙山隧道出口","from":"S2","to":"Z2","via":"青龙山施工便道"},{"id":"R4","name":"青龙山中间库 → 青龙山隧道进口","from":"S2","to":"Z1","via":"青龙山工区便道 → 隧道进口便道"},{"id":"R5","name":"城西销售库 → 龙泉矿区 B3 台阶","from":"S1","to":"Z4","via":"G318 国道 → 龙泉矿区专用道 → B 区支线"},{"id":"RO9352","name":"青龙山使用库-到第五作业点","from":"S2","to":"SI2396"}],"plans":[{"id":"PL10","planNo":"BBJH20261113011","site":"SI2396","siteId":"SI2396","project":"PR1","workarea":"WA1","status":"待核验","planKg":100.1,"planStart":"2026-11-14 15:31:00","planEnd":"2026-11-14 16:31:00","createdAt":"2026-11-13 12:41:00","auditStatus":"通过","officer":"PE2105","supervisor":"PE8946"},{"id":"PL11","planNo":"BBJH20261113012","site":"Z1","siteId":"Z1","project":"PR1","workarea":"WA1","status":"待核验","planKg":50.05,"planStart":"2026-11-14 17:43:00","planEnd":"2026-11-14 18:43:00","createdAt":"2026-11-13 13:44:40","auditStatus":"通过","officer":"PE2105","supervisor":"P2"},{"id":"PL9","planNo":"BBJH20261113010","site":"SI2396","siteId":"SI2396","project":"PR1","workarea":"WA1","status":"待运输","planKg":100.1,"planStart":"2026-11-14 14:30:00","planEnd":"2026-11-14 15:30:00","createdAt":"2026-11-13 12:30:30","auditStatus":"通过","officer":"PE2105","supervisor":"PE8946"}],"transports":[{"id":"TR11","no":"BBYS20261113012","plan":"PL11","vehicle":"V1","direction":"RETURN","status":"已到达","departTime":null,"arriveTime":1794550046215,"route":{"from":"青龙山隧道进口作业点","to":"青龙山使用库","via":"原路返回（同一路线反向）"},"driver":"D1","escort":"P5"},{"id":"TR5","no":"BBYS20261113006","plan":"PL10","vehicle":"V1","direction":"GO","status":"已到达","departTime":1794549508813,"arriveTime":1794549629030,"route":{"from":"青龙山使用库","to":"测试第5个点位 → 青龙山隧道进口作业点","via":"青龙山使用库-到第五作业点 → 青龙山中间库 → 青龙山隧道进口","segs":[{"idx":1,"route":"RO9352","name":"青龙山使用库-到第五作业点","km":40,"plan":"BBJH20261113011","site":"SI2396"},{"idx":2,"route":"R4","name":"青龙山中间库 → 青龙山隧道进口","km":6,"plan":"BBJH20261113012","site":"Z1"}]},"driver":"D1","escort":"P5"},{"id":"TR6","no":"BBYS20261113007","plan":"PL11","vehicle":"V1","direction":"RETURN","status":"已到达","departTime":null,"arriveTime":1794552763011,"route":{"from":"青龙山隧道进口作业点","to":"青龙山使用库","via":"原路返回（同一路线反向）"},"driver":"D1","escort":"P5"}],"receives":[{"id":"RC7","transport":"TR5","plan":"PL10","items":[{"goods":"zy","spec":"2号岩石乳化炸药","sent":100,"got":100,"diff":0},{"goods":"lg","spec":"8#工业电雷管","sent":100,"got":100,"diff":0}],"diffFlag":false,"time":1794549550597,"arriveTime":1794549525563},{"id":"RC8","transport":"TR5","plan":"PL11","items":[{"goods":"zy","spec":"2号岩石乳化炸药","sent":50,"got":50,"diff":0},{"goods":"lg","spec":"8#工业电雷管","sent":50,"got":50,"diff":0}],"diffFlag":false,"time":1794549644531,"arriveTime":1794549629030}],"blastings":[{"id":"BL10","plan":"PL11","method":"毫秒延时爆破","fromStorage":"S2","used":[{"goods":"zy","spec":"2号岩石乳化炸药","qty":42},{"goods":"lg","spec":"8#工业电雷管","qty":50}],"blastTime":1794549780000,"result":"NORMAL_RETURN","submitTime":1794549843767},{"id":"BL9","plan":"PL10","method":"毫秒延时爆破","fromStorage":"S2","used":[{"goods":"zy","spec":"2号岩石乳化炸药","qty":100},{"goods":"lg","spec":"8#工业电雷管","qty":100}],"blastTime":1794549600000,"result":"NORMAL_NO_RETURN","submitTime":1794549766767}],"verifies":[],"nodeLogs":[{"id":"LG1","plan":"PTQR1","planNo":"BBJH20261113900","node":"运输","action":"押运员扫码绑定出库单 BBCK20261113901（本人接管本次押运）","who":"孙立冬","time":1794548187826},{"id":"LG2","plan":"PTQR1","planNo":"BBJH20261113900","node":"运输","action":"押运员扫码绑定出库单 BBCK20261113901（本人接管本次押运）","who":"孙立冬","time":1794548215963},{"id":"LG28","plan":"PL9","planNo":"BBJH20261113010","node":"计划","action":"测量技术员现场测量上报：测试第5个点位 100kg","who":"张明","time":1794542650271},{"id":"LG29","plan":"PL9","planNo":"BBJH20261113010","node":"计划","action":"作业点安全监管 郑安 手签放行","who":"郑安","time":1794542662905},{"id":"LG3","plan":"PTQR1","planNo":"BBJH20261113900","node":"运输","action":"押运员扫码绑定出库单 BBCK20261113901（本人接管本次押运）","who":"孙立冬","time":1794548248994},{"id":"LG30","plan":"PL9","planNo":"BBJH20261113010","node":"计划","action":"测量技术员现场测量上报：测试第5个点位 100kg","who":"张明","time":1794544230735},{"id":"LG31","plan":"PL10","planNo":"BBJH20261113011","node":"计划","action":"测量技术员现场测量上报：测试第5个点位 100kg","who":"张明","time":1794544860308},{"id":"LG32","plan":"PL9","planNo":"BBJH20261113010","node":"计划","action":"作业点安全监管 郑安 手签放行","who":"郑安","time":1794544876075},{"id":"LG33","plan":"PL9","planNo":"BBJH20261113010","node":"计划","action":"审核提交（出库库房 青龙山使用库 · 公安责任区 青龙山工区）","who":"张明","time":1794545345979},{"id":"LG34","plan":"PL9","planNo":"BBJH20261113010","node":"计划","action":"项目负责人核实通过并安排运输：川L·10295（载重 2000kg）+ 押运员 何志强 + 路线 青龙山使用库-到第五作业点（0km），计划合计 100kg","who":"陈志远","time":1794545345979},{"id":"LG35","plan":"PL9","planNo":"BBJH20261113010","node":"计划","action":"民警审核通过","who":"刘峰","time":1794547305589},{"id":"LG36","plan":"PL9","planNo":"BBJH20261113010","node":"出库","action":"出库登记 BBCK20261113007（登记库管员 钱有德 已签名），待复核","who":"钱有德","time":1794547360957},{"id":"LG37","plan":"PL9","planNo":"BBJH20261113010","node":"出库","action":"复核库管员 吴秀英 签名确认，出库单生效（双人双锁），库存已扣减","who":"吴秀英","time":1794547382073},{"id":"LG38","plan":"PL9","planNo":"BBJH20261113010","node":"运输","action":"押运员扫码绑定出库单 BBCK20261113007（本人接管本次押运）","who":"孙立冬","time":1794547576219},{"id":"LG39","plan":"PL9","planNo":"BBJH20261113010","node":"运输","action":"变更押运员手续 BBBG47651144：何志强 → 孙立冬，原因：生病","who":"孙立冬","time":1794547651144},{"id":"LG4","plan":"PTQR1","planNo":"BBJH20261113900","node":"运输","action":"押运员扫码绑定出库单 BBCK20261113901（本人接管本次押运）","who":"孙立冬","time":1794548278010},{"id":"LG40","plan":"PL10","planNo":"BBJH20261113011","node":"计划","action":"作业点安全监管 郑安 手签放行","who":"郑安","time":1794548051847},{"id":"LG41","plan":"PL11","planNo":"BBJH20261113012","node":"计划","action":"测量技术员现场测量上报：青龙山隧道进口作业点 50kg","who":"张明","time":1794548680536},{"id":"LG42","plan":"PL11","planNo":"BBJH20261113012","node":"计划","action":"作业点安全监管 郑安 手签放行","who":"郑安","time":1794548689687},{"id":"LG43","plan":"PL10","planNo":"BBJH20261113011","node":"计划","action":"审核提交（出库库房 青龙山使用库 · 公安责任区 青龙山工区）","who":"张明","time":1794548810272},{"id":"LG44","plan":"PL10","planNo":"BBJH20261113011","node":"计划","action":"项目负责人核实通过并安排运输：川L·10295（载重 2000kg）+ 押运员 何志强 + 路线 青龙山使用库-到第五作业点（40km），计划合计 100kg","who":"陈志远","time":1794548810272},{"id":"LG45","plan":"PL11","planNo":"BBJH20261113012","node":"计划","action":"审核提交（出库库房 青龙山使用库 · 公安责任区 青龙山工区）","who":"张明","time":1794548947408},{"id":"LG46","plan":"PL11","planNo":"BBJH20261113012","node":"计划","action":"项目负责人核实通过并安排运输：川L·10295（载重 2000kg）+ 押运员 何志强 + 路线 青龙山中间库 → 青龙山隧道进口（6km），计划合计 50kg","who":"陈志远","time":1794548947408},{"id":"LG47","plan":"PL10","planNo":"BBJH20261113011","node":"计划","action":"民警审核通过","who":"刘峰","time":1794548958474},{"id":"LG48","plan":"PL11","planNo":"BBJH20261113012","node":"计划","action":"民警审核通过","who":"刘峰","time":1794548960890},{"id":"LG49","plan":"PL10","planNo":"BBJH20261113011","node":"出库","action":"出库登记 BBCK20261113008（多点合并 · 登记库管员 钱有德 已签名），待复核","who":"钱有德","time":1794548981875},{"id":"LG5","plan":"PT2","planNo":"BBJH20261113950","node":"出库","action":"复核库管员 吴秀英 签名确认，出库单生效（双人双锁），库存已扣减","who":"吴秀英","time":1794552890289},{"id":"LG50","plan":"PL11","planNo":"BBJH20261113012","node":"出库","action":"出库登记 BBCK20261113008（多点合并 · 登记库管员 钱有德 已签名），待复核","who":"钱有德","time":1794548981875},{"id":"LG51","plan":"PL10","planNo":"BBJH20261113011","node":"出库","action":"复核库管员 吴秀英 签名确认，出库单生效（双人双锁），库存已扣减","who":"吴秀英","time":1794549001009},{"id":"LG52","plan":"PL11","planNo":"BBJH20261113012","node":"出库","action":"复核库管员 吴秀英 签名确认，出库单生效（双人双锁），库存已扣减","who":"吴秀英","time":1794549001009},{"id":"LG53","plan":"PL10","planNo":"BBJH20261113011","node":"运输","action":"押运员扫码绑定出库单 BBCK20261113008（本人接管本次押运）","who":"孙立冬","time":1794549363084},{"id":"LG54","plan":"PL10","planNo":"BBJH20261113011","node":"运输","action":"变更押运员手续 BBBG49386579：何志强 → 孙立冬，原因：生病","who":"孙立冬","time":1794549386579},{"id":"LG55","plan":"PL10","planNo":"BBJH20261113011","node":"运输","action":"押运扫码签收 BBYS20261113006（2 个卸货点 · 人车绑定，设 2 个沿途打卡点）","who":"孙立冬","time":1794549499614},{"id":"LG56","plan":"PL10","planNo":"BBJH20261113011","node":"运输","action":"卸货顺序确认：测试第5个点位 → 青龙山隧道进口作业点（押运员可调整，调整留痕）","who":"孙立冬","time":1794549499614},{"id":"LG57","plan":"PL10","planNo":"BBJH20261113011","node":"运输","action":"发车打点（服务端时间+定位双写）","who":"孙立冬","time":1794549508813},{"id":"LG58","plan":"PL10","planNo":"BBJH20261113011","node":"运输","action":"到达卸货点「测试第5个点位」（第 1/2 站），生成建议到达时间","who":"孙立冬","time":1794549525563},{"id":"LG59","plan":"PL10","planNo":"BBJH20261113011","node":"到场","action":"核量接收完成，数量一致（第 1/2 站，押运继续前往下一卸货点）","who":"赵铁柱","time":1794549550598},{"id":"LG60","plan":"PL11","planNo":"BBJH20261113012","node":"运输","action":"到达卸货点「青龙山隧道进口作业点」（第 2/2 站），生成建议到达时间","who":"孙立冬","time":1794549629030},{"id":"LG61","plan":"PL11","planNo":"BBJH20261113012","node":"到场","action":"核量接收完成，数量一致（第 2/2 站，整趟完成）","who":"赵铁柱","time":1794549644531},{"id":"LG62","plan":"PL10","planNo":"BBJH20261113011","node":"爆破","action":"爆破登记（正常无返库），监理核验人员：赵铁柱、周大河、张明、张安全员 · 监理已手签","who":"李建国","time":1794549766767},{"id":"LG63","plan":"PL11","planNo":"BBJH20261113012","node":"爆破","action":"爆破登记（正常有返库），监理核验人员：赵铁柱、周大河、张明、张安全员 · 监理已手签","who":"李建国","time":1794549843768},{"id":"LG64","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"退库单 BBTK20261113010 生成（炸药 8kg），原路原库退回 青龙山使用库","who":"李建国","time":1794549849966},{"id":"LG65","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"押运员扫码接单 BBTK20261113010（反向押送 青龙山隧道进口作业点 → 青龙山使用库）","who":"孙立冬","time":1794549899625},{"id":"LG66","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"押运员扫码确认退库单 BBTK20261113010（退库量/驾驶员/押运员核对无误），反向押送发车","who":"孙立冬","time":1794550037108},{"id":"LG67","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"退库物品到库，待库管员核销","who":"系统","time":1794550046215},{"id":"LG68","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"退库单 BBTK20261113011 生成（炸药 8kg），原路原库退回 青龙山使用库","who":"李建国","time":1794552699376},{"id":"LG69","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"押运员扫码接单 BBTK20261113011（反向押送 青龙山隧道进口作业点 → 青龙山使用库）","who":"孙立冬","time":1794552732225},{"id":"LG70","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"押运员扫码确认退库单 BBTK20261113011（退库量/驾驶员/押运员核对无误），反向押送发车","who":"孙立冬","time":1794552738961},{"id":"LG71","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"退库物品到库，待库管员核销","who":"系统","time":1794552763011},{"id":"LG72","plan":"PL11","planNo":"BBJH20261113012","node":"退库","action":"退库核销入库完成，库存回加至「青龙山使用库」（使用库）+炸药8kg，入库照片 1 张","who":"钱有德","time":1794552797133}]},"kpi":{"todayPlanCount":3,"outboundQtyKg":0,"inTransportVehicles":0,"closingRate":0,"exceptionCount":0},"_note":"内置演示快照，由 /api/all + /api/overview/kpi 裁剪生成；未连接数据服务时展示"}</script>
+<script src="/vendor/leaflet/leaflet.js"></script>
 <script>
-  const API_BASE = (window.location.origin && window.location.origin.startsWith('http'))
-    ? (window.location.origin + '/api')
-    : 'http://localhost:8080/api';
+"use strict";
+/* ─────────────────────────────────────────────────────────
+   定尺画布缩放：CSS 的 calc 不能拿长度除以长度得到纯数，
+   --k 必须由 JS 写。窗口变化时重算。
+   ───────────────────────────────────────────────────────── */
+const W = 1920, H = 1080;
+function fitStage(){
+  const k = Math.min(innerWidth / W, innerHeight / H);
+  document.documentElement.style.setProperty('--k', k);
+}
+fitStage();
+addEventListener('resize', fitStage);
 
-  const clk = document.getElementById('clk');
-  setInterval(()=>{ clk.textContent = new Date().toLocaleTimeString('zh-CN',{hour12:false}); },1000);
-  clk.textContent = new Date().toLocaleTimeString('zh-CN',{hour12:false});
+/* ── 工具 ───────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const fmtTime = ts => {
+  if(!ts) return '—';
+  const d = new Date(ts);
+  if(isNaN(d)) return '—';
+  return `${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+const daysTo = s => {
+  if(!s) return null;
+  const t = new Date(String(s).replace(/-/g,'/') + ' 23:59:59');
+  if(isNaN(t)) return null;
+  return Math.ceil((t - Date.now()) / 86400000);
+};
+const sumStock = (o) => Object.values(o || {}).reduce((a,b) => a + (Number(b) || 0), 0);
+/* 两点间地表距离（km），纬度差 1° ≈ 111.32 km，经度按中心纬度修正 */
+const geoDist = (lng1, lat1, lng2, lat2) => {
+  const dx = (lng2 - lng1) * 111.32 * Math.cos(((lat1 + lat2) / 2) * Math.PI / 180);
+  const dy = (lat2 - lat1) * 111.32;
+  return Math.sqrt(dx * dx + dy * dy);
+};
 
-  let cachedPlans = [];
+/* ── 状态 ───────────────────────────────────────────── */
+const S = {
+  d: null, kpi: null,
+  layers: { site: true, storage: true, fence: true, link: true },
+  online: false,
+  geo: null,       // 投影上下文
+  selId: null,
+  selNode: 'all'   // 公安检查环节筛选：all | 计划/出库/运输/到场/爆破/退库
+};
 
-  // 获取真实数据
-  async function fetchRealData() {
-    try {
-      // 1. KPI 统计
-      const resKpi = await fetch(API_BASE + '/overview/kpi').then(r=>r.json()).catch(()=>null);
-      if (resKpi && resKpi.code === 200 && resKpi.data) {
-        const d = resKpi.data;
-        document.getElementById('kpiPlan').textContent = d.todayPlanCount;
-        document.getElementById('kpiOutbound').innerHTML = `${(d.outboundQtyKg / 1000).toFixed(2)}<i style="font-size:12px">t</i>`;
-        document.getElementById('kpiTransit').textContent = d.inTransportVehicles;
-        document.getElementById('kpiClosed').textContent = d.closingRate + '%';
-        document.getElementById('kpiException').textContent = d.exceptionCount || 0;
-      }
+/* ── 数据 ───────────────────────────────────────────── */
+/* 内置演示快照：仅用于未连接数据服务时（如直接双击打开文件）渲染同一套真实数据，
+   启动 server 后会切回实时接口。快照由 /api/all 与 /api/overview/kpi 裁剪生成。 */
+const SNAP = (() => {
+  try{ return JSON.parse(document.getElementById('demoSnap').textContent); }
+  catch(e){ return null; }
+})();
 
-      // 2. 计划与作业点列表
-      const resPlans = await fetch(API_BASE + '/plan/list').then(r=>r.json()).catch(()=>null);
-      if (resPlans && resPlans.code === 200 && resPlans.data) {
-        cachedPlans = resPlans.data;
-        renderSiteList(cachedPlans);
-      }
+let mode = 'offline';   // live | demo | offline
 
-      // 3. 库房真实库存
-      const resStorages = await fetch(API_BASE + '/master/storages').then(r=>r.json()).catch(()=>null);
-      if (resStorages && resStorages.code === 200 && resStorages.data) {
-        renderStorageStock(resStorages.data);
-      }
-    } catch (e) {
-      console.warn('API未联通，采用离线默认数据:', e);
+async function load(){
+  try{
+    const [a, k] = await Promise.all([
+      fetch('/api/all', {cache:'no-store'}).then(r => { if(!r.ok) throw 0; return r.json(); }),
+      fetch('/api/overview/kpi', {cache:'no-store'}).then(r => { if(!r.ok) throw 0; return r.json(); })
+    ]);
+    if(a.code !== 200) throw new Error('all');
+    S.d = a.data;
+    S.kpi = (k && k.code === 200) ? k.data : kpiFromAll(S.d);
+    setMode('live');
+  }catch(e){
+    if(mode === 'demo') return;              // 已是快照态，不重复重绘造成闪烁
+    if(SNAP && SNAP.all){
+      S.d = SNAP.all;
+      S.kpi = SNAP.kpi || kpiFromAll(SNAP.all);
     }
+    setMode(SNAP && SNAP.all ? 'demo' : 'offline');
   }
+  renderAll();
+}
 
-  function renderStorageStock(storages) {
-    if (!storages || storages.length === 0) return;
-    const tbody = document.getElementById('storageStockTb');
-    if (!tbody) return;
-    tbody.innerHTML = storages.map(s => {
-      const zyKg = Object.values((s.stock || {}).zy || {}).reduce((a, b) => a + b, 0);
-      const lgNum = Object.values((s.stock || {}).lg || {}).reduce((a, b) => a + b, 0);
-      const dbM = Object.values((s.stock || {}).db || {}).reduce((a, b) => a + b, 0);
-      return `<tr>
-        <td>${s.name}</td>
-        <td><b>${zyKg.toLocaleString()}</b></td>
-        <td><b>${lgNum.toLocaleString()}</b></td>
-        <td><b>${dbM.toLocaleString()}</b></td>
-      </tr>`;
-    }).join('');
+function setMode(m){
+  mode = m;
+  const live = $('live'), box = $('offline');
+  live.classList.toggle('off', m === 'offline');
+  live.classList.toggle('demo', m === 'demo');
+  box.classList.toggle('show', m !== 'live');
+  box.classList.toggle('demo', m === 'demo');
+  if(m === 'live'){
+    $('liveTxt').textContent = '实时 · 本地数据服务';
+    $('offlineTxt').textContent = '';
+  }else if(m === 'demo'){
+    $('liveTxt').textContent = '演示快照 · 未连接数据服务';
+    $('offlineTxt').textContent = '未连接数据服务，当前为内置演示快照；启动 server 后自动切回实时';
+  }else{
+    $('liveTxt').textContent = '数据服务未连接';
+    $('offlineTxt').textContent = '未连接到数据服务，请确认后端 8080 已启动';
   }
+}
 
-  function renderSiteList(plans) {
-    if (!plans || plans.length === 0) {
-      document.getElementById('siteList').innerHTML = '<div style="color:var(--text3);padding:24px 12px;text-align:center;font-size:13px;">暂无作业计划<br><span style="font-size:11px;opacity:0.7">等待移动端填报上报</span></div>';
-      return;
-    }
-    const siteMap = { 'Z1': '青龙山隧道进口作业点', 'Z2': '青龙山隧道出口作业点', 'Z3': '龙泉矿区 B2 台阶作业点' };
-    const html = plans.map(p => {
-      const siteName = siteMap[p.siteId] || p.siteName || ('作业点 ' + p.siteId);
-      let dotCls = 'ok', tagCls = 'st ok';
-      if (p.status === '已驳回' || p.status === '异常挂起') { dotCls = 'bad'; tagCls = 'st bad'; }
-      else if (p.status === '待审核' || p.status === '待监管签字' || p.status === '待出库') { dotCls = 'warn'; tagCls = 'st warn'; }
-      return `<div class="site" onclick="showPlanDetail('${p.id}', '${siteName}')">
-        <span class="dot ${dotCls}"></span>
-        <div class="nm"><b>${siteName}</b><i>单号 ${p.planNo} · ${p.planKg}kg · ${p.status}</i></div>
-        <span class="${tagCls}">详情</span>
-      </div>`;
-    }).join('');
-    document.getElementById('siteList').innerHTML = html;
-  }
+/* 后端 kpi 接口不可用时，从全量数据同口径兜底，避免整屏空白 */
+function kpiFromAll(d){
+  const plans = d.plans || [];
+  const today = new Date(); const ymd = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+  const todayPlan = plans.filter(p => String(p.planStart || '').slice(0,10) === ymd || String(p.createdAt || '').slice(0,10) === ymd);
+  const closed = plans.filter(p => ['已核验','已完成','已闭环'].includes(p.status));
+  const inTrans = (d.transports || []).filter(t => t.status === '在途' || (t.departTime && !t.arriveTime));
+  const exceptions = (d.receives || []).filter(r => r.diffFlag).length
+    + Math.max(0, (d.blastings || []).length - (d.verifies || []).length);
+  const outKg = todayPlan.reduce((a,p) => a + (Number(p.planKg) || 0), 0) * (d.outbounds ? 1 : 0);
+  return {
+    todayPlanCount: todayPlan.length,
+    outboundQtyKg: outKg,
+    inTransportVehicles: inTrans.length,
+    closingRate: plans.length ? Math.round(closed.length / plans.length * 100) : 0,
+    exceptionCount: exceptions
+  };
+}
 
-  // 点击作业点下钻抽屉
-  async function showPlanDetail(planId, siteName) {
-    document.getElementById('drTitle').textContent = siteName;
-    document.getElementById('drawer').classList.add('open');
-    document.getElementById('drInfo').innerHTML = '正在加载节点流转凭证...';
+/* 历史（累计）口径：从全量数据汇总，与今日 KPI 并列展示，离线快照同口径 */
+function histFromAll(d){
+  const plans = d.plans || [];
+  const closed = plans.filter(p => ['已核验','已完成','已闭环'].includes(p.status));
+  let outKg = 0;
+  (d.outbounds || []).forEach(o => { outKg += Number(o.totalKg) || 0; });
+  const exc = (d.receives || []).filter(r => r.diffFlag).length
+    + Math.max(0, (d.blastings || []).length - (d.verifies || []).length);
+  return {
+    planTotal: plans.length,
+    outKg,
+    vehTotal: (d.vehicles || []).length,
+    closed: closed.length,
+    planAll: plans.length,
+    excTotal: exc
+  };
+}
 
-    try {
-      const res = await fetch(API_BASE + '/overview/' + planId).then(r=>r.json());
-      if (res && res.code === 200 && res.data) {
-        const d = res.data;
-        const obNo = d.outbound ? d.outbound.outNo : '尚未出库';
-        const veh = d.transport ? d.transport.vehiclePlate : '未派车';
-        document.getElementById('drInfo').innerHTML = `
-          计划单号：<b>${d.plan.planNo}</b> · 状态：<span style="color:var(--cyan)">${d.plan.status}</span><br>
-          出库单号：${obNo} · 车辆：${veh}<br>
-          计划起爆：${d.plan.planStart || '-'}
-        `;
+/* ── 渲染总入口 ─────────────────────────────────────── */
+function renderAll(){
+  renderKpi();
+  renderSites();
+  renderStocks();
+  renderVehicles();
+  renderAlerts();
+  renderFlowBar();
+  renderStaff();
+  renderMap();
+}
 
-        // 渲染时间轴
-        const steps = [
-          { name: '计划填报', done: true, time: d.plan.surveyTime ? d.plan.surveyTime.slice(5, 16) : '--', desc: `测量员填报 · 监管手签 · 计划 ${d.plan.planKg}kg` },
-          { name: '出库登记', done: !!d.outbound, time: d.outbound ? d.outbound.createdAt.slice(5, 16) : '--', desc: d.outbound ? `双人双锁已扣库 · 实发 ${d.outbound.totalKg}kg` : '待出库' },
-          { name: '押运发车', done: !!d.transport && !!d.transport.departTime, time: (d.transport && d.transport.departTime) ? d.transport.departTime.slice(5, 16) : '--', desc: d.transport ? `车辆 ${d.transport.vehiclePlate} 发车在途` : '未发车' },
-          { name: '到场接收', done: !!d.receive, time: d.receive ? d.receive.arriveTime.slice(5, 16) : '--', desc: d.receive ? `安全员确认到场 · 逐项核量完成` : '未到场' },
-          { name: '爆破登记', done: !!d.blasting, time: d.blasting ? d.blasting.blastTime.slice(5, 16) : '--', desc: d.blasting ? `安全监理手签 · 结果 ${d.blasting.blastResult}` : '未爆破' },
-          { name: '民警核验', done: !!d.verify, time: d.verify ? d.verify.verifyTime.slice(5, 16) : '--', desc: d.verify ? `责任民警远程核验 · 结论：${d.verify.conclusion}` : '待核验' }
-        ];
-
-        document.getElementById('drTimeline').innerHTML = steps.map(s => `
-          <div class="tn ${s.done ? 'done' : 'miss'}">
-            <span class="tm">${s.time}</span>
-            <b>${s.name}</b>
-            <i>${s.desc}</i>
-          </div>
-        `).join('');
-      }
-    } catch(e) {
-      document.getElementById('drInfo').innerHTML = '未连通实时接口，展示离线缓存数据。';
-    }
-  }
-
-  // 默认事件墙
-  const evts = [
-    ['数量不符','水口镇土地整理 2# 点','实收 240kg / 实发 245kg · 已生成差异单','bad','09:12'],
-    ['偏移路线','川L·8D527','偏离规划路线 620m×3 点 · 预警推送','bad','09:05'],
-    ['超时未到场','安谷镇道路工程 K12','超出计划时间 25 分钟未进作业点','warn','08:55'],
-    ['未核验','兴盛砂石项目部（昨日）','超 20h 未远程核验 · 进督办列表','warn','08:00']
+/* KPI */
+function renderKpi(){
+  const k = S.kpi || {todayPlanCount:0, outboundQtyKg:0, inTransportVehicles:0, closingRate:0, exceptionCount:0};
+  const h = histFromAll(S.d || {});
+  const items = [
+    {v: k.todayPlanCount, u:'单', label:'今日作业计划', cls:'', key:'kpiPlan', h:`累计 <b>${h.planTotal}</b> 单`},
+    {v: (Number(k.outboundQtyKg||0) / 1000).toFixed(2), u:'吨', label:'今日出库总量', cls:'', key:'kpiOut', h:`累计 <b>${(h.outKg/1000).toFixed(2)}</b> 吨`},
+    {v: k.inTransportVehicles, u:'台', label:'在途运输车辆', cls:'', key:'kpiVeh', h:`在册 <b>${h.vehTotal}</b> 台`},
+    {v: k.closingRate, u:'%', label:'全链闭环率', cls:'', key:'kpiRate', h:`累计闭环 <b>${h.closed}/${h.planAll}</b> 单`},
+    {v: k.exceptionCount, u:'件', label:'未闭环异常', cls: (Number(k.exceptionCount) > 0 ? 'bad' : ''), key:'kpiAlert', h:`累计 <b>${h.excTotal}</b> 件`}
   ];
-  document.getElementById('evtList').innerHTML = evts.map(e=>
-    `<div class="evt ${e[3]}"><div class="et"><b>${e[0]} · ${e[1]}</b><span>${e[4]}</span></div><p>${e[2]}</p></div>`).join('');
+  $('kpis').innerHTML = items.map(it => `
+    <div class="kpi ${it.cls}" data-list="${it.key}" title="点击查看明细列表">
+      <div class="kpi-main"><b class="${it.cls ? '' : 'hipri'}">${esc(it.v)}<em>${it.u}</em></b><span class="kpi-hist">${it.h}</span></div>
+      <i>${it.label}<span class="kpi-more">明细</span></i>
+    </div>`).join('');
+  $('kpis').querySelectorAll('.kpi').forEach(el => {
+    el.addEventListener('click', () => openTable(el.dataset.list));
+  });
+}
 
-  // 首次拉取与定时轮询 (每 5 秒自动同步一次)
-  fetchRealData();
-  setInterval(fetchRealData, 5000);
+/* 作业点 */
+function renderSites(){
+  const d = S.d || {};
+  const sites = d.sites || [];
+  const plans = d.plans || [];
+  const waName = id => ((d.workareas || []).find(w => w.id === id) || {}).name || '';
+  const prName = id => ((d.projects || []).find(p => p.id === id) || {}).name || '';
+
+  $('siteCnt').textContent = `${sites.length} 处`;
+  if(!sites.length){ $('siteList').innerHTML = `<div class="empty-tip">暂无作业点数据</div>`; return; }
+
+  const planSiteIds = new Set(plans.filter(p => (p.siteId || p.site)).map(p => (p.siteId || p.site)));
+  const ordered = [...sites].sort((a, b) => (planSiteIds.has(a.id) ? 0 : 1) - (planSiteIds.has(b.id) ? 0 : 1));
+  $('siteList').innerHTML = ordered.slice(0, 6).map(s => {
+    const todayPlans = plans.filter(p => (p.siteId === s.id || p.site === s.id));
+    const st = todayPlans.length ? 'plan' : 'none';
+    const stTxt = todayPlans.length ? `计划 ${todayPlans.length}` : '无计划';
+    const planHtml = todayPlans.length ? `<div class="sr-plans">${todayPlans.map(p => {
+      const stt = p.auditStatus || p.status || '—';
+      return `<div class="sp-item" data-plan="${esc(p.id)}">
+        <span class="sp-no">${esc(p.planNo || p.id)}</span>
+        <span class="sp-kg">${p.planKg ? Number(p.planKg).toFixed(1) + ' kg' : '—'}</span>
+        <span class="sp-st">${tagOf(stt, statusCls(stt))}</span>
+      </div>`;
+    }).join('')}</div>` : '';
+    return `
+    <div class="site-row" data-site="${esc(s.id)}">
+      <div class="sr-top">
+        <div class="sr-main">
+          <div class="sr-name" title="${esc(s.name)}">${esc(s.name)}</div>
+          <div class="sr-sub">${esc(prName(s.project))}${s.workarea ? ' · ' + esc(waName(s.workarea)) : ''}</div>
+        </div>
+        <div class="chip ${st}">${stTxt}</div>
+        <div class="${s.fence ? 'sr-plan' : 'sr-plan mute'}">${s.fence ? `${s.fence}<small>m 围栏</small>` : '未设围栏'}</div>
+      </div>
+      ${planHtml}
+    </div>`;
+  }).join('');
+
+  $('siteList').querySelectorAll('.site-row').forEach(el => {
+    el.addEventListener('click', () => openSite(el.dataset.site));
+  });
+  $('siteList').querySelectorAll('.sp-item').forEach(el => {
+    el.addEventListener('click', e => { e.stopPropagation(); openSite(el.closest('.site-row').dataset.site); });
+  });
+}
+
+/* 库房 */
+function renderStocks(){
+  const d = S.d || {};
+  const st = d.storages || [];
+  $('stkCnt').textContent = `${st.length} 座`;
+  if(!st.length){ $('stkList').innerHTML = `<div class="empty-tip">暂无库房数据</div>`; return; }
+
+  const goodsName = {zy:'炸药', lg:'雷管', db:'导爆索'};
+  $('stkList').innerHTML = st.slice(0, 4).map(x => {
+    const has = x.stock && Object.keys(x.stock).length;
+    const typeTxt = x.type || '待补录';
+    let over = false;
+    const rows = has ? ['zy','lg'].map(g => {
+      const cur = sumStock(x.stock[g]);
+      const safe = Number((x.safe || {})[g] || 0);
+      const ratio = safe > 0 ? cur / safe : 0;
+      if(safe > 0 && ratio >= 1.5) over = true;
+      const pct = safe > 0 ? Math.min(100, ratio * 100 * 0.55) : 0;
+      return `<div class="stk-bar">
+        <span class="stk-k">${goodsName[g]}</span>
+        <div class="stk-track"><i class="${safe > 0 && ratio >= 1.5 ? 'hi' : ''}" style="width:${pct.toFixed(1)}%"></i></div>
+        <span class="stk-num"><b>${cur.toLocaleString()}</b><s> / ${safe ? safe.toLocaleString() : '—'}</s></span>
+      </div>`;
+    }).join('') : `<div class="stk-bar"><span class="stk-k"></span><span style="font-size:10.5px;color:var(--dim2)">库存结构待补录</span></div>`;
+
+    return `<div class="stk" data-storage="${esc(x.id)}">
+      <div class="stk-top">
+        <span class="stk-name" title="${esc(x.name)}">${esc(x.name)}</span>
+        <span class="stk-tag ${over ? 'hi' : ''}">${esc(typeTxt)}${over ? ' · 超储' : ''}</span>
+      </div>${rows}
+    </div>`;
+  }).join('');
+
+  $('stkList').querySelectorAll('.stk').forEach(el => {
+    el.addEventListener('click', () => openStorage(el.dataset.storage));
+  });
+}
+
+/* 在册车辆 */
+function renderVehicles(){
+  const d = S.d || {};
+  const vs = d.vehicles || [];
+  $('vehCnt').textContent = `${vs.length} 台`;
+  if(!vs.length){ $('vehList').innerHTML = `<div class="empty-tip">暂无车辆数据</div>`; return; }
+
+  const coName = id => { const c = (d.companies || []).find(x => x.id === id); return c ? c.name : ''; };
+  $('vehList').innerHTML = vs.slice(0, 5).map(v => {
+    const dd = daysTo(v.annualExpire);
+    const near = dd != null && dd <= 60;
+    const co = coName(v.company);
+    return `<div class="veh-row" data-vehicle="${esc(v.id)}">
+      <div class="vh-main">
+        <div class="vh-plate">${esc(v.plate)}</div>
+        <div class="vh-sub">${esc(v.model || '')}</div>
+        ${co ? `<div class="vh-co" title="${esc(co)}">${esc(co)}</div>` : ''}
+      </div>
+      <div class="vh-load">${Number(v.load || 0).toLocaleString()} kg</div>
+      <div class="vh-exp ${near ? 'near' : ''}">${near ? dd + ' 天到期' : esc(v.annualExpire || '—')}</div>
+    </div>`;
+  }).join('');
+
+  $('vehList').querySelectorAll('.veh-row').forEach(el => {
+    el.addEventListener('click', () => openVehicle(el.dataset.vehicle));
+  });
+}
+
+/* 异常与预警：全部由真实数据推导，规则写在注释里 */
+function buildAlerts(){
+  const d = S.d || {};
+  const out = [];
+
+  // ① 爆破记录已有、核验未提交 → 链路未闭环（最严重）
+  const blastPlans = [...new Set((d.blastings || []).map(b => b.plan).filter(Boolean))];
+  const verified = new Set((d.verifies || []).map(v => v.plan));
+  const pendingVerify = blastPlans.filter(p => !verified.has(p));
+  if(pendingVerify.length){
+    out.push({
+      lv:'red', t:`${pendingVerify.length} 条爆破记录待核验`,
+      s:`${pendingVerify.join('、')} · 使用消耗与剩余退库未核验，链路未闭环`,
+      tm:'待办', kind:'verify', ids:pendingVerify
+    });
+  }
+
+  // ② 入库实收与实发不符
+  const diffRecv = (d.receives || []).filter(r => r.diffFlag);
+  if(diffRecv.length){
+    const tot = diffRecv.reduce((a,r) => a + (r.items||[]).filter(i => Math.abs(Number(i.diff)||0) > 0).length, 0);
+    out.push({
+      lv:'red', t:`${diffRecv.length} 张入库单数量不符`,
+      s:`合计 ${tot} 项差异 · 需责任认定与差异说明`,
+      tm:'待办', kind:'receive', ids:diffRecv.map(r => r.id)
+    });
+  }
+
+  // ③ 点位/库房无经纬度 → 无法上图、围栏与到场判定不可用
+  const noGeo = [...(d.sites||[]).map(s => ({...s, _k:'作业点'})), ...(d.storages||[]).map(s => ({...s, _k:'库房'}))].filter(x => !x.lng || !x.lat);
+  if(noGeo.length){
+    out.push({
+      lv:'amber', t:`${noGeo.length} 处点位未录入坐标`,
+      s:`${noGeo.map(x => x.name).join('、')} · 未上图，电子围栏与到场判定不可用`,
+      tm:'数据', kind:'nogeo', ids:noGeo.map(x => x.id)
+    });
+  }
+
+  // ④ 主数据缺失（库房无所属企业 / 无类型）
+  const badStor = (d.storages || []).filter(s => !s.company || !s.type);
+  if(badStor.length){
+    out.push({
+      lv:'amber', t:`${badStor.length} 座库房主数据不完整`,
+      s:`${badStor.map(s => s.name).join('、')} · 缺所属企业与库房类型`,
+      tm:'数据', kind:'storage', ids:badStor.map(s => s.id)
+    });
+  }
+
+  // ⑤ 运输许可临期（60 天内）
+  const expiring = (d.vehicles || []).map(v => ({v, dd: daysTo(v.annualExpire)})).filter(x => x.dd != null && x.dd <= 60);
+  expiring.forEach(x => {
+    out.push({
+      lv:'amber', t:`${x.v.plate} 运输许可 ${x.dd} 天后到期`,
+      s:`年审到期 ${x.v.annualExpire} · 到期后该车不可承运`,
+      tm:'临期', kind:'vehicle', ids:[x.v.id]
+    });
+  });
+
+  // ⑥ 待运输计划（提示级，不算异常）
+  const pending = (d.plans || []).filter(p => p.status === '待运输');
+  if(pending.length){
+    const next = pending.map(p => String(p.planStart||'').slice(5,16)).sort()[0] || '';
+    out.push({
+      lv:'blue', t:`${pending.length} 单待运输`,
+      s:`${pending.map(p => p.planNo).join('、')} · 最早计划 ${next}`,
+      tm:'提示', kind:'plan', ids:pending.map(p => p.id)
+    });
+  }
+
+  return out;
+}
+
+/* 公安检查环节：按计划归集民警 / 安全员 / 监理、用量档位与检查结论 */
+const POLICE_GRADE = {special:{t:'≥1200kg', cls:'special'}, major:{t:'≥600kg', cls:'major'}, normal:{t:'常规', cls:''}};
+function policeOf(){
+  const d = S.d || {};
+  const plans = d.plans || [], persons = d.persons || [], logs = d.nodeLogs || [];
+  const pmap = Object.fromEntries(persons.map(p => [p.id, p]));
+  return plans.map(p => {
+    const plogs = logs.filter(l => l.plan === p.id);
+    const policeNames = plogs.filter(l => /民警/.test(l.action || '')).map(l => l.who);
+    const police = persons.filter(x => x.role === '民警' && policeNames.includes(x.name));
+    const officer = pmap[p.officer] || null;
+    const supervisor = pmap[p.supervisor] || null;
+    const kg = Number(p.planKg || 0);
+    const grade = kg >= 1200 ? 'special' : kg >= 600 ? 'major' : 'normal';
+    const nodeCount = {};
+    plogs.forEach(l => { nodeCount[l.node] = (nodeCount[l.node] || 0) + 1; });
+    return {plan: p, siteName: nmOf('sites', p.site || p.siteId), kg, grade,
+      gradeTxt: POLICE_GRADE[grade].t, gradeCls: POLICE_GRADE[grade].cls,
+      police, officer, supervisor, concl: p.auditStatus || p.status || '待处理',
+      nodeCount, plogs};
+  });
+}
+
+function renderAlerts(){
+  const rows = policeOf();
+  const nodeAgg = {};
+  rows.forEach(r => Object.entries(r.nodeCount).forEach(([n, c]) => { nodeAgg[n] = (nodeAgg[n] || 0) + c; }));
+  const flowNodes = FLOW_NODES.filter(n => nodeAgg[n] != null);
+  if(!FLOW_NODES.includes(S.selNode)) S.selNode = 'all';
+
+  const show = S.selNode === 'all' ? rows : rows.filter(r => r.nodeCount[S.selNode]);
+  $('alertCnt').textContent = `${show.length} 单待检`;
+
+  const chip = (v, label, count) => {
+    const on = S.selNode === v ? ' on' : '';
+    return `<div class="pf${on}" data-node="${esc(v)}"><div class="pf-k">${esc(label)}</div><div class="pf-v">${count}</div></div>`;
+  };
+  const flowHtml = `<div class="pol-flow">${chip('all','全部',rows.length)}${flowNodes.map(n => chip(n, n, nodeAgg[n])).join('')}</div>`;
+
+  if(!rows.length){ $('alertList').innerHTML = flowHtml + `<div class="empty-tip">今日暂无公安检查计划</div>`; return; }
+  if(!show.length){ $('alertList').innerHTML = flowHtml + `<div class="empty-tip">该环节暂无检查记录</div>`; return; }
+
+  $('alertList').innerHTML = flowHtml + show.map(r => {
+    const ppl = [r.police[0] && '民警 ' + r.police[0].name,
+      r.officer && '安全员 ' + r.officer.name,
+      r.supervisor && '监理 ' + r.supervisor.name].filter(Boolean).join(' · ');
+    return `<div class="pol" data-plan="${esc(r.plan.id)}">
+      <div class="pol-top">
+        <span class="pol-no">${esc(r.plan.planNo || r.plan.id)}</span>
+        <span class="pol-kg">${r.kg ? r.kg.toFixed(1) + ' kg' : '—'}${r.gradeCls ? `<span class="pol-tag ${r.gradeCls}">${r.gradeTxt}</span>` : ''}</span>
+      </div>
+      <div class="pol-site">${esc(r.siteName)}</div>
+      <div class="pol-meta">${ppl || '检查人待指派'}</div>
+      <div class="pol-concl">结论 ${tagOf(r.concl, statusCls(r.concl))}</div>
+    </div>`;
+  }).join('');
+
+  $('alertList').querySelectorAll('.pf').forEach(el => {
+    el.addEventListener('click', () => { S.selNode = el.dataset.node; renderAlerts(); });
+  });
+  $('alertList').querySelectorAll('.pol').forEach(el => {
+    el.addEventListener('click', () => openPolice(el.dataset.plan));
+  });
+}
+
+function openPolice(planId){
+  const rows = policeOf();
+  const r = rows.find(x => x.plan.id === planId);
+  if(!r) return;
+  const p = r.plan;
+  const personBlock = (label, arr) => {
+    if(!arr || !arr.length) return `<div class="sec"><h4>${label}</h4><div style="font-size:11.5px;color:var(--dim2)">暂无${label}记录</div></div>`;
+    return `<div class="sec"><h4>${label}</h4><dl class="kv">${arr.map(x => `
+      <dt>${esc(x.name)}</dt><dd>${esc(x.role || '')}${x.company ? ' · ' + esc(nmOf('companies', x.company)) : ''}<br>
+        <span style="color:var(--dim2);font-size:10.5px">证书 ${esc(x.cert || '—')}　${esc(x.phone || '')}</span></dd>`).join('')}</dl></div>`;
+  };
+  drHead('公安检查', p.planNo || p.id, `${r.siteName} · 计划用量 ${r.kg ? r.kg.toFixed(1) + ' kg' : '—'}`);
+  $('drBody').innerHTML = `
+    <div class="sec"><h4>计划与用量档位</h4>
+      <dl class="kv">
+        <dt>作业点</dt><dd>${esc(r.siteName)}</dd>
+        <dt>计划用量</dt><dd>${r.kg ? r.kg.toFixed(1) + ' kg' : '—'}${r.gradeCls ? ` <span class="pol-tag ${r.gradeCls}">${r.gradeTxt}</span>` : ''}</dd>
+        <dt>计划状态</dt><dd>${tagOf(p.status || '—', statusCls(p.status))}</dd>
+        <dt>审核结论</dt><dd>${tagOf(r.concl, statusCls(r.concl))}</dd>
+      </dl>
+    </div>
+    ${personBlock('民警审核', r.police)}
+    ${personBlock('现场安全员', r.officer ? [r.officer] : [])}
+    ${personBlock('监理核验', r.supervisor ? [r.supervisor] : [])}
+    <div class="sec"><h4>环节检查留痕</h4>
+      ${r.plogs.length ? `<div class="tl">${r.plogs.slice().sort((a, b) => (a.time || 0) - (b.time || 0)).map(l => `
+        <div class="tl-i"><div class="tl-n">${esc(l.node || '节点')}</div><div class="tl-a">${esc(l.action || '')}</div><div class="tl-w">${esc(l.who || '')}　${fmtTime(l.time)}</div></div>`).join('')}</div>`
+        : `<div style="font-size:11.5px;color:var(--dim2)">暂无环节留痕</div>`}
+    </div>`;
+  openDrawer();
+}
+
+/* ── 通用数据列表：屏上任何数字点开都能查到明细，并支持关键字 / 状态筛选 ── */
+const stripTags = s => String(s).replace(/<[^>]*>/g, '');
+const tagOf = (t, c) => `<span class="tg ${c || ''}">${esc(t)}</span>`;
+const rowOf = (cells, tag) => ({cells, tag: tag || 'all', txt: cells.map(stripTags).join(' ') + ' ' + (tag || '')});
+const statusCls = s => !s ? 'cy'
+  : (/核验|异常|不符|阻断|超储/.test(s) ? 'rd'
+  : (/待|未|临期|补录/.test(s) ? 'am'
+  : (/完成|到达|通过|闭环|已核|正常|已签/.test(s) ? 'gr' : 'cy')));
+function chipSet(list){
+  const uniq = [];
+  list.forEach(v => { const k = v || '—'; if(!uniq.includes(k)) uniq.push(k); });
+  return [{v:'all', t:'全部'}].concat(uniq.map(k => ({v:k, t:k})));
+}
+const nmOf = (arr, id, f) => {
+  const h = ((S.d || {})[arr] || []).find(x => x.id === id);
+  return h ? (h[f || 'name'] || h.id) : (id || '—');
+};
+function stkOf(s){
+  const st = s.stock || {}, safe = s.safe || {};
+  const sum = g => Object.values(st[g] || {}).reduce((a, b) => a + Number(b || 0), 0);
+  return {zy: sum('zy'), lg: sum('lg'), db: sum('db'), zyS: Number(safe.zy || 0), lgS: Number(safe.lg || 0)};
+}
+
+function buildList(key){
+  const d = S.d || {};
+  const plans = d.plans || [], trans = d.transports || [], outb = d.outbounds || [];
+  const sites = d.sites || [], stor = d.storages || [], veh = d.vehicles || [];
+  const logs = d.nodeLogs || [], alerts = buildAlerts();
+  const persons = d.persons || [];
+
+  if(key === 'kpiPlan'){
+    return {
+      kicker: '今日作业计划', title: `${plans.length} 单计划`, sub: '逐单展开，可核对作业点、计划用量与审批状态',
+      chips: chipSet(plans.map(p => p.status)),
+      cols: [{t:'计划单号',w:'19%'},{t:'作业点',w:'19%'},{t:'项目 / 工区',w:'27%',wrap:1},{t:'计划用量',w:'11%',num:1},{t:'计划时间',w:'13%'},{t:'状态',w:'11%'}],
+      rows: plans.map(p => {
+        const kg = Number(p.planKg || (p.items || []).reduce((s, i) => s + Number(i.planQty || 0), 0));
+        const site = p.site || p.siteId;
+        return rowOf([
+          esc(p.planNo || p.id), esc(nmOf('sites', site)),
+          esc(nmOf('projects', p.project)) + (p.workarea ? ' · ' + esc(nmOf('workareas', p.workarea)) : ''),
+          kg ? kg.toFixed(1) + ' kg' : '—',
+          esc(String(p.planStart || '—').slice(5, 16)),
+          tagOf(p.status || '待处理', statusCls(p.status))
+        ], p.status);
+      })
+    };
+  }
+
+  if(key === 'kpiOut'){
+    const kg = Number((S.kpi || {}).outboundQtyKg || 0);
+    return {
+      kicker: '今日出库总量', title: `${(kg / 1000).toFixed(2)} 吨`, sub: '出库单逐张展开，含品种规格、保管员与双锁签收',
+      chips: chipSet(outb.map(o => o.status)),
+      cols: [{t:'出库单号',w:'23%'},{t:'计划',w:'11%'},{t:'库房',w:'17%'},{t:'品种 / 数量',w:'27%'},{t:'状态',w:'12%'},{t:'出库时间',w:'16%'}],
+      rows: outb.map(o => {
+        const its = o.items || [];
+        const spec = its.length ? (its.length > 1 ? `${its[0].spec} 等 ${its.length} 项` : `${its[0].spec} ${its[0].qty}`) : '—';
+        return rowOf([
+          esc(o.outNo || o.id), esc(nmOf('plans', o.plan, 'planNo')), esc(nmOf('storages', o.storage)),
+          esc(spec), tagOf(o.status || '待签收', statusCls(o.status)),
+          esc(o.outTime ? fmtTime(o.outTime) : '—')
+        ], o.status);
+      })
+    };
+  }
+
+  if(key === 'kpiVeh'){
+    const inTrans = Number((S.kpi || {}).inTransportVehicles || 0);
+    return {
+      kicker: '在途运输车辆', title: `在途 ${inTrans} 台 / 运输单 ${trans.length} 张`, sub: '运输单逐张展开，含车辆、路线与到达状态',
+      chips: chipSet(trans.map(t => t.status)),
+      cols: [{t:'运输单号',w:'21%'},{t:'车辆',w:'12%'},{t:'计划',w:'13%'},{t:'路线',w:'28%'},{t:'状态',w:'11%'},{t:'到达',w:'15%'}],
+      rows: trans.map(t => rowOf([
+        esc(t.no || t.id), esc(nmOf('vehicles', t.vehicle, 'plate')), esc(nmOf('plans', t.plan, 'planNo')),
+        esc(((t.route || {}).from || '—') + ' → ' + ((t.route || {}).to || '—')),
+        tagOf(t.status || '在途', statusCls(t.status)),
+        esc(t.arriveTime ? fmtTime(t.arriveTime) : '未到达')
+      ], t.status))
+    };
+  }
+
+  if(key === 'kpiRate'){
+    const nodes = ['计划','出库','运输','到场','爆破'];
+    const byPlan = {};
+    logs.forEach(l => { if(l.plan) (byPlan[l.plan] = byPlan[l.plan] || []).push(l); });
+    const rows = Object.keys(byPlan).map(pid => {
+      const ls = byPlan[pid];
+      const hit = nodes.filter(n => ls.some(l => l.node === n));
+      const miss = nodes.filter(n => !hit.includes(n));
+      const pl = plans.find(p => p.id === pid) || {};
+      return rowOf([
+        esc(pl.planNo || ls[0].planNo || pid), esc(nmOf('sites', pl.site || pl.siteId)),
+        String(ls.length),
+        `${hit.length}/${nodes.length} 环节${miss.length ? '　缺 ' + miss.join('、') : ''}`,
+        tagOf(miss.length ? '未闭环' : '已闭环', miss.length ? 'am' : 'gr')
+      ], miss.length ? '未闭环' : '已闭环');
+    });
+    return {
+      kicker: '全链闭环率', title: `闭环 ${(S.kpi || {}).closingRate || 0}%`, sub: '按计划聚合今日节点留痕，缺任环节即未闭环',
+      chips: [{v:'all',t:'全部'},{v:'已闭环',t:'已闭环'},{v:'未闭环',t:'未闭环'}],
+      cols: [{t:'计划单号',w:'24%'},{t:'作业点',w:'22%'},{t:'留痕',w:'8%',num:1},{t:'环节覆盖',w:'32%'},{t:'闭环',w:'14%'}],
+      rows
+    };
+  }
+
+  if(key === 'kpiAlert' || key === 'alert'){
+    const rows = alerts.map(a => rowOf([
+      tagOf(a.lv === 'red' ? '阻断' : (a.lv === 'amber' ? '待办' : '提示'), a.lv === 'red' ? 'rd' : (a.lv === 'amber' ? 'am' : '')),
+      esc(a.t), esc(a.s), esc(a.tm || '')
+    ], a.lv === 'red' ? '阻断' : (a.lv === 'amber' ? '待办' : '提示')));
+    return {
+      kicker: '异常与预警', title: `共 ${alerts.length} 项`, sub: '按级别筛选；点列表外的条目可看该异常的处置路径',
+      chips: [{v:'all',t:'全部'},{v:'阻断',t:'阻断'},{v:'待办',t:'待办'},{v:'提示',t:'提示'}],
+      cols: [{t:'级别',w:'11%'},{t:'事项',w:'26%'},{t:'对象',w:'24%'},{t:'时间',w:'39%'}],
+      rows
+    };
+  }
+
+  if(key === 'site'){
+    return {
+      kicker: '作业点态势', title: `${sites.length} 处作业点`, sub: '含围栏、坐标与今日计划数；未录坐标者标注未上图',
+      chips: chipSet(sites.map(s => s.status || '启用')),
+      cols: [{t:'编号',w:'9%'},{t:'名称',w:'26%'},{t:'项目 / 工区',w:'25%',wrap:1},{t:'围栏',w:'10%',num:1},{t:'坐标',w:'21%'},{t:'计划',w:'9%',num:1}],
+      rows: sites.map(s => {
+        const n = plans.filter(p => p.site === s.id || p.siteId === s.id).length;
+        return rowOf([
+          esc(s.id), esc(s.name),
+          esc(nmOf('projects', s.project)) + (s.workarea ? ' · ' + esc(nmOf('workareas', s.workarea)) : ''),
+          s.fence ? s.fence + ' m' : '未设',
+          s.lng ? `${s.lng}, ${s.lat}` : '未录入',
+          String(n)
+        ], s.status || '启用');
+      })
+    };
+  }
+
+  if(key === 'storage'){
+    return {
+      kicker: '库房存量', title: `${stor.length} 座库房`, sub: '库存折算与安全阈值逐库展开，超储以红色标注',
+      chips: chipSet(stor.map(s => s.type || '待补录')),
+      cols: [{t:'库房',w:'19%'},{t:'类型',w:'10%'},{t:'所属企业',w:'17%'},{t:'面积',w:'9%',num:1},{t:'库存(炸药/雷管)',w:'19%',num:1},{t:'阈值',w:'12%',num:1},{t:'状态',w:'14%'}],
+      rows: stor.map(s => {
+        const k = stkOf(s);
+        const over = (k.zy >= k.zyS * 1.5 && k.zyS) || (k.lg >= k.lgS * 1.5 && k.lgS);
+        const has = k.zy || k.lg;
+        return rowOf([
+          esc(s.name), esc(s.type || '待补录'), esc(nmOf('companies', s.company)),
+          s.area ? Number(s.area).toLocaleString() + ' ㎡' : '—',
+          has ? `${k.zy.toLocaleString()} / ${k.lg.toLocaleString()}` : '待补录',
+          has ? `${k.zyS.toLocaleString()} / ${k.lgS.toLocaleString()}` : '—',
+          tagOf(has ? (over ? '超储' : '正常') : '待补录', has ? (over ? 'rd' : 'gr') : 'am')
+        ], s.type || '待补录');
+      })
+    };
+  }
+
+  if(key === 'vehicle'){
+    return {
+      kicker: '在册运输车辆', title: `${veh.length} 台车辆`, sub: '载重、许可与年审到期逐台展开，60 天内到期标黄',
+      chips: chipSet(veh.map(v => v.status || '在册')),
+      cols: [{t:'车牌',w:'14%'},{t:'车型',w:'20%'},{t:'载重',w:'11%',num:1},{t:'所属企业',w:'19%'},{t:'年审到期',w:'15%'},{t:'剩余',w:'9%',num:1},{t:'状态',w:'12%'}],
+      rows: veh.map(v => {
+        const dd = daysTo(v.annualExpire);
+        const near = dd != null && dd <= 60;
+        return rowOf([
+          esc(v.plate), esc(v.model || '—'), v.load ? Number(v.load).toLocaleString() + ' kg' : '—',
+          esc(nmOf('companies', v.company)), esc(v.annualExpire || '—'),
+          dd != null ? (dd <= 0 ? '已过期' : dd + ' 天') : '—',
+          tagOf(v.status || '在册', near ? 'am' : 'gr')
+        ], v.status || '在册');
+      })
+    };
+  }
+
+  if(key === 'flow'){
+    const byNode = {};
+    logs.forEach(l => { const n = l.node || '其他'; byNode[n] = (byNode[n] || 0) + 1; });
+    const order = Object.entries(byNode).sort((a, b) => b[1] - a[1]).map(([n]) => n);
+    return {
+      kicker: '今日节点流转', title: `${logs.length} 笔留痕`, sub: '按节点环节筛选，逐笔核对动作、操作人与计划',
+      chips: [{v:'all',t:'全部'}].concat(order.map(n => ({v:n, t:`${n} ${byNode[n]}`}))),
+      cols: [{t:'时间',w:'13%'},{t:'节点',w:'10%'},{t:'计划单号',w:'17%'},{t:'动作',w:'43%',wrap:1},{t:'操作人',w:'17%'}],
+      rows: logs.map(l => rowOf([
+        esc(fmtTime(l.time)), tagOf(l.node || '其他', 'cy'),
+        esc(l.planNo || l.plan || '—'), esc(l.action || '—'), esc(l.who || '—')
+      ], l.node || '其他'))
+    };
+  }
+
+  if(key === 'police'){
+    const rows = policeOf();
+    return {
+      kicker: '公安检查环节', title: `${rows.length} 单计划`, sub: '按用量档位 / 结论筛选；点开条目可查看检查人员与环节留痕',
+      chips: [{v:'all',t:'全部'},{v:'special',t:'≥1200kg'},{v:'major',t:'≥600kg'},{v:'normal',t:'常规'}],
+      cols: [{t:'计划单号',w:'18%'},{t:'作业点',w:'19%'},{t:'计划用量',w:'12%',num:1},{t:'民警',w:'14%'},{t:'安全员',w:'14%'},{t:'监理',w:'13%'},{t:'结论',w:'10%'}],
+      rows: rows.map(r => rowOf([
+        esc(r.plan.planNo || r.plan.id), esc(r.siteName),
+        (r.kg ? r.kg.toFixed(1) + ' kg' : '—') + (r.gradeCls ? ` <span class="tg ${r.gradeCls === 'special' ? 'rd' : 'am'}">${r.gradeTxt}</span>` : ''),
+        esc((r.police[0] || {}).name || '—'), esc((r.officer || {}).name || '—'), esc((r.supervisor || {}).name || '—'),
+        tagOf(r.concl, statusCls(r.concl))
+      ], r.grade))
+    };
+  }
+
+  if(key === 'staff'){
+    const staff = persons.filter(p => STAFF_CATS.includes(p.role));
+    return {
+      kicker: '作业四员', title: `${staff.length} 人`, sub: '爆破员 / 安全员 / 保管员 / 押运员，按角色筛选',
+      chips: [{v:'all',t:'全部'}].concat(STAFF_CATS.map(role => ({v:role, t:role}))),
+      cols: [{t:'姓名',w:'16%'},{t:'角色',w:'14%'},{t:'所属企业',w:'22%'},{t:'资格证书',w:'20%'},{t:'联系电话',w:'16%'},{t:'状态',w:'12%'}],
+      rows: staff.map(p => rowOf([
+        esc(p.name), tagOf(p.role || '—', 'cy'), esc(nmOf('companies', p.company) || p.company || '—'),
+        esc(p.cert || '—'), esc(p.phone || '—'), esc(p.status || '在岗')
+      ], p.role || '—'))
+    };
+  }
+
+  if(key === 'nogeo'){
+    const miss = [...sites, ...stor].filter(x => !x.lng);
+    return {
+      kicker: '未上图点位', title: `${miss.length} 处缺坐标`, sub: '缺经纬度即不上图，围栏进出与到场时间无法自动取证',
+      chips: chipSet(miss.map(x => (sites.includes(x) ? '作业点' : '库房'))),
+      cols: [{t:'名称',w:'28%'},{t:'类型',w:'12%'},{t:'编号',w:'12%'},{t:'围栏',w:'12%',num:1},{t:'缺失项',w:'36%'}],
+      rows: miss.map(x => {
+        const isS = sites.includes(x);
+        const lack = [!x.lng || !x.lat ? '经纬度' : '', !x.fence ? '电子围栏' : '', !x.project && isS ? '所属项目' : ''].filter(Boolean).join('、');
+        return rowOf([
+          esc(x.name), tagOf(isS ? '作业点' : '库房', isS ? 'cy' : 'am'), esc(x.id),
+          x.fence ? x.fence + ' m' : '未设', esc(lack || '—')
+        ], isS ? '作业点' : '库房');
+      })
+    };
+  }
+  return null;
+}
+
+function openTable(key, initChip){
+  const cfg = buildList(key);
+  if(!cfg) return;
+  let chip = initChip || 'all';
+  const chips = cfg.chips && cfg.chips.length ? cfg.chips : [{v:'all', t:'全部'}];
+  if(!chips.some(c => c.v === chip)) chip = 'all';
+
+  $('drawer').classList.add('wide');
+  drHead(cfg.kicker, cfg.title, cfg.sub);
+  $('drBody').innerHTML = `
+    <div class="lf">
+      <input class="lf-inp" id="lfKw" placeholder="搜索关键字…">
+      ${chips.map(c => `<span class="lf-chip${c.v === chip ? ' on' : ''}" data-c="${esc(c.v)}">${esc(c.t)}</span>`).join('')}
+      <span class="lf-cnt" id="lfCnt"></span>
+    </div>
+    <div id="lfTbl"></div>`;
+
+  const paint = () => {
+    const kwEl = $('lfKw');
+    const kw = kwEl ? kwEl.value.trim().toLowerCase() : '';
+    const rows = cfg.rows.filter(r =>
+      (chip === 'all' || r.tag === chip) && (!kw || r.txt.toLowerCase().includes(kw)));
+    $('lfCnt').textContent = `${rows.length} / ${cfg.rows.length} 条`;
+    $('lfTbl').innerHTML = rows.length ? `<table class="ltb">
+      <colgroup>${cfg.cols.map(c => `<col style="width:${c.w}">`).join('')}</colgroup>
+      <thead><tr>${cfg.cols.map(c => `<th class="${c.num ? 'num' : ''}">${esc(c.t)}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map(r => `<tr>${r.cells.map((v, i) => {
+          const c = cfg.cols[i] || {};
+          const cls = [c.num ? 'num' : '', c.wrap ? 'wrap' : ''].filter(Boolean).join(' ');
+          return `<td class="${cls}" title="${esc(stripTags(v))}">${v}</td>`;
+        }).join('')}</tr>`).join('')}</tbody>
+    </table>` : `<div style="padding:28px 2px;font-size:11.5px;color:var(--dim2)">没有符合筛选条件的记录</div>`;
+  };
+
+  const kwEl = $('lfKw');
+  if(kwEl) kwEl.addEventListener('input', paint);
+  $('drBody').querySelectorAll('.lf-chip').forEach(el => el.addEventListener('click', () => {
+    chip = el.dataset.c;
+    $('drBody').querySelectorAll('.lf-chip').forEach(x => x.classList.toggle('on', x === el));
+    paint();
+  }));
+  paint();
+  openDrawer(true);
+}
+
+/* 顶部环节流转条：自原右轨面板拆出，按 nodeLogs 环节聚合，可点开留痕明细 */
+const FLOW_NODES = ['计划','出库','运输','到场','爆破','退库'];
+function renderFlowBar(){
+  const d = S.d || {};
+  const logs = d.nodeLogs || [];
+  const byNode = {};
+  logs.forEach(l => { const n = l.node || '其他'; byNode[n] = (byNode[n] || 0) + 1; });
+  const rows = [...FLOW_NODES.filter(n => byNode[n] != null),
+    ...Object.keys(byNode).filter(n => !FLOW_NODES.includes(n))];
+  if(!rows.length){ $('flowbar').innerHTML = `<span style="font-size:11px;color:var(--dim2)">今日暂无节点流转留痕</span>`; return; }
+  $('flowbar').innerHTML = rows.map(n => `
+    <div class="fb-item" data-node="${esc(n)}" title="点击查看「${esc(n)}」留痕明细">
+      <span class="fb-k">${esc(n)}</span><span class="fb-v">${byNode[n]}<em>笔</em></span>
+    </div>`).join('');
+  $('flowbar').querySelectorAll('.fb-item').forEach(el => {
+    el.addEventListener('click', () => openTable('flow', el.dataset.node));
+  });
+}
+
+/* 作业四员：爆破员 / 安全员 / 保管员 / 押运员，按人员主数据 role 归类 */
+const STAFF_CATS = ['爆破员','安全员','保管员','押运员'];
+function renderStaff(){
+  const d = S.d || {};
+  const persons = d.persons || [];
+  const coName = id => { const c = (d.companies || []).find(x => x.id === id); return c ? c.name : ''; };
+  const groups = STAFF_CATS.map(role => ({role, list: persons.filter(p => p.role === role)}));
+  const total = groups.reduce((a, g) => a + g.list.length, 0);
+  $('staffCnt').textContent = `${total} 人`;
+  if(!total){ $('staffList').innerHTML = `<div class="empty-tip">暂无在册作业人员</div>`; return; }
+  $('staffList').innerHTML = groups.map(g => `
+    <div class="staff">
+      <div class="staff-cat"><b>${esc(g.role)}</b><span class="cnt">${g.list.length} 人</span></div>
+      ${g.list.map(p => `
+        <div class="staff-row" data-person="${esc(p.id)}">
+          <div class="staff-ava">${esc((p.name || '人').slice(0, 1))}</div>
+          <div class="staff-info">
+            <div class="staff-name">${esc(p.name || '—')}</div>
+            <div class="staff-meta">${esc(coName(p.company) || p.company || '—')}${p.cert ? ' · ' + esc(p.cert) : ''}</div>
+          </div>
+          <div class="staff-st">${esc(p.status || '在岗')}</div>
+        </div>`).join('')}
+    </div>`).join('');
+  $('staffList').querySelectorAll('.staff-row').forEach(el => {
+    el.addEventListener('click', () => openPerson(el.dataset.person));
+  });
+}
+
+function openPerson(id){
+  const d = S.d || {};
+  const p = (d.persons || []).find(x => x.id === id);
+  if(!p) return;
+  const co = (d.companies || []).find(c => c.id === p.company);
+  drHead('作业人员', p.name || '—', `${p.role || ''}${co ? ' · ' + co.name : ''}`);
+  $('drBody').innerHTML = `
+    <div class="sec"><h4>人员档案</h4>
+      <dl class="kv">
+        <dt>角色</dt><dd>${esc(p.role || '—')}</dd>
+        <dt>所属企业</dt><dd>${co ? esc(co.name) : esc(p.company || '未关联')}</dd>
+        <dt>联系电话</dt><dd>${esc(p.phone || '—')}</dd>
+        <dt>资格证书</dt><dd>${esc(p.cert || '—')}</dd>
+        <dt>证书到期</dt><dd>${esc(p.certExpire || '—')}</dd>
+        <dt>状态</dt><dd>${esc(p.status || '在岗')}</dd>
+      </dl>
+    </div>
+    ${(p.remark || p._remark) ? `<div class="sec"><h4>备注</h4><div style="font-size:11.5px;color:var(--dim);line-height:1.7">${esc(p.remark || p._remark)}</div></div>` : ''}`;
+  openDrawer();
+}
+
+/* ── 地图：Leaflet 真实深色地图 ────────────────────────── */
+const MAP_CFG = {
+  tileUrl: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+  subdomains: ['1', '2', '3', '4'],
+  center: [29.656, 94.360], zoom: 11, minZoom: 9, maxZoom: 17
+};
+let LMAP = null, ML = null;
+
+function ensureMap(){
+  if (LMAP) return LMAP;
+  LMAP = L.map('map', {
+    center: MAP_CFG.center, zoom: MAP_CFG.zoom,
+    minZoom: MAP_CFG.minZoom, maxZoom: MAP_CFG.maxZoom,
+    zoomControl: false, attributionControl: false, zoomSnap: 0.25
+  });
+  L.tileLayer(MAP_CFG.tileUrl, { subdomains: MAP_CFG.subdomains, maxZoom: MAP_CFG.maxZoom }).addTo(LMAP);
+  ML = {
+    bound: L.layerGroup().addTo(LMAP),
+    fence: L.layerGroup().addTo(LMAP),
+    link: L.layerGroup().addTo(LMAP),
+    focus: L.layerGroup().addTo(LMAP),
+    storage: [], site: []
+  };
+  L.control.scale({ imperial: false, position: 'bottomright' }).addTo(LMAP);
+  return LMAP;
+}
+
+/* 二次贝塞尔弧线 → Leaflet latlng 数组（[lat,lng]） */
+function arcLatLngs(a, b, curve){
+  const lng1 = a.lng, lat1 = a.lat, lng2 = b.lng, lat2 = b.lat;
+  const dx = lng2 - lng1, dy = lat2 - lat1, len = Math.hypot(dx, dy) || 1e-6;
+  const nx = -dy / len, ny = dx / len, cv = (curve == null ? .14 : curve);
+  const qx = (lng1 + lng2) / 2 + nx * len * cv, qy = (lat1 + lat2) / 2 + ny * len * cv;
+  const out = [];
+  for (let i = 0; i <= 16; i++){
+    const t = i / 16, mt = 1 - t;
+    out.push([mt * mt * lat1 + 2 * mt * t * qy + t * t * lat2,
+              mt * mt * lng1 + 2 * mt * t * qx + t * t * lng2]);
+  }
+  return out;
+}
+
+// 链路三色口径：出库=蓝 / 退库=绿 / 异常=红
+const TONE = {
+  out: { base: '#6290f2', flow: '#98ceff', w: 1.4, fw: 2.2, glow: 'rgba(40,118,206,.28)' },
+  ret: { base: '#28e8a2', flow: '#96ffd6', w: 2.6, fw: 3.4, glow: 'rgba(40,232,162,.28)' },
+  bad: { base: '#ff4a52', flow: '#ff848c', w: 1.9, fw: 2.9, glow: 'rgba(255,74,82,.22)' }
+};
+
+function renderMap(){
+  const d = S.d || {};
+  ensureMap();
+
+  // 清掉上一轮业务图层（底图与遮罩保留）
+  ML.bound.clearLayers(); ML.fence.clearLayers(); ML.link.clearLayers(); ML.focus.clearLayers();
+  ML.storage.forEach(m => LMAP.removeLayer(m));
+  ML.site.forEach(m => LMAP.removeLayer(m));
+  ML.storage = []; ML.site = [];
+
+  const pts = [];
+  (d.storages || []).forEach(s => { if (s.lng && s.lat) pts.push({ ...s, kind: 'storage' }); });
+  (d.sites || []).forEach(s => { if (s.lng && s.lat) pts.push({ ...s, kind: 'site' }); });
+
+  const noGeoCount = (d.storages || []).filter(s => !s.lng).length + (d.sites || []).filter(s => !s.lng).length;
+  $('mapNote').textContent = noGeoCount ? `${noGeoCount} 处点位未录坐标，未上图` : '全部点位已上图';
+
+  if (!pts.length){
+    if (!S.mappedOnce){ LMAP.fitBounds([[29.50, 94.15], [29.80, 94.55]]); S.mappedOnce = true; }
+    return;
+  }
+
+  /* 行政边界：内嵌 GeoJSON 叠加为多边形轮廓 + 区名 */
+  let BOUND = [];
+  try{ BOUND = JSON.parse(document.getElementById('geoBound').textContent); }catch(e){}
+  BOUND.forEach(b => {
+    (b.r || []).forEach(ring => {
+      if (!ring || ring.length < 3) return;
+      const latlngs = ring.map(([lg, la]) => [la, lg]);
+      L.polygon(latlngs, { fillColor: '#2a92ce', fillOpacity: .08, color: 'rgba(64,186,255,.10)', weight: 5, opacity: .4, interactive: false }).addTo(ML.bound);
+      L.polygon(latlngs, { fill: false, color: 'rgba(88,200,255,.62)', weight: 1.2, interactive: false }).addTo(ML.bound);
+    });
+    if (b.c){
+      L.marker([b.c[1], b.c[0]], {
+        icon: L.divIcon({ className: '', html: `<div class="bound-name">${esc(b.n)}</div>`, iconSize: [0, 0], iconAnchor: [0, 0] }),
+        interactive: false
+      }).addTo(ML.bound);
+    }
+  });
+
+  /* 节点索引 */
+  const nodeById = {};
+  (d.storages || []).forEach(s => nodeById[s.id] = { ...s, kind: 'storage' });
+  (d.sites || []).forEach(s => nodeById[s.id] = { ...s, kind: 'site' });
+
+  /* 链路 */
+  const routeAbnormal = rid => (d.plans || []).some(pl => (pl.route || '') === rid && (pl.exceptionFlag === true || pl.status === '待核验'));
+  const mkLink = (a, b, tone, curve, showKm) => {
+    const t = TONE[tone], latlngs = arcLatLngs(a, b, curve);
+    if (t.glow) L.polyline(latlngs, { color: t.base, weight: 8, opacity: .18, interactive: false }).addTo(ML.link);
+    L.polyline(latlngs, { color: t.base, weight: t.w, opacity: .85, interactive: false }).addTo(ML.link);
+    L.polyline(latlngs, { color: t.flow, weight: t.fw, dashArray: '3 16', lineCap: 'round', className: 'flow', interactive: false }).addTo(ML.link);
+    const km = geoDist(a.lng, a.lat, b.lng, b.lat);
+    if (showKm !== false && km >= 3){
+      L.marker(latlngs[8], {
+        icon: L.divIcon({ className: '', html: `<div style="font-size:9.5px;color:#8b9cbe;text-shadow:0 0 3px #070d18;white-space:nowrap">${km.toFixed(1)} km</div>`, iconSize: [0, 0], iconAnchor: [0, 0] }),
+        interactive: false
+      }).addTo(ML.link);
+    }
+  };
+
+  // 出库路线：routes 档案（库房 → 作业点）；计划待核验/异常转红
+  (d.routes || []).forEach(r => {
+    const a = nodeById[r.from], b = nodeById[r.to];
+    if (!a || !b || !a.lng || !b.lng) return;
+    mkLink(a, b, routeAbnormal(r.id) ? 'bad' : 'out');
+  });
+
+  // 退库路线：作业点 → 退入库房；已入库绿，未闭环红
+  const retPairs = new Map();
+  (d.returns || []).forEach(rt => {
+    const pl = (d.plans || []).find(p => p.id === rt.plan) || {};
+    const a = nodeById[pl.site || pl.siteId], b = nodeById[rt.target];
+    if (!a || !b || !a.lng || !b.lng) return;
+    const ok = rt.status === '已入库';
+    retPairs.set(a.id + '>' + b.id + (ok ? '|ok' : '|bad'), { a, b, ok });
+  });
+  [...retPairs.values()].forEach(x => mkLink(x.a, x.b, x.ok ? 'ret' : 'bad', x.ok ? 0.9 : -1.6, false));
+
+  /* 围栏（真实米数半径） */
+  pts.filter(p => Number(p.fence) > 0).forEach(p => {
+    L.circle([p.lat, p.lng], { radius: Number(p.fence), color: 'rgba(91,130,255,.34)', weight: 1, dashArray: '3 3', fillColor: '#5b82ff', fillOpacity: .045, interactive: false }).addTo(ML.fence);
+  });
+
+  /* 点位：库房方形 / 作业点圆点；异常红 */
+  const lngMid = (Math.min(...pts.map(p => p.lng)) + Math.max(...pts.map(p => p.lng))) / 2;
+  pts.forEach(p => {
+    const plans = (d.plans || []).filter(pl => pl.site === p.id || pl.siteId === p.id);
+    const blasts = (d.blastings || []).filter(b => plans.some(pl => pl.id === b.plan));
+    const verified = (d.verifies || []).some(v => plans.some(pl => pl.id === v.plan));
+    const abnormal = blasts.length > 0 && !verified;
+    const isStore = p.kind === 'storage';
+    const color = abnormal ? '#ff5d63' : (isStore ? '#5b82ff' : '#45d8ff');
+    const haloBg = abnormal ? 'radial-gradient(circle,rgba(255,124,130,.9),rgba(255,93,99,.24) 62%,rgba(255,93,99,0))'
+      : (isStore ? 'radial-gradient(circle,rgba(122,162,255,.85),rgba(91,130,255,.20) 62%,rgba(91,130,255,0))'
+                 : 'radial-gradient(circle,rgba(112,234,255,.9),rgba(69,216,255,.22) 62%,rgba(69,216,255,0))');
+    const side = p.lng > lngMid ? 'left' : 'right';
+    const shortName = isStore ? String(p.name || '') : String(p.name || '').replace(/作业点$/, '').replace(/（\S*）/, '');
+    const core = isStore
+      ? `<svg width="18" height="18" viewBox="0 0 18 18"><rect x="0.75" y="0.75" width="16.5" height="16.5" fill="none" stroke="${color}" stroke-width="1.5"/><rect x="4.5" y="4.5" width="9" height="9" fill="${color}" opacity=".92"/></svg>`
+      : `<svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="10" fill="none" stroke="${color}" stroke-width=".9" opacity=".28"/><circle cx="11" cy="11" r="7.5" fill="none" stroke="${color}" stroke-width="1.1" opacity=".55"/><circle cx="11" cy="11" r="3.8" fill="${color}"/></svg>`;
+    const html = `<div class="mk-node ${abnormal ? 'abn' : ''} ${p.kind}">
+      <div class="halo" style="width:${isStore ? 30 : 26}px;height:${isStore ? 30 : 26}px;background:${haloBg}"></div>
+      <div class="core">${core}</div>
+      <div class="lbl ${side}">${esc(shortName)}${plans.length ? `<span class="sub">计划 ${plans.length} 单</span>` : ''}</div>
+    </div>`;
+    const icon = L.divIcon({ className: '', html, iconSize: [0, 0], iconAnchor: [0, 0] });
+    const marker = L.marker([p.lat, p.lng], { icon, title: p.name }).addTo(LMAP);
+    marker.on('click', () => { if (p.kind === 'storage') openStorage(p.id); else openSite(p.id); });
+    (p.kind === 'storage' ? ML.storage : ML.site).push(marker);
+  });
+
+  /* 重点监控域：仅极淡范围提示，不画显眼边框 */
+  const b = L.latLngBounds(pts.map(p => [p.lat, p.lng]));
+  const pad = 0.012;
+  const box = L.latLngBounds([[b.getSouth() - pad, b.getWest() - pad], [b.getNorth() + pad, b.getEast() + pad]]);
+  L.rectangle(box, { fillColor: '#2c76c8', fillOpacity: .02, color: 'transparent', interactive: false }).addTo(ML.focus);
+  L.marker([box.getNorth(), box.getWest()], {
+    icon: L.divIcon({ className: '', html: '<div style="font-size:10px;letter-spacing:.16em;color:rgba(140,196,250,.40);text-shadow:0 0 3px #06101d;white-space:nowrap">重点监控域</div>', iconSize: [0, 0], iconAnchor: [6, 14] }),
+    interactive: false
+  }).addTo(ML.focus);
+
+  if (!S.mappedOnce){ LMAP.setView(MAP_CFG.center, MAP_CFG.zoom); S.mappedOnce = true; }
+  $('mapScale').textContent = '';
+  applyLayers();
+}
+
+function applyLayers(){
+  if (!LMAP || !ML) return;
+  const tog = (grp, on) => { on ? grp.addTo(LMAP) : LMAP.removeLayer(grp); };
+  tog(ML.link, S.layers.link);
+  tog(ML.fence, S.layers.fence);
+  ML.storage.forEach(m => { S.layers.storage ? m.addTo(LMAP) : LMAP.removeLayer(m); });
+  ML.site.forEach(m => { S.layers.site ? m.addTo(LMAP) : LMAP.removeLayer(m); });
+}
+
+/* 图层工具条 */
+const LAYER_DEF = [
+  {k:'site', t:'作业点', icon:''},
+  {k:'storage', t:'库房', icon:'sq'},
+  {k:'fence', t:'围栏', icon:'dashrc'},
+  {k:'link', t:'链路', icon:''}
+];
+function buildTools(){
+  $('tools').innerHTML = LAYER_DEF.map(l => `
+    <div class="tool on" data-layer="${l.k}"><i class="${l.icon}"></i>${l.t}</div>`).join('');
+  $('tools').querySelectorAll('.tool').forEach(el => {
+    el.addEventListener('click', () => {
+      const k = el.dataset.layer;
+      S.layers[k] = !S.layers[k];
+      el.classList.toggle('on', S.layers[k]);
+      applyLayers();
+    });
+  });
+}
+
+/* ── 抽屉：真实 overview 下钻 ──────────────────────── */
+function openDrawer(wide){
+  $('drawer').classList.toggle('wide', !!wide);
+  $('drBody').classList.toggle('list', !!wide);
+  $('drawer').classList.add('open');
+}
+function closeDrawer(){
+  $('drawer').classList.remove('open', 'wide');
+  S.selId = null;
+}
+$('drClose').addEventListener('click', closeDrawer);
+addEventListener('keydown', e => { if(e.key === 'Escape') closeDrawer(); });
+
+function drHead(kicker, title, sub){
+  $('drKicker').textContent = kicker;
+  $('drTitle').textContent = title;
+  $('drSub').textContent = sub || '';
+}
+
+async function openSite(id){
+  const d = S.d || {};
+  const site = (d.sites || []).find(s => s.id === id);
+  if(!site) return;
+  S.selId = id;
+  const pr = (d.projects || []).find(p => p.id === site.project);
+  const wa = (d.workareas || []).find(w => w.id === site.workarea);
+  const todayPlans = (d.plans || []).filter(p => p.site === id || p.siteId === id);
+  const byPlan = Object.fromEntries(policeOf().map(r => [r.plan.id, r]));
+  let selPlan = todayPlans.length ? todayPlans[0].id : null;
+
+  drHead('作业点', site.name, `${pr ? pr.name : '未关联项目'}${wa ? ' · ' + wa.name : ''}`);
+
+  const cardHtml = p => {
+    const r = byPlan[p.id];
+    const ppl = [r && r.police[0] && '民警 ' + r.police[0].name,
+      r && r.officer && '安全员 ' + r.officer.name,
+      r && r.supervisor && '监理 ' + r.supervisor.name].filter(Boolean).join(' · ');
+    return `<div class="plan-card${p.id === selPlan ? ' on' : ''}" data-plan="${esc(p.id)}">
+      <div class="pc-top">
+        <span class="pc-no">${esc(p.planNo || p.id)}</span>
+        ${tagOf(p.status || '—', statusCls(p.status))}
+      </div>
+      <div class="pc-line">计划用量 ${p.planKg || 0} kg　审批 ${esc(p.auditStatus || '—')}</div>
+      ${ppl ? `<div class="pc-line">${ppl}</div>` : ''}
+    </div>`;
+  };
+
+  $('drBody').innerHTML = `
+    <div class="sec"><h4>点位档案</h4>
+      <dl class="kv">
+        <dt>点位编号</dt><dd>${esc(site.id)}</dd>
+        <dt>电子围栏</dt><dd>${site.fence ? site.fence + ' 米' : '未设置'}</dd>
+        <dt>坐标</dt><dd>${site.lng ? `${site.lng}, ${site.lat}` : '未录入（未上图）'}</dd>
+        <dt>历史作业</dt><dd>${site.hist || 0} 次</dd>
+        <dt>状态</dt><dd>${esc(site.status || '—')}</dd>
+      </dl>
+    </div>
+    <div class="sec"><h4>今日计划（${todayPlans.length}）</h4>
+      <div class="plan-tabs" id="planTabs">${todayPlans.length ? todayPlans.map(cardHtml).join('') : `<div style="font-size:12px;color:var(--dim2)">该点位今日无作业计划</div>`}</div>
+    </div>
+    <div class="sec"><h4>全链节点</h4>
+      <div class="cb-title" id="chainTitle"></div>
+      <div class="cb-body" id="siteChain2"></div>
+    </div>`;
+  openDrawer();
+
+  const chainBody = $('siteChain2');
+  const chainTitle = $('chainTitle');
+  async function showPlan(pid){
+    selPlan = pid;
+    const p = todayPlans.find(x => x.id === pid);
+    document.querySelectorAll('#planTabs .plan-card').forEach(el =>
+      el.classList.toggle('on', el.dataset.plan === pid));
+    if(chainTitle) chainTitle.textContent = p ? (p.planNo || p.id) : '';
+    if(chainBody){ chainBody.innerHTML = ''; await renderChainInto(chainBody, pid); }
+  }
+  const tabs = $('planTabs');
+  if(tabs) tabs.querySelectorAll('.plan-card').forEach(el => {
+    el.addEventListener('click', () => showPlan(el.dataset.plan));
+  });
+  if(selPlan) await showPlan(selPlan);
+  else if(chainBody) chainBody.innerHTML = `<div style="font-size:11.5px;color:var(--dim2)">无计划即无链路留痕</div>`;
+}
+
+function openStorage(id){
+  const d = S.d || {};
+  const s = (d.storages || []).find(x => x.id === id);
+  if(!s) return;
+  S.selId = id;
+  const co = (d.companies || []).find(c => c.id === s.company);
+  const goods = {zy:'炸药', lg:'雷管', db:'导爆索'};
+  const stkRows = Object.entries(s.stock || {}).map(([g, arr]) =>
+    Object.entries(arr || {}).map(([spec, v]) =>
+      `<dl class="kv" style="margin-bottom:6px"><dt>${esc(spec)}</dt><dd><b style="font-variant-numeric:tabular-nums">${Number(v).toLocaleString()}</b>
+       <span style="color:var(--dim2);font-size:10.5px">　安全下限 ${((s.safe||{})[g]||0).toLocaleString()}</span></dd></dl>`).join('')
+  ).join('') || `<div style="font-size:11.5px;color:var(--dim2)">库存结构待补录</div>`;
+
+  drHead('库房', s.name, `${s.type || '待补录类型'}${co ? ' · ' + co.name : ''}`);
+  $('drBody').innerHTML = `
+    <div class="sec"><h4>库房档案</h4>
+      <dl class="kv">
+        <dt>库房编号</dt><dd>${esc(s.id)}</dd>
+        <dt>所属企业</dt><dd>${co ? esc(co.name) : '<span style="color:var(--amber)">未关联，待补录</span>'}</dd>
+        <dt>地址</dt><dd>${esc(s.addr || '—')}</dd>
+        <dt>库区面积</dt><dd>${s.area ? s.area + ' ㎡' : '—'}</dd>
+        <dt>电子围栏</dt><dd>${s.fence ? s.fence + ' 米' : '未设置'}</dd>
+        <dt>坐标</dt><dd>${s.lng ? `${s.lng}, ${s.lat}` : '未录入（未上图）'}</dd>
+        <dt>保管员</dt><dd>${(s.keepers || []).map(k => ((d.persons||[]).find(p => p.id === k) || {}).name || k).join('、') || '—'}</dd>
+      </dl>
+    </div>
+    <div class="sec"><h4>实时存量 / 安全阈值</h4>${stkRows}</div>`;
+  openDrawer();
+}
+
+function openVehicle(id){
+  const d = S.d || {};
+  const v = (d.vehicles || []).find(x => x.id === id);
+  if(!v) return;
+  S.selId = id;
+  const co = (d.companies || []).find(c => c.id === v.company);
+  const dd = daysTo(v.annualExpire);
+  const near = dd != null && dd <= 60;
+  const runs = (d.transports || []).filter(t => t.vehicle === id);
+
+  drHead('运输车辆', v.plate, `${v.model || ''}${co ? '　·　' + co.name : ''}`);
+  $('drBody').innerHTML = `
+    <div class="sec"><h4>车辆档案</h4>
+      <dl class="kv">
+        <dt>车牌</dt><dd>${esc(v.plate)}</dd>
+        <dt>车型</dt><dd>${esc(v.model || '—')}</dd>
+        <dt>核定载重</dt><dd>${v.load ? Number(v.load).toLocaleString() + ' kg' : '—'}</dd>
+        <dt>所属企业</dt><dd>${co ? esc(co.name) : '未关联'}</dd>
+        <dt>运输许可</dt><dd>${esc(v.transLicence || '—')}</dd>
+        <dt>许可物品</dt><dd>${esc(v.transGoods || '—')}</dd>
+        <dt>年审到期</dt><dd ${near ? 'style="color:var(--amber)"' : ''}>${esc(v.annualExpire || '—')}${dd != null ? `　${dd} 天后到期` : ''}</dd>
+        <dt>状态</dt><dd>${esc(v.status || '—')}</dd>
+      </dl>
+    </div>
+    <div class="sec"><h4>运输任务</h4>
+      ${runs.length ? runs.map(t => `<dl class="kv" style="margin-bottom:7px">
+        <dt>${esc(t.no || t.id)}</dt>
+        <dd>${esc((t.route || {}).from || '—')} → ${esc((t.route || {}).to || '—')}<br>
+        <span style="color:var(--dim2);font-size:10.5px">${esc(t.status || '')}　出发 ${fmtTime(t.departTime)}</span></dd></dl>`).join('')
+        : `<div style="font-size:11.5px;color:var(--dim2)">该车今日无运输任务</div>`}
+    </div>`;
+  openDrawer();
+}
+
+async function openAlert(a){  if(!a) return;
+  const d = S.d || {};
+  const titles = {
+    verify: '待核验爆破记录',
+    receive: '入库数量不符',
+    nogeo: '未录入坐标的点位',
+    storage: '库房主数据不完整',
+    vehicle: '运输许可临期',
+    plan: '待运输计划'
+  };
+  drHead('异常与预警', titles[a.kind] || a.t, a.s);
+  let body = '';
+
+  if(a.kind === 'verify'){
+    body = `<div class="sec"><h4>涉及计划</h4><dl class="kv">${a.ids.map(p => {
+      const pl = (d.plans||[]).find(x => x.id === p);
+      return `<dt>${esc(p)}</dt><dd>${esc((pl||{}).planNo || '—')}　${esc((pl||{}).status || '')}</dd>`;
+    }).join('')}</dl></div>
+    <div class="sec"><h4>处置路径</h4>
+      <div style="font-size:11.5px;color:var(--dim);line-height:1.8">
+        使用消耗与剩余退库需由核验负责人提交核验单；提交后本项自动转入已闭环，闭环率随之更新。</div></div>`;
+  }else if(a.kind === 'receive'){
+    const r = (d.receives||[]).find(x => x.id === a.ids[0]) || {};
+    body = `<div class="sec"><h4>差异明细</h4>
+      ${(r.items||[]).map(i => `<dl class="kv" style="margin-bottom:6px">
+        <dt>${esc(i.spec || i.goods)}</dt>
+        <dd>实发 <b>${i.sent}</b>　实收 <b style="color:var(--red)">${i.got}</b>　差异 <b style="color:var(--red)">${i.diff}</b></dd></dl>`).join('')
+        || `<div style="font-size:11.5px;color:var(--dim2)">差异明细待补</div>`}
+      </div>`;
+  }else if(a.kind === 'nogeo'){
+    const items = [...(d.sites||[]), ...(d.storages||[])].filter(x => a.ids.includes(x.id));
+    body = `<div class="sec"><h4>待补坐标</h4><dl class="kv">${items.map(x =>
+      `<dt>${esc(x.name)}</dt><dd>${esc(x.id)}　${x.fence ? '围栏 ' + x.fence + ' 米' : '未设围栏'}</dd>`).join('')}</dl></div>
+      <div class="sec"><h4>影响</h4><div style="font-size:11.5px;color:var(--dim);line-height:1.8">
+        无经纬度则不上图，电子围栏进出判定与到场时间无法自动取证，相关计划只能依赖人工确认。</div></div>`;
+  }else if(a.kind === 'storage'){
+    const items = (d.storages||[]).filter(x => a.ids.includes(x.id));
+    body = `<div class="sec"><h4>缺失项</h4><dl class="kv">${items.map(x =>
+      `<dt>${esc(x.name)}</dt><dd>${[!x.company ? '缺所属企业' : '', !x.type ? '缺库房类型' : '', !x.lng ? '缺坐标' : ''].filter(Boolean).join('、')}</dd>`).join('')}</dl></div>`;
+  }else if(a.kind === 'vehicle'){
+    const v = (d.vehicles||[]).find(x => a.ids.includes(x.id)) || {};
+    body = `<div class="sec"><h4>车辆档案</h4><dl class="kv">
+      <dt>车牌</dt><dd>${esc(v.plate || '—')}</dd>
+      <dt>车型</dt><dd>${esc(v.model || '—')}</dd>
+      <dt>核定载重</dt><dd>${v.load ? v.load + ' kg' : '—'}</dd>
+      <dt>运输许可</dt><dd>${esc(v.transLicence || '—')}</dd>
+      <dt>年审到期</dt><dd style="color:var(--amber)">${esc(v.annualExpire || '—')}</dd>
+      </dl></div>`;
+  }else{
+    body = `<div class="sec"><h4>计划清单</h4><dl class="kv">${a.ids.map(p => {
+      const pl = (d.plans||[]).find(x => x.id === p) || {};
+      return `<dt>${esc(pl.planNo || p)}</dt><dd>${esc(pl.status || '')}　计划 ${esc(String(pl.planStart||'').slice(5,16))}</dd>`;
+    }).join('')}</dl></div>`;
+  }
+  $('drBody').innerHTML = body;
+  openDrawer();
+}
+
+async function renderChainInto(box, planId){
+  if(!box) return;
+  let logs = [];
+  try{
+    const r = await fetch(`/api/overview/${encodeURIComponent(planId)}`, {cache:'no-store'}).then(x => x.json());
+    if(r.code === 200) logs = (r.data.timelineLogs || []);
+  }catch(e){ /* 落到本地留痕兜底 */ }
+  // overview 未返回时间线时，用同一份数据里的节点留痕按计划过滤（数据同源，不造假）
+  if(!logs.length && S.d && S.d.nodeLogs){
+    logs = S.d.nodeLogs.filter(l => l.plan === planId).sort((a,b) => (a.time||0) - (b.time||0));
+  }
+  if(!logs.length){
+    box.innerHTML = `<div style="font-size:11.5px;color:var(--dim2)">该计划暂无节点留痕</div>`;
+    return;
+  }
+  box.innerHTML = `<div class="tl">${logs.map(l => `
+    <div class="tl-i">
+      <div class="tl-n">${esc(l.node || '节点')}</div>
+      <div class="tl-a">${esc(l.action || '')}</div>
+      <div class="tl-w">${esc(l.who || '')}　${fmtTime(l.time)}</div>
+    </div>`).join('')}</div>`;
+}
+
+async function loadChain(planId){
+  await renderChainInto($('siteChain'), planId);
+}
+
+/* ── 时钟 ───────────────────────────────────────────── */
+const WEEK = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+function tick(){
+  const n = new Date();
+  $('clock').textContent = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  $('today').textContent = `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}　${WEEK[n.getDay()]}`;
+}
+
+/* ── 启动 ───────────────────────────────────────────── */
+buildTools();
+/* 面板角标与脚注也是数据入口：点开即该板块的完整列表 */
+[['siteCnt','site'], ['stkCnt','storage'], ['vehCnt','vehicle'], ['alertCnt','police'], ['staffCnt','staff'], ['mapNote','nogeo']]
+  .forEach(([id, key]) => {
+    const el = $(id);
+    if(!el) return;
+    el.style.cursor = 'pointer';
+    el.title = '点击查看明细列表';
+    el.addEventListener('click', e => { e.stopPropagation(); openTable(key); });
+  });
+tick(); setInterval(tick, 1000);
+load();
+setInterval(load, 10000);   // 10s 轮询：大屏常驻，全量一次拉齐比多次小接口省
 </script>
 </body>
 </html>

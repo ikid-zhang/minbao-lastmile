@@ -842,16 +842,21 @@ const server = http.createServer(async (req, res) => {
       const plan = db.plans.find(p => p.id === planId);
       if (!plan) return sendJSON(res, 404, '作业计划不存在');
 
-      const site = db.sites.find(s => s.id === plan.siteId) || {};
-      const storage = db.storages.find(s => s.id === plan.outStorageId) || {};
-      const outbound = db.outbounds.find(o => (o.planIds || []).includes(planId)) || null;
-      const transport = outbound ? db.transports.find(t => t.outboundId === outbound.id) : null;
-      const receive = db.receives.find(r => r.planId === planId) || null;
-      const blasting = db.blastings.find(b => b.planId === planId) || null;
-      const destroy = db.destroys.find(d => d.planId === planId) || null;
-      const ret = db.returns.find(r => r.planId === planId) || null;
-      const verify = db.verifies.find(v => v.planId === planId) || null;
-      const logs = db.nodeLogs.filter(l => l.planId === planId);
+      const site = db.sites.find(s => s.id === (plan.siteId || plan.site)) || {};
+      const storage = db.storages.find(s => s.id === (plan.outStorageId || plan.outStorage)) || {};
+      const outbound = db.outbounds.find(o =>
+        (o.planIds || []).includes(planId) ||
+        (o.plans || []).some(x => x.plan === planId)) || null;
+      let transport = db.transports.find(t => t.plan === planId || t.planId === planId) || null;
+      if (!transport && outbound) {
+        transport = db.transports.find(t => t.outboundId === outbound.id || t.outbound === outbound.id) || null;
+      }
+      const receive = db.receives.find(r => r.planId === planId || r.plan === planId) || null;
+      const blasting = db.blastings.find(b => b.planId === planId || b.plan === planId) || null;
+      const destroy = db.destroys.find(d => d.planId === planId || d.plan === planId) || null;
+      const ret = db.returns.find(r => r.planId === planId || r.plan === planId) || null;
+      const verify = db.verifies.find(v => v.planId === planId || v.plan === planId) || null;
+      const logs = db.nodeLogs.filter(l => l.planId === planId || l.plan === planId);
 
       return sendJSON(res, 200, 'success', {
         plan,

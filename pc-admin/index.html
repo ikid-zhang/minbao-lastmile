@@ -6,6 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
 <title>民爆最后一公里 · PC 管理后台（L 模块原型）</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600&display=swap');
@@ -72,7 +73,14 @@
   .tag.bad{background:#fbeae8;color:var(--bad)}
   .tag.gray{background:var(--dp-muted);color:var(--sub)}
   .tag.red{background:#eaf0fd;color:var(--red)}
-  .op{color:var(--dp-accent);cursor:pointer;font-size:12px;white-space:nowrap}
+  .op{color:var(--dp-accent);font-size:12px;white-space:nowrap}
+  /* 操作按钮：每个动作独立成按钮 */
+  .obtn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:3px 9px;margin:0 6px 2px 0;border:1px solid var(--dp-rule);border-radius:6px;background:#fff;color:var(--dp-accent);font-size:12px;line-height:1.6;text-decoration:none;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease}
+  .obtn:hover{background:#f3f5ff;border-color:#c3d0f5}
+  .obtn.danger{color:#a3382c;border-color:#e7c9c3}
+  .obtn.danger:hover{background:#fdf3f1;border-color:#dcb0a8}
+  .obtn:last-child{margin-right:0}
+  .op > a, .op > span{vertical-align:middle}
   .op.gray{color:var(--sub)}
   /* 工具条 */
   .tools{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
@@ -145,6 +153,16 @@
   .tb tr.qrow:hover td{background:#f0f4ff;cursor:pointer}
 
   /* ====== L02 子模块维护（作业点位/路线/库房/四大员）====== */
+  /* 页面内确认 / 提示弹层 */
+  .ui-mask{position:fixed;inset:0;background:rgba(16,24,38,.42);display:none;align-items:center;justify-content:center;z-index:80}
+  .ui-mask.on{display:flex}
+  .ui-box{width:min(440px,92vw);background:#fff;border-radius:12px;box-shadow:0 12px 32px rgba(14,26,60,.18);overflow:hidden}
+  .ui-h{padding:18px 20px 0;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .ui-body{padding:10px 20px 20px;font-size:13px;line-height:1.75;color:var(--txt);white-space:pre-line;word-break:break-word}
+  .ui-f{display:flex;justify-content:flex-end;gap:10px;padding:0 20px 18px}
+  .ui-f .btn{min-width:84px;outline:none}
+  .ui-f .btn:focus-visible{box-shadow:0 0 0 2px rgba(30,64,175,.25)}
+  .btn.danger{background:linear-gradient(135deg,#C0504A 0%,#8E2F26 100%)}
   .rec-modal{position:fixed;inset:0;background:rgba(16,24,38,.42);display:flex;align-items:center;justify-content:center;z-index:60}
   .rec-modal .rm{width:min(640px,92vw);max-height:86vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 12px 32px rgba(14,26,60,.16)}
   .rec-modal .rm-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
@@ -154,7 +172,8 @@
   .rec-modal .rm-f{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
   .rm-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line)}
   .rm-row label{width:132px;flex:0 0 132px;color:var(--sub);font-size:13px}
-  .rm-row input,.rm-row select,.rm-row textarea{flex:1;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit;font-size:13px;background:#fff}
+  .rm-row input,.rm-row textarea{flex:1;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit;font-size:13px;background-color:#fff}
+  .rm-row select{flex:1;border:1px solid var(--line);border-radius:6px;padding:8px 28px 8px 10px;font:inherit;font-size:13px;background-color:#fff;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2394a3b8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;-webkit-appearance:none;appearance:none;cursor:pointer}
   .rm-row textarea{min-height:64px;resize:vertical}
 
   /* ---------- 表单控件统一基线（低权重 :where，不覆盖既有组件规则）---------- */
@@ -211,12 +230,14 @@
   .btn:active{background:#142f83;filter:none}
   .btn.ghost{background:#fcfcfd;color:#000;border:1px solid #dcdbd5}
   .btn.ghost:hover{background:#f2f1ec;border-color:#c9c8c1}
-  .inp,select{background:#fcfcfd;border:1px solid #dcdbd5;border-radius:8px;color:#000}
+  .inp,select{background-color:#fcfcfd;border:1px solid #dcdbd5;border-radius:8px;color:#000}
   .inp:hover,select:hover{border-color:#1e40af}
   .inp:focus,select:focus{border-color:#1e40af;box-shadow:0 0 0 2px rgba(30,64,175,.12)}
   .tb th{background:#f2f1ec;color:#414141;border-bottom:1px solid #dcdbd5;font-weight:500;white-space:nowrap}
   .tb td{white-space:nowrap}
   .tb td.wrap{white-space:normal}
+  .tb td{overflow:hidden;text-overflow:ellipsis}
+  .tb td.wrap{overflow:visible}
   .tb td{border-bottom:1px solid #dcdbd5}
   .tb tr:hover td{background:#f7f6f0}
   .tb tr.qrow:hover td{background:#f7f6f0}
@@ -238,7 +259,7 @@
   .landed-box{background:#f2f1ec;border-color:#dcdbd5;color:#000;border-radius:8px}
   .rec-modal{background:rgba(20,19,20,.42)}
   .rec-modal .rm{background:#fcfcfd;border:1px solid #dcdbd5;border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.12)}
-  .rm-row input,.rm-row select,.rm-row textarea{background:#fcfcfd;border-color:#dcdbd5;border-radius:8px}
+  .rm-row input,.rm-row select,.rm-row textarea{background-color:#fcfcfd;border-color:#dcdbd5;border-radius:8px}
   .pager span{background:#fcfcfd;border-color:#dcdbd5;border-radius:6px}
   .pager span.on{background:#1e40af;border-color:#1e40af;color:#fcfcfd}
   .todo,.kv,.dw-item{border-bottom-color:#e8e6de}
@@ -254,8 +275,25 @@
   .content{background:#fbfaf4}
   .desc{color:#595858}
   .rm-row{border-bottom-style:solid;border-bottom-color:#e8e6de}
+
+  /* ── 地图选点（库房 / 作业点位经纬度维护） ───────────────────── */
+  .geo-box{position:relative;width:100%;height:300px;border:1px solid var(--line);border-radius:8px;overflow:hidden;
+    background:#0a1424}
+  #geoMap{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+  .geo-box.ro #geoMap{cursor:default}
+  #geoMap .leaflet-container{background:#0a1424;outline:none}
+  #geoMap .leaflet-control-attribution{display:none}
+  #geoMap .leaflet-tile-pane{filter:brightness(.72) saturate(.7)}
+  .gmk .dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+  .geo-tip{position:absolute;left:10px;top:8px;font-size:11px;color:#9db5d6;letter-spacing:.02em;pointer-events:none;z-index:1000}
+  .geo-read{position:absolute;right:10px;bottom:8px;font-size:11px;color:#d4e6ff;font-variant-numeric:tabular-nums;z-index:1000;
+    background:rgba(6,14,26,.74);border:1px solid rgba(120,170,240,.22);border-radius:4px;padding:3px 8px;pointer-events:none}
+  .geo-miss{color:var(--bad);font-weight:600}
+  .geo-num{font-variant-numeric:tabular-nums}
 </style>
 <script src="demo-data.js"></script>
+<script src="/vendor/leaflet/leaflet.js"></script>
+<script type="application/json" id="geoBound">[{"n":"市中区","c":[103.7969,29.5988],"r":[[[103.89789,29.74746],[103.8945,29.74301],[103.88859,29.74198],[103.87986,29.74208],[103.87612,29.7441],[103.86763,29.74412],[103.86039,29.74683],[103.85622,29.747],[103.85449,29.74414],[103.85363,29.73823],[103.84623,29.73481],[103.8423,29.73108],[103.83555,29.73047],[103.83037,29.73231],[103.82127,29.73032],[103.81328,29.7243],[103.80756,29.71896],[103.79926,29.71401],[103.79663,29.714],[103.79349,29.71567],[103.78489,29.71226],[103.77895,29.71162],[103.77751,29.71033],[103.77647,29.7042],[103.77459,29.70442],[103.77459,29.70325],[103.76422,29.7071],[103.75866,29.71667],[103.75541,29.72023],[103.74676,29.72023],[103.73972,29.7285],[103.73636,29.73024],[103.7313,29.73058],[103.73071,29.73006],[103.73289,29.7276],[103.73368,29.7253],[103.73165,29.72198],[103.7237,29.72087],[103.71936,29.71691],[103.72095,29.71139],[103.72089,29.70823],[103.72017,29.70715],[103.70684,29.69799],[103.70559,29.69752],[103.70256,29.69854],[103.70079,29.69819],[103.69718,29.69405],[103.70648,29.68567],[103.70672,29.68449],[103.70606,29.6834],[103.69906,29.68292],[103.69704,29.68191],[103.69694,29.68034],[103.69844,29.67878],[103.70386,29.67884],[103.70643,29.6782],[103.70709,29.67505],[103.70479,29.67245],[103.69986,29.67089],[103.6942,29.67292],[103.69302,29.67166],[103.69129,29.66259],[103.68849,29.66078],[103.68725,29.66087],[103.68355,29.66363],[103.68245,29.66346],[103.68128,29.66152],[103.68231,29.65825],[103.68188,29.65607],[103.68088,29.65498],[103.67085,29.65094],[103.66338,29.65106],[103.64639,29.65481],[103.6365,29.65406],[103.6288,29.65131],[103.62188,29.64106],[103.62097,29.63743],[103.61671,29.63461],[103.61528,29.63105],[103.61383,29.63057],[103.61826,29.62082],[103.62037,29.61876],[103.62287,29.61791],[103.62313,29.61693],[103.62169,29.61516],[103.62268,29.61206],[103.6223,29.61058],[103.61507,29.61285],[103.61237,29.61186],[103.61009,29.60957],[103.60989,29.60802],[103.61148,29.60511],[103.60945,29.6035],[103.61097,29.60075],[103.61104,29.59909],[103.60666,29.59153],[103.60211,29.57842],[103.59923,29.57447],[103.59708,29.57401],[103.5936,29.57594],[103.59111,29.57428],[103.58652,29.57278],[103.58437,29.56872],[103.5834,29.56825],[103.58103,29.56837],[103.57677,29.57048],[103.57442,29.56974],[103.57311,29.5683],[103.57306,29.564],[103.57398,29.56182],[103.5812,29.55764],[103.58383,29.55414],[103.58378,29.55146],[103.57419,29.5412],[103.57275,29.53872],[103.57191,29.53511],[103.57035,29.53309],[103.56374,29.53139],[103.56119,29.53149],[103.55929,29.53253],[103.55876,29.53558],[103.55692,29.5361],[103.54981,29.5307],[103.54949,29.52723],[103.55528,29.51853],[103.55354,29.51257],[103.55171,29.51069],[103.54908,29.50953],[103.53684,29.50098],[103.53592,29.49915],[103.53612,29.49718],[103.53816,29.49489],[103.54035,29.4951],[103.54395,29.49398],[103.54909,29.49514],[103.55472,29.49832],[103.55723,29.49883],[103.55707,29.49823],[103.558,29.49828],[103.55958,29.49662],[103.56145,29.48693],[103.5605,29.47152],[103.5709,29.47983],[103.57262,29.49211],[103.5735,29.4934],[103.57608,29.49431],[103.57728,29.49679],[103.57597,29.50239],[103.57684,29.50427],[103.57997,29.50598],[103.58793,29.50803],[103.59184,29.51004],[103.59939,29.51766],[103.60192,29.52231],[103.60451,29.52293],[103.6097,29.51431],[103.61378,29.512],[103.6171,29.50829],[103.62133,29.50506],[103.62194,29.50136],[103.62411,29.50002],[103.62921,29.50048],[103.63117,29.49901],[103.6313,29.49789],[103.62712,29.49264],[103.62647,29.49076],[103.62766,29.48604],[103.63118,29.48401],[103.63797,29.48301],[103.64312,29.48592],[103.65425,29.48891],[103.6617,29.48851],[103.66454,29.48736],[103.67184,29.48099],[103.67889,29.47694],[103.68154,29.47293],[103.68152,29.46912],[103.69582,29.46923],[103.71201,29.47316],[103.71572,29.47428],[103.71795,29.47588],[103.72098,29.48676],[103.72112,29.49356],[103.72534,29.49853],[103.72643,29.5015],[103.72843,29.50339],[103.73722,29.50407],[103.74148,29.50569],[103.7436,29.50719],[103.74492,29.50996],[103.74659,29.51136],[103.75158,29.51252],[103.752,29.51131],[103.75726,29.50891],[103.76076,29.50287],[103.7622,29.50154],[103.77539,29.49478],[103.77896,29.49376],[103.78175,29.49388],[103.79239,29.49521],[103.80043,29.49841],[103.81058,29.50519],[103.81258,29.50708],[103.81423,29.51014],[103.81613,29.51114],[103.8177,29.51096],[103.82099,29.50871],[103.82189,29.50882],[103.825,29.51199],[103.83198,29.51086],[103.83658,29.51099],[103.83848,29.51179],[103.84322,29.52079],[103.84477,29.52218],[103.85039,29.52212],[103.85243,29.52125],[103.85552,29.51648],[103.85812,29.51543],[103.86193,29.51575],[103.86551,29.51735],[103.86951,29.52162],[103.87187,29.52232],[103.87414,29.51593],[103.876,29.50755],[103.87963,29.50351],[103.8838,29.49653],[103.88535,29.49518],[103.88718,29.49022],[103.88874,29.48932],[103.89285,29.48979],[103.89261,29.48754],[103.89339,29.48618],[103.89705,29.48701],[103.8969,29.48916],[103.89528,29.49276],[103.89595,29.49741],[103.89784,29.49777],[103.90153,29.49636],[103.90297,29.49661],[103.90375,29.49718],[103.90409,29.50149],[103.90838,29.49924],[103.91087,29.49983],[103.91108,29.50362],[103.91467,29.5068],[103.91467,29.50771],[103.91181,29.51153],[103.91205,29.51356],[103.91849,29.51584],[103.91952,29.51676],[103.91994,29.51848],[103.92741,29.52694],[103.93268,29.52492],[103.93401,29.52356],[103.93443,29.52213],[103.92985,29.52036],[103.93037,29.51991],[103.93511,29.51973],[103.93713,29.52084],[103.93625,29.5284],[103.93405,29.53182],[103.93466,29.53398],[103.9378,29.53363],[103.94312,29.53058],[103.94536,29.53078],[103.94783,29.53276],[103.94814,29.53517],[103.94514,29.53886],[103.94468,29.54448],[103.94624,29.54644],[103.9522,29.54794],[103.95389,29.54898],[103.95342,29.55024],[103.94937,29.55416],[103.94862,29.55684],[103.95372,29.55804],[103.96063,29.5584],[103.96914,29.56199],[103.96781,29.56381],[103.95843,29.56529],[103.95722,29.56772],[103.95929,29.56841],[103.95995,29.56961],[103.9681,29.5723],[103.96835,29.57357],[103.96543,29.57588],[103.96429,29.57868],[103.96125,29.57939],[103.9583,29.57867],[103.9545,29.57662],[103.95129,29.57699],[103.94755,29.57638],[103.94688,29.5766],[103.94629,29.57916],[103.94778,29.58396],[103.95081,29.58982],[103.95747,29.59465],[103.95964,29.59445],[103.96176,29.59327],[103.96689,29.58725],[103.96861,29.58664],[103.97189,29.59309],[103.971,29.59635],[103.97088,29.60094],[103.97222,29.60444],[103.98438,29.61232],[103.98739,29.61546],[103.98629,29.61719],[103.98054,29.62042],[103.97625,29.6218],[103.97405,29.62402],[103.9719,29.62817],[103.97273,29.63081],[103.97179,29.63282],[103.97224,29.63362],[103.97851,29.63215],[103.98131,29.63304],[103.98188,29.63596],[103.98141,29.63722],[103.97989,29.63801],[103.9764,29.63814],[103.97362,29.63988],[103.9728,29.64257],[103.97332,29.64842],[103.96915,29.65009],[103.96882,29.65077],[103.97006,29.65217],[103.97327,29.65289],[103.97444,29.65411],[103.97301,29.65902],[103.97598,29.67069],[103.97629,29.67803],[103.97736,29.68285],[103.97405,29.68447],[103.97394,29.68837],[103.97249,29.6883],[103.9706,29.68673],[103.96987,29.68753],[103.97257,29.69334],[103.97732,29.69225],[103.97779,29.69747],[103.97696,29.70107],[103.97768,29.70183],[103.98898,29.70453],[103.99307,29.71099],[103.99312,29.71203],[103.98966,29.71503],[103.98882,29.71932],[103.9875,29.71988],[103.98634,29.71943],[103.98377,29.72143],[103.98394,29.72563],[103.9822,29.72842],[103.97936,29.72895],[103.97824,29.72848],[103.97881,29.72488],[103.97784,29.72373],[103.97461,29.72334],[103.96804,29.72408],[103.96452,29.72532],[103.95735,29.72978],[103.95304,29.72993],[103.95032,29.73109],[103.95051,29.73464],[103.95379,29.74271],[103.95464,29.74749],[103.95815,29.75176],[103.95659,29.75559],[103.95337,29.75865],[103.95325,29.76014],[103.95095,29.75903],[103.95075,29.75703],[103.94662,29.75267],[103.94235,29.75159],[103.93968,29.74962],[103.93816,29.74931],[103.93539,29.75027],[103.923,29.75163],[103.91648,29.74796],[103.90983,29.74836],[103.90595,29.74773],[103.90225,29.74496],[103.90015,29.74523],[103.89789,29.74746]]]},{"n":"沙湾区","c":[103.5992,29.3449],"r":[[[103.68152,29.46912],[103.68154,29.47293],[103.67889,29.47694],[103.67184,29.48099],[103.66454,29.48736],[103.6617,29.48851],[103.65425,29.48891],[103.64312,29.48592],[103.63797,29.48301],[103.63119,29.48401],[103.62766,29.48604],[103.62647,29.49076],[103.62712,29.49263],[103.6313,29.49789],[103.63117,29.49902],[103.62921,29.50048],[103.62411,29.50002],[103.62194,29.50136],[103.62133,29.50506],[103.6171,29.50829],[103.61378,29.51199],[103.60969,29.51431],[103.6045,29.52293],[103.60192,29.52231],[103.5994,29.51766],[103.59184,29.51004],[103.58793,29.50803],[103.57997,29.50598],[103.57684,29.50427],[103.57596,29.50239],[103.57728,29.49679],[103.57608,29.49431],[103.5735,29.4934],[103.57262,29.49211],[103.5709,29.47983],[103.5605,29.47152],[103.55383,29.46481],[103.526,29.44772],[103.52056,29.44071],[103.51818,29.43477],[103.51577,29.43121],[103.5087,29.42327],[103.50647,29.42226],[103.5024,29.4223],[103.50018,29.42417],[103.50121,29.43008],[103.50087,29.43265],[103.49735,29.4405],[103.4961,29.44117],[103.49554,29.43763],[103.4978,29.43072],[103.49706,29.42895],[103.48982,29.42112],[103.48834,29.41598],[103.48802,29.40944],[103.4865,29.40699],[103.48334,29.40375],[103.47869,29.40305],[103.471,29.3951],[103.46739,29.38619],[103.46666,29.37754],[103.45864,29.37687],[103.45668,29.37763],[103.45274,29.38135],[103.44165,29.37489],[103.43386,29.37378],[103.43309,29.36883],[103.43751,29.36529],[103.43741,29.36122],[103.43557,29.35911],[103.42698,29.35512],[103.42565,29.35323],[103.42537,29.35014],[103.42572,29.34641],[103.42826,29.3373],[103.42776,29.33384],[103.43069,29.33238],[103.43027,29.32854],[103.43452,29.31998],[103.43425,29.31771],[103.42957,29.3133],[103.43294,29.30947],[103.43332,29.30255],[103.4344,29.29896],[103.43762,29.29288],[103.43773,29.28817],[103.44521,29.28906],[103.44937,29.29083],[103.45329,29.29361],[103.4577,29.29769],[103.46027,29.30143],[103.46283,29.30805],[103.4638,29.31408],[103.46512,29.31634],[103.47078,29.31681],[103.47375,29.31444],[103.48283,29.29828],[103.49186,29.28006],[103.50119,29.26923],[103.50344,29.25812],[103.50501,29.25666],[103.51045,29.25498],[103.52232,29.25308],[103.52591,29.25331],[103.52758,29.25442],[103.53278,29.26281],[103.53423,29.26338],[103.53702,29.26272],[103.54998,29.25204],[103.55374,29.24766],[103.55446,29.24543],[103.55369,29.23992],[103.55413,29.23516],[103.56044,29.22606],[103.56217,29.22219],[103.56714,29.21643],[103.56839,29.21371],[103.574,29.20816],[103.59273,29.1942],[103.60083,29.18945],[103.60526,29.18844],[103.63074,29.18636],[103.64132,29.18719],[103.65206,29.18651],[103.66125,29.18904],[103.66492,29.19111],[103.66642,29.19252],[103.66687,29.19513],[103.66628,29.20416],[103.66414,29.20656],[103.65594,29.21004],[103.65378,29.21222],[103.65336,29.2146],[103.6539,29.21749],[103.65562,29.22024],[103.65908,29.223],[103.66198,29.22337],[103.66394,29.22221],[103.66888,29.21563],[103.67221,29.21329],[103.67493,29.21366],[103.67663,29.2146],[103.67785,29.21651],[103.67798,29.22448],[103.67755,29.22648],[103.67548,29.22875],[103.67656,29.23129],[103.67921,29.23287],[103.68642,29.23275],[103.69099,29.23408],[103.69189,29.23477],[103.69138,29.23832],[103.69842,29.2444],[103.70911,29.24386],[103.71116,29.2463],[103.71421,29.24766],[103.71547,29.25044],[103.71262,29.25796],[103.71021,29.26132],[103.70798,29.26233],[103.69984,29.26383],[103.69706,29.26592],[103.69511,29.26911],[103.69477,29.27065],[103.69645,29.27222],[103.70318,29.27368],[103.70509,29.27783],[103.7047,29.28173],[103.69471,29.28969],[103.69468,29.29117],[103.7006,29.29446],[103.71172,29.29574],[103.71568,29.30335],[103.71861,29.30499],[103.72602,29.30421],[103.7264,29.30049],[103.72714,29.29901],[103.72786,29.29908],[103.73462,29.30736],[103.73792,29.31031],[103.73987,29.3134],[103.7264,29.32155],[103.72522,29.32543],[103.72844,29.32862],[103.72842,29.33006],[103.72728,29.33147],[103.72195,29.33324],[103.71783,29.33685],[103.71549,29.34014],[103.7118,29.34147],[103.70904,29.34077],[103.70262,29.33689],[103.69696,29.33505],[103.69166,29.32887],[103.68921,29.32803],[103.67595,29.34312],[103.67404,29.34815],[103.67467,29.3526],[103.6785,29.36072],[103.67753,29.36394],[103.67096,29.37214],[103.66928,29.37676],[103.66989,29.40119],[103.66585,29.40983],[103.66535,29.41245],[103.66873,29.4343],[103.66869,29.43994],[103.67028,29.44238],[103.67772,29.44818],[103.67564,29.45628],[103.67701,29.4573],[103.68001,29.45794],[103.68149,29.45978],[103.67776,29.46205],[103.67316,29.46059],[103.67199,29.46118],[103.67163,29.46299],[103.67242,29.46431],[103.68152,29.46912]]]},{"n":"五通桥区","c":[103.8351,29.407],"r":[[[103.9441,29.44716],[103.94238,29.44981],[103.94162,29.45403],[103.93737,29.45801],[103.93664,29.45954],[103.93751,29.46334],[103.93031,29.46281],[103.92772,29.45878],[103.92623,29.45774],[103.922,29.45928],[103.91977,29.45919],[103.91057,29.45709],[103.90729,29.45528],[103.90585,29.45645],[103.90395,29.46302],[103.90282,29.46398],[103.9001,29.46098],[103.89774,29.46153],[103.89594,29.46387],[103.89507,29.46627],[103.89566,29.47224],[103.8944,29.47291],[103.88466,29.47134],[103.88253,29.4743],[103.87957,29.476],[103.87884,29.4768],[103.87823,29.4839],[103.87828,29.48528],[103.87964,29.48649],[103.88428,29.48681],[103.89164,29.48505],[103.89622,29.48572],[103.89705,29.48701],[103.8934,29.48618],[103.89261,29.48754],[103.89285,29.48979],[103.88874,29.48932],[103.88718,29.49022],[103.88535,29.49518],[103.8838,29.49653],[103.87963,29.50351],[103.876,29.50755],[103.87414,29.51593],[103.87187,29.52232],[103.86952,29.52162],[103.86551,29.51735],[103.86194,29.51575],[103.85811,29.51543],[103.85552,29.51648],[103.85243,29.52125],[103.85039,29.52212],[103.84477,29.52218],[103.84322,29.52079],[103.83848,29.51179],[103.83658,29.51099],[103.83198,29.51086],[103.825,29.51199],[103.82189,29.50882],[103.82099,29.50871],[103.8177,29.51096],[103.81613,29.51114],[103.81423,29.51014],[103.81258,29.50708],[103.81058,29.50519],[103.80043,29.49842],[103.79239,29.49521],[103.78175,29.49388],[103.77896,29.49376],[103.77539,29.49479],[103.7622,29.50154],[103.76076,29.50287],[103.75726,29.50891],[103.752,29.51131],[103.75158,29.51252],[103.74659,29.51136],[103.74492,29.50996],[103.7436,29.50719],[103.74148,29.50569],[103.73722,29.50407],[103.72843,29.50339],[103.72643,29.5015],[103.72534,29.49853],[103.72112,29.49356],[103.72098,29.48676],[103.71905,29.47836],[103.71795,29.47588],[103.71572,29.47428],[103.69909,29.46956],[103.68152,29.46912],[103.67242,29.46431],[103.67162,29.46299],[103.67199,29.46118],[103.67316,29.46059],[103.67776,29.46205],[103.68149,29.45977],[103.68001,29.45794],[103.67701,29.4573],[103.67564,29.45627],[103.67772,29.44817],[103.67027,29.44238],[103.66869,29.43994],[103.66874,29.4343],[103.66535,29.41245],[103.66585,29.40983],[103.66989,29.4012],[103.66928,29.37676],[103.67096,29.37214],[103.67753,29.36394],[103.6785,29.36072],[103.67468,29.3526],[103.67404,29.34815],[103.67595,29.34312],[103.68921,29.32803],[103.69166,29.32887],[103.69696,29.33505],[103.70262,29.33689],[103.71058,29.34146],[103.71285,29.34125],[103.71549,29.34014],[103.71783,29.33685],[103.72195,29.33324],[103.72728,29.33147],[103.72842,29.33006],[103.72844,29.32862],[103.7256,29.32618],[103.72552,29.32291],[103.72792,29.32025],[103.73671,29.31503],[103.73987,29.3134],[103.74258,29.31609],[103.74349,29.31943],[103.74185,29.32219],[103.74213,29.32328],[103.74849,29.32477],[103.75084,29.32417],[103.75284,29.32562],[103.75519,29.32537],[103.76394,29.31703],[103.77206,29.31787],[103.77295,29.31704],[103.77515,29.31083],[103.78123,29.30374],[103.78188,29.30446],[103.78193,29.30677],[103.78046,29.31935],[103.78137,29.32296],[103.78516,29.32427],[103.79136,29.32443],[103.79647,29.3266],[103.7985,29.32653],[103.8059,29.3231],[103.80952,29.31921],[103.82094,29.31897],[103.82342,29.32472],[103.82613,29.3268],[103.83562,29.32649],[103.83664,29.32723],[103.83681,29.32929],[103.83108,29.33338],[103.83041,29.33487],[103.83236,29.33563],[103.83981,29.33465],[103.84506,29.33285],[103.84993,29.32934],[103.85207,29.32539],[103.85596,29.31132],[103.85828,29.30778],[103.86454,29.30359],[103.87181,29.29196],[103.87401,29.29198],[103.87736,29.29335],[103.883,29.29281],[103.88357,29.29413],[103.88181,29.29704],[103.88525,29.30093],[103.88631,29.308],[103.88422,29.31541],[103.88453,29.31734],[103.89422,29.32172],[103.89837,29.31713],[103.90102,29.31644],[103.90693,29.31893],[103.91572,29.31991],[103.91717,29.32146],[103.91671,29.32294],[103.91479,29.32466],[103.9152,29.32697],[103.92106,29.33186],[103.92171,29.33552],[103.92042,29.33815],[103.91563,29.34074],[103.91273,29.33936],[103.91151,29.33422],[103.91079,29.33402],[103.90972,29.34116],[103.91098,29.34658],[103.9107,29.34883],[103.90811,29.3522],[103.90981,29.3559],[103.91324,29.35745],[103.91729,29.36137],[103.91921,29.36517],[103.9191,29.36907],[103.92589,29.37201],[103.92645,29.37419],[103.92551,29.37658],[103.92452,29.37658],[103.9233,29.37485],[103.92102,29.37362],[103.91382,29.37281],[103.91322,29.37412],[103.91358,29.37717],[103.90918,29.38394],[103.90712,29.38562],[103.90278,29.38671],[103.90122,29.38805],[103.90492,29.38866],[103.90554,29.39242],[103.90744,29.39519],[103.90805,29.39937],[103.91429,29.40143],[103.91941,29.39913],[103.91773,29.40242],[103.92234,29.40346],[103.92505,29.40282],[103.92677,29.39972],[103.9304,29.4005],[103.93401,29.40272],[103.93658,29.39946],[103.9399,29.39821],[103.94544,29.40477],[103.94878,29.40674],[103.9494,29.41041],[103.94865,29.41163],[103.94648,29.41234],[103.94392,29.41438],[103.93907,29.41569],[103.93761,29.41835],[103.93497,29.41894],[103.93556,29.42252],[103.9345,29.42613],[103.93501,29.42748],[103.93333,29.42969],[103.93891,29.43172],[103.93754,29.43855],[103.94165,29.44083],[103.9441,29.44716]]]}]</script>
 </head>
 <body>
 <div class="app">
@@ -287,6 +325,7 @@
   <main class="m">
     <div class="topbar">
       <span class="crumb" id="crumb">工作台</span><span class="sp"></span>
+      <span class="tag" id="scopeTag" style="margin-right:10px" title="当前登录角色的数据可见范围"></span>
       <select id="roleSel" class="inp" style="width:150px;margin-right:12px" title="切换登录角色（菜单与数据权限随之变化）" onchange="applyRole(this.value)">
         <option value="police">公安管理员</option>
         <option value="biz">业务管理员</option>
@@ -325,9 +364,9 @@
           </div>
         </div>
         <div class="card">
-          <h4>在途运输实时监控<a onclick="window.open('../bigscreen/index.html')">俯瞰大屏 →</a></h4>
-          <table class="tb">
-            <thead><tr><th>运输单</th><th>车辆/押运员</th><th>卸货点</th><th>出发</th><th>状态</th><th>操作</th></tr></thead>
+          <h4>在途运输实时监控<a class="obtn" onclick="window.open('../bigscreen/index.html')">俯瞰大屏 →</a></h4>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:170px;white-space:nowrap">运输单</th><th style="width:160px;white-space:nowrap">车辆/押运员</th><th style="width:180px;white-space:nowrap">卸货点</th><th style="width:140px;white-space:nowrap">出发</th><th style="width:90px;white-space:nowrap">状态</th><th style="width:90px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="workbenchTransportTb">
               <tr><td colspan="6" style="text-align:center;color:var(--sub);padding:18px">暂无在途运输车辆</td></tr>
             </tbody>
@@ -341,7 +380,7 @@
         <div class="desc">民爆公司 / 项目 / 工区 / 点位 / 库房 / 四大员 / 车辆 / 路线 / 项目负责人 —— 九类主数据统一由治安管理员在此维护（Q11 已确认），支持与其他系统对接接收数据；字段对照《民爆管理表单.et》</div>
         <div class="tools">
           <button class="btn" onclick="openAddMasterModal()">＋ 新增主数据</button>
-          <button class="btn ghost" onclick="alert('支持导出 CSV / Excel 模版')">导出 Excel</button>
+          <button class="btn ghost" onclick="uiAlert('支持导出 CSV / Excel 模版')">导出 Excel</button>
           <span class="sp"></span>
           <select id="masterFilterType" onchange="loadMasterData()">
             <option value="all">全部类型（9 类）</option>
@@ -352,12 +391,13 @@
             <option value="projects">项目</option>
             <option value="vehicles">车辆(自录)</option>
             <option value="routes">路线(自录)</option>
+            <option value="checkpoints">沿途打卡点</option>
           </select>
           <input class="inp" id="masterSearchInp" onkeyup="filterMasterTable()" placeholder="搜索名称 / 证号 / 车牌">
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb" style="table-layout:fixed">
-            <thead><tr><th>类型</th><th>名称 / 编号</th><th>关键信息</th><th>来源</th><th>状态</th><th>最近维护</th><th>操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:88px;white-space:nowrap">类型</th><th style="width:210px;white-space:nowrap">名称 / 编号</th><th style="width:334px;white-space:nowrap">关键信息</th><th style="width:104px;white-space:nowrap">来源</th><th style="width:74px;white-space:nowrap">状态</th><th style="width:136px;white-space:nowrap">最近维护</th><th style="width:96px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="masterTbody">
               <tr><td colspan="7" style="text-align:center;color:var(--sub);padding:20px">正在从服务端加载主数据...</td></tr>
             </tbody>
@@ -376,13 +416,13 @@
           <input type="checkbox" id="ck" style="accent-color:#074ce0"><label for="ck" style="color:var(--sub)">全选</label>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th style="width:36px"></th><th>类型</th><th>申报内容</th><th>申报单位</th><th>申报时间</th><th>状态</th><th>操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:44px"></th><th style="width:90px;white-space:nowrap">类型</th><th style="width:290px;white-space:nowrap">申报内容</th><th style="width:150px;white-space:nowrap">申报单位</th><th style="width:110px;white-space:nowrap">申报时间</th><th style="width:80px;white-space:nowrap">状态</th><th style="width:200px;white-space:nowrap">操作</th></tr></thead>
             <tbody>
-              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>四大员</td><td>新增 安全员 刘志明（乐山民安）</td><td>乐山民安爆破</td><td>11-05 09:20</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
-              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>车辆</td><td>变更 川L·77Q31 核定载重 2.5t→3.0t</td><td>乐山交运</td><td>11-05 08:52</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
-              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>项目备案</td><td>新增 竹根滩整治工程（有效期 1 年）</td><td>岷江工程公司</td><td>11-04 17:30</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
-              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>点位</td><td>新增 棉竹采石场 5# 掌子面（围栏 400m）</td><td>乐山民安爆破</td><td>11-04 15:02</td><td><span class="tag warn">待审核</span></td><td class="op">详情 · 通过 · 驳回</td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>四大员</td><td>新增 安全员 刘志明（乐山民安）</td><td>乐山民安爆破</td><td>11-05 09:20</td><td><span class="tag warn">待审核</span></td><td class="op"><span class="obtn">详情</span><span class="obtn">通过</span><span class="obtn">驳回</span></td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>车辆</td><td>变更 川L·77Q31 核定载重 2.5t→3.0t</td><td>乐山交运</td><td>11-05 08:52</td><td><span class="tag warn">待审核</span></td><td class="op"><span class="obtn">详情</span><span class="obtn">通过</span><span class="obtn">驳回</span></td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>项目备案</td><td>新增 竹根滩整治工程（有效期 1 年）</td><td>岷江工程公司</td><td>11-04 17:30</td><td><span class="tag warn">待审核</span></td><td class="op"><span class="obtn">详情</span><span class="obtn">通过</span><span class="obtn">驳回</span></td></tr>
+              <tr><td><input type="checkbox" style="accent-color:#074ce0"></td><td>点位</td><td>新增 棉竹采石场 5# 掌子面（围栏 400m）</td><td>乐山民安爆破</td><td>11-04 15:02</td><td><span class="tag warn">待审核</span></td><td class="op"><span class="obtn">详情</span><span class="obtn">通过</span><span class="obtn">驳回</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -434,12 +474,12 @@
             <div class="bar"><span class="lb">分级到场 9 次</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
           </div></div>
           <div class="card"><h4>数量差异率 / 退库执行率</h4><div class="bars">
-            <div class="bar"><span class="lb">差异率</span><div class="tk"><div class="fl" style="width:6%;background:var(--warn)"></div></div><span class="vl">1.2%</span></div>
+            <div class="bar"><span class="lb">差异率</span><div class="tk"><div class="fl" style="width:6%;min-width:14px;background:var(--warn)"></div></div><span class="vl">1.2%</span></div>
             <div class="bar"><span class="lb">退库执行</span><div class="tk"><div class="fl" style="width:100%"></div></div><span class="vl">100%</span></div>
           </div></div>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
+          <table class="tb" style="table-layout:fixed;width:100%">
             <thead><tr><th>辖区</th><th>计划数</th><th>闭环率</th><th>核验覆盖</th><th>差异单</th><th>异常未闭环</th><th>平均在途</th></tr></thead>
             <tbody>
               <tr><td>市中区</td><td>18</td><td><b style="color:var(--ok)">94%</b></td><td>88%</td><td>2</td><td><span class="tag bad">3</span></td><td>1h 12m</td></tr>
@@ -461,12 +501,12 @@
           <button class="btn ghost">导出档案 PDF</button>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th>计划单号</th><th>作业点</th><th>作业量</th><th>状态</th><th>单据完整度</th><th>检查史</th><th>操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:160px;white-space:nowrap">计划单号</th><th style="width:170px;white-space:nowrap">作业点</th><th style="width:90px;white-space:nowrap">作业量</th><th style="width:100px;white-space:nowrap">状态</th><th style="width:110px;white-space:nowrap">单据完整度</th><th style="width:80px;white-space:nowrap">检查史</th><th style="width:235px;white-space:nowrap">操作</th></tr></thead>
             <tbody>
-              <tr><td>BBJH20261105003</td><td>兴盛砂石 1# 采区</td><td>2.4t</td><td><span class="tag warn">部分到达</span></td><td>4/6 节点</td><td>1 次</td><td class="op">档案 · 轨迹 · 日志</td></tr>
-              <tr><td>BBJH20261104011</td><td>岷江航电 3# 围堰</td><td>1.8t</td><td><span class="tag ok">已完成</span></td><td>6/6 节点</td><td>2 次</td><td class="op">档案 · PDF 下载</td></tr>
-              <tr><td>BBJH20261104008</td><td>水口镇土地整理 2#</td><td>980kg</td><td><span class="tag bad">差异挂起</span></td><td>4/6 节点</td><td>1 次</td><td class="op">档案 · 异常单</td></tr>
+              <tr><td>BBJH20261105003</td><td>兴盛砂石 1# 采区</td><td>2.4t</td><td><span class="tag warn">部分到达</span></td><td>4/6 节点</td><td>1 次</td><td class="op"><span class="obtn">档案</span><span class="obtn">轨迹</span><span class="obtn">日志</span></td></tr>
+              <tr><td>BBJH20261104011</td><td>岷江航电 3# 围堰</td><td>1.8t</td><td><span class="tag ok">已完成</span></td><td>6/6 节点</td><td>2 次</td><td class="op"><span class="obtn">档案</span><span class="obtn">PDF 下载</span></td></tr>
+              <tr><td>BBJH20261104008</td><td>水口镇土地整理 2#</td><td>980kg</td><td><span class="tag bad">差异挂起</span></td><td>4/6 节点</td><td>1 次</td><td class="op"><span class="obtn">档案</span><span class="obtn">异常单</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -535,7 +575,7 @@
               <input class="inp" placeholder="操作人 / 单号 / 时间段">
               <button class="btn">查询</button>
             </div>
-            <table class="tb"><thead><tr><th>时间</th><th>操作人</th><th>动作</th><th>对象</th></tr></thead>
+            <table class="tb" style="table-layout:fixed;width:100%"><thead><tr><th>时间</th><th>操作人</th><th>动作</th><th>对象</th></tr></thead>
               <tbody>
                 <tr><td>11-05 09:41</td><td>王警官</td><td>导出监管报表</td><td>市中区 · 近7日</td></tr>
                 <tr><td>11-05 09:12</td><td>系统</td><td>生成差异异常单</td><td>DX-1105-02</td></tr>
@@ -564,33 +604,33 @@
           <button class="btn">导出澄清清单</button>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th>编号</th><th>澄清事项</th><th>优先级</th><th>甲方确认意见（2026-11-05）</th><th>状态</th><th>操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:64px;white-space:nowrap">编号</th><th style="width:150px;white-space:nowrap">澄清事项</th><th style="width:76px;white-space:nowrap">优先级</th><th style="width:420px;white-space:nowrap">甲方确认意见（2026-11-05）</th><th style="width:90px;white-space:nowrap">状态</th><th style="width:190px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="clarifyTb">
-              <tr class="qrow" onclick="openQ('Q01')"><td>Q01</td><td>计划上报时间要求</td><td><span class="tag bad">P0</span></td><td id="op-Q01">24:00 前提交次日计划 + 提前 ≥6h，两条件同时生效；不允许节假日 / 跨日 / 紧急任务 / 超时补报（一期不做补报）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q02')"><td>Q02</td><td>计划审核及变更</td><td><span class="tag bad">P0</span></td><td id="op-Q02">治安管理员界面设审核开关：关闭不需审核，开启须责任区民警审核；民警只审作业计划；出库后不允许变更</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q03')"><td>Q03</td><td>超计划发料</td><td><span class="tag bad">P0</span></td><td id="op-Q03">不能超，严格按照作业计划出库（取消 105% 容差口径）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q04')"><td>Q04</td><td>多点合并出库与分配</td><td><span class="tag bad">P0</span></td><td id="op-Q04">甲方意见：待考虑</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q05')"><td>Q05</td><td>双人双锁复核</td><td><span class="tag bad">P0</span></td><td id="op-Q05">登记人与复核人须为 2 个以上自然人，凭身份证验证身份；复核驳回由登记人修改重新提交；库存在复核人点击通过后扣除；不考虑复核超时 / 撤销</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q06')"><td>Q06</td><td>数量平衡与剩余物处置</td><td><span class="tag bad">P0</span></td><td id="op-Q06">本次建设范围对销毁只做登记（不纳入销毁执行流程）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q07')"><td>Q07</td><td>跨日、多次退库</td><td><span class="tag bad">P0</span></td><td id="op-Q07">退库可跨日但不能分批；必须原库退回；必须一次退完；不能拒收；中间库流程待确认</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q08')"><td>Q08</td><td>分级检查与远程核验</td><td><span class="tag bad">P0</span></td><td id="op-Q08">甲方意见：待确认（阈值 / 分级口径 / 远程核验关系均待定）</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q09')"><td>Q09</td><td>异常上报与闭环</td><td><span class="tag bad">P0</span></td><td id="op-Q09">第一阶段不考虑异常预警，移至 P1 阶段（待客户确认）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q10')"><td>Q10</td><td>角色及数据权限</td><td><span class="tag bad">P0</span></td><td id="op-Q10">按人员做数据区分；不能兼任其他角色；离职 / 调岗由系统后台管理界面维护；不能跨工区，民警可有多个工区权限</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q11')"><td>Q11</td><td>主数据来源与审核生效</td><td><span class="tag bad">P0</span></td><td id="op-Q11">八类主数据统一由治安管理员维护，并支持与其他系统对接接收数据</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q12')"><td>Q12</td><td>公安责任区与民警路由</td><td><span class="tag warn">P1</span></td><td id="op-Q12">甲方意见：待确认</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q13')"><td>Q13</td><td>定位、围栏与轨迹</td><td><span class="tag warn">P1</span></td><td id="op-Q13">第一阶段不考虑该功能，由押运员手动点击到达</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q14')"><td>Q14</td><td>弱网、离线与补传</td><td><span class="tag warn">P1</span></td><td id="op-Q14">不考虑离线（各环节联网校验）</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q15')"><td>Q15</td><td>签名、照片及电子证据</td><td><span class="tag warn">P1</span></td><td id="op-Q15">每环节手写签名 + 现场拍照 + 定位 + 操作日志；不能使用相册照片；只记录签名人操作日志；证据一直保存；查询、导出仅限 PC 端</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q16')"><td>Q16</td><td>消息与超时提醒</td><td><span class="tag warn">P1</span></td><td id="op-Q16">发送系统层面的通知消息；先不考虑无人处理时的替代责任人</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q17')"><td>Q17</td><td>统计指标及大屏口径</td><td><span class="tag warn">P1</span></td><td id="op-Q17">甲方意见：统计待定</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q18')"><td>Q18</td><td>对接系统及数据共享</td><td><span class="tag warn">P1</span></td><td id="op-Q18">对接林安码统一登录 + 统一权限管理；用户 / 组织在本系统内单独维护，可脱离林安码独立运行</td><td><span class="tag ok">已确认</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q19')"><td>Q19</td><td>一期建设范围与验收</td><td><span class="tag bad">P0</span></td><td id="op-Q19">甲方意见：未填写</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q20')"><td>Q20</td><td>部署与安全要求</td><td><span class="tag warn">P1</span></td><td id="op-Q20">技术路线已定：小程序 / 后台服务 / 数据库部署政务网，数据同步至公安网，PC 端部署公安网；安全测评等仍待主管部门规范</td><td><span class="tag warn">原型已落地</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q21')"><td>Q21</td><td>页面术语与现场操作</td><td><span class="tag gray">P2</span></td><td id="op-Q21">原型已按「业务页无技术编号」落地，正式口径待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q22')"><td>Q22</td><td>发车责任人与载重边界</td><td><span class="tag warn">P1</span></td><td id="op-Q22">原型按押运员发车 / 载重须大于总重落地，等于时处理待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q23')"><td>Q23</td><td>多点卸货顺序及参与人员</td><td><span class="tag warn">P1</span></td><td id="op-Q23">原型按押运员手动调整顺序 / 参与人员自选落地，细则待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op">查看 · 回写意见</td></tr>
-              <tr class="qrow" onclick="openQ('Q24')"><td>Q24</td><td>双网数据同步时效与批处理</td><td><span class="tag warn">P1</span></td><td id="op-Q24">甲方意见：未填写（凌晨批处理窗口是否适用待定）</td><td><span class="tag gray">待甲方确认</span></td><td class="op">催办 · 回写意见</td></tr>
+              <tr class="qrow" onclick="openQ('Q01')"><td>Q01</td><td>计划上报时间要求</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q01">24:00 前提交次日计划 + 提前 ≥6h，两条件同时生效；不允许节假日 / 跨日 / 紧急任务 / 超时补报（一期不做补报）</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q02')"><td>Q02</td><td>计划审核及变更</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q02">治安管理员界面设审核开关：关闭不需审核，开启须责任区民警审核；民警只审作业计划；出库后不允许变更</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q03')"><td>Q03</td><td>超计划发料</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q03">不能超，严格按照作业计划出库（取消 105% 容差口径）</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q04')"><td>Q04</td><td>多点合并出库与分配</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q04">甲方意见：待考虑</td><td><span class="tag gray">待甲方确认</span></td><td class="op"><span class="obtn">催办</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q05')"><td>Q05</td><td>双人双锁复核</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q05">登记人与复核人须为 2 个以上自然人，凭身份证验证身份；复核驳回由登记人修改重新提交；库存在复核人点击通过后扣除；不考虑复核超时 / 撤销</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q06')"><td>Q06</td><td>数量平衡与剩余物处置</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q06">本次建设范围对销毁只做登记（不纳入销毁执行流程）</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q07')"><td>Q07</td><td>跨日、多次退库</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q07">退库可跨日但不能分批；必须原库退回；必须一次退完；不能拒收；中间库流程待确认</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q08')"><td>Q08</td><td>分级检查与远程核验</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q08">甲方意见：待确认（阈值 / 分级口径 / 远程核验关系均待定）</td><td><span class="tag gray">待甲方确认</span></td><td class="op"><span class="obtn">催办</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q09')"><td>Q09</td><td>异常上报与闭环</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q09">第一阶段不考虑异常预警，移至 P1 阶段（待客户确认）</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q10')"><td>Q10</td><td>角色及数据权限</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q10">按人员做数据区分；不能兼任其他角色；离职 / 调岗由系统后台管理界面维护；不能跨工区，民警可有多个工区权限</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q11')"><td>Q11</td><td>主数据来源与审核生效</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q11">八类主数据统一由治安管理员维护，并支持与其他系统对接接收数据</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q12')"><td>Q12</td><td>公安责任区与民警路由</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q12">甲方意见：待确认</td><td><span class="tag gray">待甲方确认</span></td><td class="op"><span class="obtn">催办</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q13')"><td>Q13</td><td>定位、围栏与轨迹</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q13">第一阶段不考虑该功能，由押运员手动点击到达</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q14')"><td>Q14</td><td>弱网、离线与补传</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q14">不考虑离线（各环节联网校验）</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q15')"><td>Q15</td><td>签名、照片及电子证据</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q15">每环节手写签名 + 现场拍照 + 定位 + 操作日志；不能使用相册照片；只记录签名人操作日志；证据一直保存；查询、导出仅限 PC 端</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q16')"><td>Q16</td><td>消息与超时提醒</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q16">发送系统层面的通知消息；先不考虑无人处理时的替代责任人</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q17')"><td>Q17</td><td>统计指标及大屏口径</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q17">甲方意见：统计待定</td><td><span class="tag gray">待甲方确认</span></td><td class="op"><span class="obtn">催办</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q18')"><td>Q18</td><td>对接系统及数据共享</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q18">对接林安码统一登录 + 统一权限管理；用户 / 组织在本系统内单独维护，可脱离林安码独立运行</td><td><span class="tag ok">已确认</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q19')"><td>Q19</td><td>一期建设范围与验收</td><td><span class="tag bad">P0</span></td><td class="wrap" id="op-Q19">甲方意见：未填写</td><td><span class="tag gray">待甲方确认</span></td><td class="op"><span class="obtn">催办</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q20')"><td>Q20</td><td>部署与安全要求</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q20">技术路线已定：小程序 / 后台服务 / 数据库部署政务网，数据同步至公安网，PC 端部署公安网；安全测评等仍待主管部门规范</td><td><span class="tag warn">原型已落地</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q21')"><td>Q21</td><td>页面术语与现场操作</td><td><span class="tag gray">P2</span></td><td class="wrap" id="op-Q21">原型已按「业务页无技术编号」落地，正式口径待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q22')"><td>Q22</td><td>发车责任人与载重边界</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q22">原型按押运员发车 / 载重须大于总重落地，等于时处理待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q23')"><td>Q23</td><td>多点卸货顺序及参与人员</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q23">原型按押运员手动调整顺序 / 参与人员自选落地，细则待回写</td><td><span class="tag warn">原型已落地</span></td><td class="op"><span class="obtn">查看</span><span class="obtn">回写意见</span></td></tr>
+              <tr class="qrow" onclick="openQ('Q24')"><td>Q24</td><td>双网数据同步时效与批处理</td><td><span class="tag warn">P1</span></td><td class="wrap" id="op-Q24">甲方意见：未填写（凌晨批处理窗口是否适用待定）</td><td><span class="tag gray">待甲方确认</span></td><td class="op"><span class="obtn">催办</span><span class="obtn">回写意见</span></td></tr>
             </tbody>
           </table>
           <div class="pager"><span>«</span><span class="on">1</span><span>2</span><span>»</span></div>
@@ -612,8 +652,8 @@
           <span class="hint" id="cnt-m-companies"></span>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th style="width:44px">编号</th><th style="width:150px;white-space:nowrap">公司名称</th><th style="width:140px">注册地址</th><th style="width:76px;white-space:nowrap">法定代表人</th><th style="width:128px;white-space:nowrap">从业人员</th><th style="width:142px;white-space:nowrap">许可证号</th><th style="width:96px;white-space:nowrap">许可证有效期</th><th style="width:116px">已关联</th><th style="width:52px">状态</th><th style="width:112px;white-space:nowrap">操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:42px">编号</th><th style="width:152px;white-space:nowrap">公司名称</th><th style="width:150px;white-space:nowrap">注册地址</th><th style="width:84px;white-space:nowrap">法定代表人</th><th style="width:132px;white-space:nowrap">从业人员</th><th style="width:148px;white-space:nowrap">许可证号</th><th style="width:96px;white-space:nowrap">许可证有效期</th><th style="width:130px;white-space:nowrap">已关联</th><th style="width:68px">状态</th><th style="width:138px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="tb-companies"><tr><td colspan="10" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
@@ -628,8 +668,8 @@
           <span class="hint" id="cnt-m-projects"></span>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb" style="table-layout:fixed">
-            <thead><tr><th style="width:66px">编号</th><th style="width:180px;white-space:nowrap">项目名称</th><th style="width:170px">所属公司</th><th style="width:120px;white-space:nowrap">工区 / 点位</th><th style="width:196px">作业区域</th><th style="width:88px;white-space:nowrap">类型</th><th style="width:176px;white-space:nowrap">有效期</th><th style="width:52px">状态</th><th style="width:96px;white-space:nowrap">操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:52px;white-space:nowrap">编号</th><th style="width:150px;white-space:nowrap">项目名称</th><th style="width:148px;white-space:nowrap">所属公司</th><th style="width:142px;white-space:nowrap">公安管辖</th><th style="width:94px;white-space:nowrap">工区 / 点位</th><th style="width:102px;white-space:nowrap">作业区域</th><th style="width:76px;white-space:nowrap">类型</th><th style="width:184px;white-space:nowrap">有效期</th><th style="width:64px;white-space:nowrap">状态</th><th style="width:120px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="tb-projects"><tr><td colspan="9" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
@@ -657,9 +697,9 @@
           <span class="hint" id="cnt-m-sites"></span>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th>编号</th><th>作业点位</th><th>所属项目</th><th>工区</th><th>围栏半径</th><th>状态</th><th>操作</th></tr></thead>
-            <tbody id="tb-sites"><tr><td colspan="7" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:84px;white-space:nowrap">编号</th><th style="width:196px;white-space:nowrap">作业点位</th><th style="width:198px;white-space:nowrap">所属项目</th><th style="width:108px;white-space:nowrap">工区</th><th style="width:146px;white-space:nowrap">坐标 / 落图</th><th style="width:84px;white-space:nowrap">围栏半径</th><th style="width:70px;white-space:nowrap">状态</th><th style="width:140px;white-space:nowrap">操作</th></tr></thead>
+            <tbody id="tb-sites"><tr><td colspan="8" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -673,9 +713,23 @@
           <span class="hint" id="cnt-m-routes"></span>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th>编号</th><th>路线名称</th><th>起运库房</th><th>到达点位</th><th>途经</th><th>里程</th><th>状态</th><th>操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:60px;white-space:nowrap">编号</th><th style="width:230px;white-space:nowrap">路线名称</th><th style="width:150px;white-space:nowrap">起运库房</th><th style="width:180px;white-space:nowrap">到达点位</th><th style="width:190px;white-space:normal">途经</th><th style="width:76px;white-space:nowrap">里程</th><th style="width:70px;white-space:nowrap">状态</th><th style="width:170px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="tb-routes"><tr><td colspan="8" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          </table>
+        </div>
+        <h3 class="subpg" style="margin:18px 2px 8px;font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--txt)">沿途打卡点</h3>
+        <div class="desc" style="margin-bottom:8px">维护运输沿途打卡点：在地图上标注位置、名称与所属工区；路线维护里勾选本路线途经的打卡点即可。停用的打卡点不再出现在路线可选列表中。</div>
+        <div class="tools">
+          <button class="btn" onclick="openRecForm('m-checkpoints')">＋ 新增打卡点</button>
+          <input class="inp" id="q-m-checkpoints" onkeyup="filterRec('m-checkpoints')" placeholder="搜索名称 / 编号 / 所属工区">
+          <span class="sp"></span>
+          <span class="hint" id="cnt-m-checkpoints"></span>
+        </div>
+        <div class="card" style="padding:6px 12px 12px">
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:60px;white-space:nowrap">编号</th><th style="width:220px;white-space:nowrap">打卡点名称</th><th style="width:150px;white-space:nowrap">所属工区</th><th style="width:180px;white-space:nowrap">坐标 / 落图</th><th style="width:200px;white-space:normal">备注</th><th style="width:70px;white-space:nowrap">状态</th><th style="width:170px;white-space:nowrap">操作</th></tr></thead>
+            <tbody id="tb-checkpoints"><tr><td colspan="7" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -689,9 +743,9 @@
           <span class="hint" id="cnt-m-storages"></span>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th>编号</th><th>库房名称</th><th>类型</th><th>地址</th><th>面积</th><th>保管员</th><th>状态</th><th>操作</th></tr></thead>
-            <tbody id="tb-storages"><tr><td colspan="8" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:60px;white-space:nowrap">编号</th><th style="width:150px;white-space:nowrap">库房名称</th><th style="width:80px;white-space:nowrap">类型</th><th style="width:190px;white-space:nowrap">地址</th><th style="width:80px;white-space:nowrap">面积</th><th style="width:96px;white-space:nowrap">保管员</th><th style="width:146px;white-space:nowrap">坐标 / 落图</th><th style="width:70px;white-space:nowrap">状态</th><th style="width:240px;white-space:nowrap">操作</th></tr></thead>
+            <tbody id="tb-storages"><tr><td colspan="9" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -705,8 +759,8 @@
           <span class="hint" id="cnt-m-vehicles"></span>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th>编号</th><th>车牌 / 车型</th><th>核定载重</th><th>所属公司</th><th>关联项目</th><th>运输许可证</th><th>许可物品</th><th>年审到期</th><th>状态</th><th>操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:48px;white-space:nowrap">编号</th><th style="width:122px;white-space:nowrap">车牌 / 车型</th><th style="width:72px;white-space:nowrap">核定载重</th><th style="width:156px;white-space:nowrap">所属公司</th><th style="width:132px;white-space:nowrap">关联项目</th><th style="width:164px;white-space:nowrap">运输许可证</th><th style="width:128px;white-space:nowrap">许可物品</th><th style="width:104px;white-space:nowrap">年审到期</th><th style="width:68px;white-space:nowrap">状态</th><th style="width:150px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="tb-vehicles"><tr><td colspan="10" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
@@ -714,7 +768,7 @@
       <section class="page" id="p-m-persons">
         <h2 class="pg">四大员维护</h2>
         <div class="desc">维护爆破员、安全员、保管员、押运员等全部岗位（含民警、安全监理、技术员、负责人）的从业人员档案：所属民爆公司、关联项目 / 库房 / 作业点位、联系电话、证书编号与有效期。可从「民爆公司维护」点该公司的「从业人员」数字进入，按公司收敛到该单位全部人员。</div>
-        <div id="personCompanyBar" class="pcb"><b id="pcbName"></b><span id="pcbStat"></span><span style="flex:1"></span><a onclick="clearCompanyFilter()">显示全部公司人员</a></div>
+        <div id="personCompanyBar" class="pcb"><b id="pcbName"></b><span id="pcbStat"></span><span style="flex:1"></span><a class="obtn" onclick="clearCompanyFilter()">显示全部公司人员</a></div>
         <div class="tools">
           <button class="btn" onclick="openRecForm('m-persons')">＋ 新增人员</button>
           <select class="inp" id="flt-person-company" onchange="filterRec('m-persons')" title="按所属单位筛选" style="width:190px"><option value="">全部单位</option></select>
@@ -727,8 +781,8 @@
           <span class="hint" id="cnt-m-persons"></span>
         </div>
         <div class="card" style="padding:6px 12px 12px">
-          <table class="tb">
-            <thead><tr><th>编号</th><th>姓名</th><th>岗位</th><th>所属公司</th><th>电话</th><th>证书 / 有效期</th><th>关联（项目 · 库房 · 点位）</th><th>状态</th><th>操作</th></tr></thead>
+          <table class="tb" style="table-layout:fixed;width:100%">
+            <thead><tr><th style="width:60px;white-space:nowrap">编号</th><th style="width:88px;white-space:nowrap">姓名</th><th style="width:96px;white-space:nowrap">岗位</th><th style="width:154px;white-space:nowrap">所属公司</th><th style="width:118px;white-space:nowrap">电话</th><th style="width:140px;white-space:nowrap">证书 / 有效期</th><th style="width:212px;white-space:normal">关联（项目 · 库房 · 点位）</th><th style="width:68px;white-space:nowrap">状态</th><th style="width:190px;white-space:nowrap">操作</th></tr></thead>
             <tbody id="tb-persons"><tr><td colspan="9" style="text-align:center;color:var(--sub);padding:20px">正在加载...</td></tr></tbody>
           </table>
         </div>
@@ -831,7 +885,7 @@
   })();
   const names = {work:'工作台', master:'主数据管理', audit:'主数据审核', check:'检查配置',
     stat:'监管统计报表', archive:'一作业点一档', sys:'系统管理', log:'日志与大屏配置', clarify:'需求澄清跟踪',
-    'm-companies':'民爆公司维护', 'm-projects':'项目维护', 'm-sites':'作业点位维护', 'm-workareas':'工区维护', 'bizlog':'我的业务台账', 'm-routes':'路线维护', 'm-storages':'库房维护', 'm-persons':'四大员维护', 'm-vehicles':'运输车辆维护'};
+    'm-companies':'民爆公司维护', 'm-projects':'项目维护', 'm-sites':'作业点位维护', 'm-workareas':'工区维护', 'bizlog':'我的业务台账', 'm-routes':'路线维护', 'm-checkpoints':'打卡点维护', 'm-storages':'库房维护', 'm-persons':'四大员维护', 'm-vehicles':'运输车辆维护'};
   /* ===== 三类权限：公安管理员（公安特有菜单 + 业务管理员全部菜单）/ 业务管理员（基础数据维护）/ 业务人员（本环节历史数据） ===== */
   var PERSON_FILT = { company: '', storage: '' };
   const ROLE_MENU = {
@@ -844,6 +898,95 @@
     biz:    { label:'业务管理员', user:'李管理员 · 宏泰民爆<br>业务管理员 · 基础数据维护权限' },
     staff:  { label:'业务人员',   user:'张技术员 · 宏泰民爆<br>业务人员 · 本环节历史数据' }
   };
+  /* ===== 数据权限：公安管理员=全域 / 业务管理员=本民爆公司 / 业务人员=本公司本业务环节 ===== */
+  const ROLE_SCOPE = {
+    police: { company: null, nodes: null, label: '数据范围：全域' },
+    biz:    { company: 'C1', nodes: null, label: '数据范围：本公司（宏泰民爆）' },
+    staff:  { company: 'C1', nodes: ['blastings'], label: '数据范围：本公司 · 爆破环节' }
+  };
+  /* 公安管辖：市局 → 分局（含市局直属大队）→ 派出所/警务室 → 责任区，四级联动单选 */
+  const JURIS_TREE = {
+    '市中区分局': {
+      '城关派出所': ['城关责任区', '滨江责任区', '老城责任区'],
+      '张公桥派出所': ['张公桥责任区', '通江责任区'],
+      '肖坝派出所': ['肖坝责任区', '绿心责任区'],
+      '苏稽派出所': ['苏稽责任区', '棉竹责任区']
+    },
+    '沙湾区分局': {
+      '沙湾派出所': ['沙湾城关责任区', '嘉农责任区'],
+      '嘉农派出所': ['嘉农工业责任区', '太平责任区'],
+      '工区警务室': ['工区一号责任区', '工区二号责任区']
+    },
+    '五通桥区分局': {
+      '竹根派出所': ['竹根责任区', '桥沟责任区'],
+      '牛华派出所': ['牛华责任区', '西坝责任区']
+    },
+    '治安支队': { '民爆监管大队': ['民爆审批责任区', '民爆监管责任区'] },
+    '治安大队': { '危爆管理中队': ['危爆核查责任区', '危爆巡查责任区'] }
+  };
+  const JURIS_LABEL = ['分局 / 直属', '派出所 / 警务室', '责任区'];
+  function jL1(){ return Object.keys(JURIS_TREE); }
+  function jL2(a){ const n = JURIS_TREE[a]; return n ? Object.keys(n) : []; }
+  function jL3(a, b){ const n = (JURIS_TREE[a] || {})[b]; return Array.isArray(n) ? n : []; }
+  function jurisPathOf(rec){
+    let p = null;
+    if (rec && Array.isArray(rec.jurisdictionPath) && rec.jurisdictionPath.length) p = rec.jurisdictionPath.slice();
+    else if (rec && rec.jurisdiction) p = String(rec.jurisdiction).split(/\s*[/／>]\s*/).filter(Boolean);
+    if (!p || !p.length) return ['', '', ''];
+    if (p.length > 3) p = p.slice(p.length - 3);   /* 兼容历史四级（市局级）数据 */
+    while (p.length < 3) p.push('');
+    return p;
+  }
+  function jurisShort(rec){ const p = jurisPathOf(rec); return p[0] ? (p[1] ? p[1] + ' · ' + p[2] : p[0]) : ''; }
+  /* 联动：改变第 n 级后重建其后各级，保留仍然合法的选择 */
+  function jurisChain(level){
+    const get = function(i){ const el = document.getElementById('rf_jurisdiction_' + i); return el ? el.value : ''; };
+    const setLv = function(i, list){
+      const el = document.getElementById('rf_jurisdiction_' + i);
+      if (!el) return;
+      const keep = el.value;
+      el.innerHTML = '<option value="">' + JURIS_LABEL[i - 1] + '</option>' +
+        list.map(function(o){ return '<option>' + o + '</option>'; }).join('');
+      el.value = list.indexOf(keep) >= 0 ? keep : '';
+    };
+    const a = get(1), b = get(2), c = get(3);
+    if (level <= 1) setLv(2, jL2(a));
+    if (level <= 2) setLv(3, jL3(a, get(2)));
+  }
+  function scope(){ return ROLE_SCOPE[CUR_ROLE] || ROLE_SCOPE.police; }
+  function projCompany(pid){ const p = (REF_CACHE.projects || []).find(function(x){ return x.id === pid; }); return p ? (p.company || '') : ''; }
+  function inScopeCo(cid){ const s = scope(); return !s.company || (cid || '') === s.company; }
+  function inScopeRec(type, x){
+    const s = scope();
+    if (!s.company) return true;
+    if (!x) return false;
+    switch (type) {
+      case 'companies': return x.id === s.company;
+      case 'projects':  return (x.company || '') === s.company;
+      case 'workareas': return projCompany(x.project) === s.company;
+      case 'sites':     return projCompany(x.project) === s.company;
+      case 'storages':  return (x.company || '') === s.company;
+      case 'vehicles':  return (x.company || '') === s.company;
+      case 'persons':   return (x.company || '') === s.company;
+      case 'routes': {
+        const st = (REF_CACHE.storages || []).find(function(z){ return z.id === x.from; });
+        return st ? inScopeCo(st.company) : true;
+      }
+      default: return true;
+    }
+  }
+  /* 角色切换后，把已打开的维护页按新范围重算 */
+  function refreshScopeViews(){
+    ['m-companies','m-projects','m-workareas','m-sites','m-routes','m-storages','m-vehicles','m-persons'].forEach(function(k){
+      if (SUB_CACHE[k]) {
+        const q = document.getElementById('q-' + k);
+        renderSub(k, q ? q.value.trim() : '');
+      }
+    });
+    if (typeof renderWorkareas === 'function' && document.getElementById('waList')) renderWorkareas();
+    if (typeof renderBizLog === 'function' && SUB_CACHE['m-persons'] === undefined) { /* 未加载则忽略 */ }
+    if (typeof renderBizLog === 'function' && document.getElementById('tb-bizlog')) renderBizLog();
+  }
   let CUR_ROLE = 'police';
   function applyRole(role){
     if (!ROLE_MENU[role]) role = 'police';
@@ -859,6 +1002,9 @@
     const cur = document.querySelector('.page.on');
     const curKey = cur ? cur.id.replace(/^p-/, '') : 'work';
     if (allow && allow.indexOf(curKey) < 0) gotoPage(allow[0]);
+    const tag = document.getElementById('scopeTag');
+    if (tag) tag.textContent = (ROLE_SCOPE[role] || ROLE_SCOPE.police).label;
+    refreshScopeViews();
   }
   function gotoPage(key){
     const ni = document.querySelector('#nav .ni[data-p="' + key + '"]');
@@ -875,6 +1021,7 @@
     if (ni.dataset.p === 'm-workareas' && typeof loadWorkareas === 'function') loadWorkareas();
     if (ni.dataset.p === 'bizlog' && typeof loadBizLog === 'function') loadBizLog();
     if (typeof SUB_CFG !== 'undefined' && SUB_CFG[ni.dataset.p]) loadSub(ni.dataset.p);
+    if (ni.dataset.p === 'm-routes' && typeof SUB_CFG !== 'undefined' && SUB_CFG['m-checkpoints']) loadSub('m-checkpoints');
   });
 
   /* ====== 需求澄清详情（内容源自《甲方需求澄清确认清单》沟通稿 2026-11-05）====== */
@@ -1059,7 +1206,7 @@
     const id = document.getElementById('dwQno').textContent;
     const v = document.getElementById('dwNote').value.trim();
     const ts = new Date().toLocaleString('zh-CN',{hour12:false});
-    if(!v){ alert('请先填写沟通记录内容'); return; }
+    if(!v){ uiAlert('请先填写沟通记录内容'); return; }
     localStorage.setItem('clarify_note_'+id, v);
     localStorage.setItem('clarify_note_ts_'+id, ts);
     document.getElementById('dwHint').textContent = '已保存 ' + ts;
@@ -1100,6 +1247,50 @@
   if(expBtn) expBtn.addEventListener('click', ()=>window.print());
 
   /* ====== 真实服务端数据联动 ====== */
+  /* ===== 页面内确认 / 提示（替代浏览器原生 alert / confirm） ===== */
+  var UI_RESOLVE = null;
+  function uiDialog(opt){
+    return new Promise(function(resolve){
+      UI_RESOLVE = resolve;
+      const mask = document.getElementById('uiMask');
+      if (!mask) { resolve(opt.cancel === false ? true : false); return; }
+      document.getElementById('uiTitle').textContent = opt.title || '提示';
+      document.getElementById('uiMsg').textContent = (opt.msg == null ? '' : String(opt.msg));
+      const ok = document.getElementById('uiOk'), cancel = document.getElementById('uiCancel');
+      ok.textContent = opt.okText || '确定';
+      ok.className = 'btn' + (opt.danger ? ' danger' : '');
+      cancel.style.display = (opt.cancel === false) ? 'none' : '';
+      cancel.textContent = opt.cancelText || '取消';
+      mask.classList.add('on');
+      setTimeout(function(){ try { ok.focus(); } catch(e){} }, 30);
+    });
+  }
+  function uiClose(v){
+    const mask = document.getElementById('uiMask');
+    if (mask) mask.classList.remove('on');
+    const r = UI_RESOLVE; UI_RESOLVE = null;
+    if (r) r(v);
+  }
+  function uiAlert(msg, title){
+    return uiDialog({ msg: msg, title: title || '提示', cancel: false, okText: '知道了' });
+  }
+  function uiConfirm(msg, title, danger){
+    return uiDialog({ msg: msg, title: title || '请确认', danger: !!danger }).then(function(v){ return v === true; });
+  }
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && UI_RESOLVE) uiClose(false);
+    if (e.key === 'Enter' && UI_RESOLVE) {
+      const ok = document.getElementById('uiOk');
+      if (ok && document.activeElement === ok) uiClose(true);
+    }
+  });
+  document.addEventListener('DOMContentLoaded', function(){
+    const mask = document.getElementById('uiMask'); if (!mask) return;
+    document.getElementById('uiOk').onclick = function(){ uiClose(true); };
+    document.getElementById('uiCancel').onclick = function(){ uiClose(false); };
+    mask.addEventListener('click', function(e){ if (e.target === mask) uiClose(false); });
+  });
+
   const API_BASE = (window.location.origin && window.location.origin.startsWith('http'))
     ? (window.location.origin + '/api')
     : 'http://localhost:8080/api';
@@ -1136,7 +1327,7 @@
                 <td>${(t.route && t.route.to) || '作业点'}</td>
                 <td>${t.departTime ? String(t.departTime).slice(11, 16) : '待发车'}</td>
                 <td><span class="tag ${t.status === '运输中' ? 'ok' : 'warn'}">${t.status}</span></td>
-                <td class="op"><a onclick="window.open('../bigscreen/index.html')">查看轨迹</a></td>
+                <td class="op"><a class="obtn" onclick="window.open('../bigscreen/index.html')">查看轨迹</a></td>
               </tr>
             `).join('');
           } else {
@@ -1185,7 +1376,7 @@
 
     try {
       const typesToFetch = filterType === 'all'
-        ? ['companies', 'sites', 'storages', 'persons', 'vehicles', 'routes']
+        ? ['companies', 'sites', 'storages', 'persons', 'vehicles', 'routes', 'checkpoints']
         : [filterType];
 
       let combined = [];
@@ -1193,6 +1384,7 @@
         const res = await fetch(API_BASE + '/master/' + t).then(r=>r.json()).catch(()=>null);
         if (res && res.code === 200 && res.data) {
           res.data.forEach(item => {
+            if (!inScopeRec(t, item)) return;
             combined.push({
               _category: t,
               ...item
@@ -1218,14 +1410,14 @@
 
     const typeNames = {
       companies: '民爆公司', sites: '点位', storages: '库房',
-      persons: '从业人员', vehicles: '车辆', routes: '路线'
+      persons: '从业人员', vehicles: '车辆', routes: '路线', checkpoints: '打卡点'
     };
 
     tbody.innerHTML = list.map(item => {
       const cname = typeNames[item._category] || item._category;
       let keyInfo = item.addr || item.via || (item.load ? `载重 ${item.load}kg` : '') || item.cert || '';
       if (item._category === 'persons') keyInfo = `身份证 ${item.idno || '-'} · 电话 ${item.phone || '-'}`;
-      if (item._category === 'storages') keyInfo = `类型 ${item.type} · 管理员: ${(item.keepers||[]).join(', ')}`;
+      if (item._category === 'storages') keyInfo = `类型 ${item.type || '待补录'} · 管理员 ${(item.keepers||[]).join(', ') || '待补录'}`;
 
       const title = item.name || item.plate || item.id;
       const isCustom = (item._category === 'vehicles' || item._category === 'routes');
@@ -1233,12 +1425,12 @@
 
       return `<tr>
         <td>${cname}</td>
-        <td><b>${title}</b></td>
-        <td>${keyInfo}</td>
+        <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${title}"><b>${title}</b></td>
+        <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${keyInfo}">${keyInfo}</td>
         <td>${srcTag}</td>
         <td><span class="tag ok">${item.status || '生效'}</span></td>
         <td>刚刚 · 治安管理员</td>
-        <td class="op"><a onclick="alert('主数据 [${title}] 维护留痕记录齐全，已落库 t_bb_master_log')">详情留痕</a></td>
+        <td class="op"><a class="obtn" onclick="uiAlert('主数据 [${title}] 维护留痕记录齐全，已落库 t_bb_master_log')">详情留痕</a></td>
       </tr>`;
     }).join('');
   }
@@ -1276,13 +1468,13 @@
       })
     }).then(r => r.json()).then(res => {
       if (res.code === 200) {
-        alert(`✅ 车辆 [${plate}] 已成功录入服务端数据库，自动记录主数据维护留痕 (t_bb_master_log)！小程序端与大屏端立即可见！`);
+        uiAlert(`✅ 车辆 [${plate}] 已成功录入服务端数据库，自动记录主数据维护留痕 (t_bb_master_log)！小程序端与大屏端立即可见！`);
         loadMasterData();
       } else {
-        alert('录入失败: ' + res.msg);
+        uiAlert('录入失败: ' + res.msg);
       }
     }).catch(err => {
-      alert('服务请求失败: ' + err);
+      uiAlert('服务请求失败: ' + err);
     });
   }
 
@@ -1318,6 +1510,7 @@
         { k: 'id', t: '项目编号', ph: '留空自动生成，如 PR3' },
         { k: 'name', t: '项目名称', req: 1, ph: '如 青龙山隧道爆破项目' },
         { k: 'company', t: '所属民爆公司', ref: 'companies', req: 1 },
+        { k: 'jurisdiction', t: '公安管辖', cascade: 1, req: 1 },
         { k: 'area', t: '作业区域', ph: '如 青龙山工区 K3+200 ~ K5+800' },
         { k: 'type', t: '作业类型', sel: ['隧道开挖', '露天台阶', '拆除爆破', '其他'] },
         { k: 'valid', t: '有效期', ph: '2026-03-01 ~ 2027-02-28' },
@@ -1331,6 +1524,7 @@
         { k: 'id', t: '工区编号', ph: '留空自动生成，如 WA3' },
         { k: 'name', t: '工区名称', req: 1, ph: '如 青龙山工区' },
         { k: 'project', t: '所属项目', ref: 'projects', req: 1 },
+        { k: 'jurisdiction', t: '公安管辖', cascade: 1, req: 1 },
         { k: 'district', t: '所在区县', ph: '如 市中区' },
         { k: 'police', t: '责任民警', ref: 'persons', ph: '选填' },
         { k: 'status', t: '状态', sel: ['启用', '停用'] }
@@ -1343,6 +1537,7 @@
         { k: 'name', t: '作业点位名称', ph: '如 青龙山隧道 3# 掌子面', req: 1 },
         { k: 'workarea', t: '所属工区', ref: 'workareas', ph: '先选工区，再填点位' },
         { k: 'project', t: '所属项目', ref: 'projects', req: 1 },
+        { k: 'geo', t: '地图坐标（经纬度）', geo: 1 },
         { k: 'fence', t: '电子围栏半径(m)', num: 1, ph: '300' },
         { k: 'hist', t: '历史作业次数', num: 1, ph: '0' },
         { k: 'status', t: '状态', sel: ['启用', '停用'] }
@@ -1357,7 +1552,18 @@
         { k: 'to', t: '到达点位', ref: 'sites', req: 1 },
         { k: 'via', t: '途经道路', ph: '如 G318 国道 → 青龙山专线' },
         { k: 'km', t: '里程(km)', num: 1, ph: '42' },
-        { k: 'checkPoints', t: '沿途打卡点', ph: '多个用逗号分隔，如 专线入口,便道口' },
+        { k: 'checkPoints', t: '沿途打卡点', ref: 'checkpoints', multi: 1 },
+        { k: 'status', t: '状态', sel: ['启用', '停用'] }
+      ]
+    },
+    'm-checkpoints': {
+      type: 'checkpoints', table: 'tb-checkpoints', label: '打卡点',
+      fields: [
+        { k: 'id', t: '打卡点编号', ph: '留空自动生成，如 CP5' },
+        { k: 'name', t: '打卡点名称', req: 1, ph: '如 青龙山专线入口' },
+        { k: 'region', t: '所属工区', ph: '如 青龙山工区' },
+        { k: 'geo', t: '地图坐标（经纬度）', geo: 1 },
+        { k: 'remark', t: '备注', ph: '点位说明 / 核验要求' },
         { k: 'status', t: '状态', sel: ['启用', '停用'] }
       ]
     },
@@ -1377,6 +1583,7 @@
         { k: 'staff', t: '员工人数', num: 1, ph: '12', req: 1 },
         { k: 'supplyUnit', t: '供给单位', ph: '如 宏泰民爆工程有限公司', req: 1 },
         { k: 'keepers', t: '保管员编号', ph: '多个用逗号分隔，如 P4,P9', req: 1 },
+        { k: 'geo', t: '地图坐标（经纬度）', geo: 1 },
         { k: 'fence', t: '电子围栏半径(m)', num: 1, ph: '150' },
         { k: 'status', t: '状态', sel: ['生效', '停用'] }
       ]
@@ -1429,7 +1636,7 @@
     const cfg = SUB_CFG[subKey]; if (!cfg) return;
     const tb = document.getElementById(cfg.table); if (!tb) return;
     tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--sub);padding:20px">正在从服务端加载...</td></tr>';
-    await Promise.all([refList('projects'), refList('storages'), refList('sites'), refList('workareas'), refList('companies'), refList('vehicles'), refList('persons')]);
+    await Promise.all([refList('projects'), refList('storages'), refList('sites'), refList('workareas'), refList('companies'), refList('vehicles'), refList('persons'), refList('checkpoints')]);
     try {
       const res = await fetch(API_BASE + '/master/' + cfg.type).then(r => r.json());
       SUB_CACHE[subKey] = (res && res.code === 200) ? (res.data || []) : [];
@@ -1444,6 +1651,8 @@
     let roleFlt = '';
     if (subKey === 'm-persons') { fillPersonFilters(); fillRoleFilter(); const sel = document.getElementById('flt-m-persons'); roleFlt = sel ? sel.value : ''; renderPersonFilterBar(); }
     let list = SUB_CACHE[subKey] || [];
+    const scopeTotal = list.filter(function(x){ return inScopeRec(cfg.type, x); }).length;
+    list = list.filter(function(x){ return inScopeRec(cfg.type, x); });
     if (roleFlt) list = list.filter(x => (x.role || '') === roleFlt);
     if (subKey === 'm-persons') {
       if (PERSON_FILT.company) list = list.filter(x => (x.company || '') === PERSON_FILT.company);
@@ -1455,7 +1664,7 @@
     }
     const cnt = document.getElementById('cnt-' + subKey);
     if (cnt) {
-      const total = (SUB_CACHE[subKey] || []).length;
+      const total = scopeTotal;
       const pFlt = (subKey === 'm-persons' && (PERSON_FILT.company || PERSON_FILT.storage));
       cnt.textContent = (roleFlt || keyword || pFlt ? '筛选 ' + list.length + ' / ' : '') + '共 ' + total + ' 条';
     }
@@ -1466,7 +1675,7 @@
     }
     const type = cfg.type;
     const row = (cells) => '<tr>' + cells + '</tr>';
-    const op = (id) => '<td class="op"><a onclick="openRecForm(\'' + subKey + '\',\'' + id + '\')">编辑</a> · <a onclick="toggleRec(\'' + subKey + '\',\'' + id + '\')">停用/恢复</a></td>';
+    const op = (id) => '<td class="op"><a class="obtn" onclick="openRecForm(\'' + subKey + '\',\'' + id + '\')">编辑</a><a class="obtn" onclick="toggleRec(\'' + subKey + '\',\'' + id + '\')">停用/恢复</a></td>';
 
     if (type === 'projects') {
       tb.innerHTML = list.map(x => {
@@ -1476,52 +1685,60 @@
         const waTxt = (!was.length ? '未挂工区' : (was.length === 1 ? was[0].name : was.length + ' 个工区'));
         return row('<td>' + x.id + '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.name || '') + '"><b>' + (x.name || '') + '</b></td>' +
           '<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (co.name || '') + '">' + (co.name || x.company || '-') + '</td>' +
+          '<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.jurisdiction || '') + '">' + (jurisShort(x) ? '<span class="tag">' + jurisShort(x) + '</span>' : '<span style="color:var(--sub)">未设置</span>') + '</td>' +
           '<td style="white-space:nowrap"><a class="op" onclick="gotoProjectItems(\'' + x.id + '\')" title="查看该项目下的工区与作业点位">' + waTxt + '<br><span style="font-size:12px;font-weight:400;color:var(--sub)">' + sc + ' 个作业点位</span></a></td>' +
-          '<td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.area || '') + '">' + (x.area || '-') + '</td>' +
+          '<td class="wrap" style="line-height:1.5;font-size:12px">' + (x.area || '-') + '</td>' +
           '<td style="white-space:nowrap">' + (x.type || '-') + '</td>' +
           '<td style="font-size:12px;color:var(--sub);white-space:nowrap">' + (x.valid || '-') + '</td>' +
           '<td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
-          '<td class="op"><a onclick="openRecForm(\'m-projects\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-projects\',\'' + x.id + '\')">' + (x.status === '停用' ? '恢复' : '停用') + '</a></td>');
+          '<td class="op"><a class="obtn" onclick="openRecForm(\'m-projects\',\'' + x.id + '\')">编辑</a><a class="obtn" onclick="toggleRec(\'m-projects\',\'' + x.id + '\')">' + (x.status === '停用' ? '恢复' : '停用') + '</a></td>');
       }).join('');
     } else if (type === 'companies') {
       tb.innerHTML = list.map(x => {
         const prs = (REF_CACHE.projects || []).filter(p => p.company === x.id).length;
         const ps = (REF_CACHE.persons || []).filter(p => p.company === x.id).length;
         const vs = (REF_CACHE.vehicles || []).filter(v => v.company === x.id).length;
-        return row('<td>' + x.id + '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b>' + (x.name || '') + '</b></td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.addr || '') + '">' + (x.addr || '-') + '</td><td style="white-space:nowrap">' + (x.legal || '-') +
+        return row('<td>' + x.id + '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b>' + (x.name || '') + '</b></td><td class="wrap" style="line-height:1.5;font-size:12px">' + (x.addr || '-') + '</td><td style="white-space:nowrap">' + (x.legal || '-') +
           '</td><td><a class="op" style="font-size:13px' + ((Number(x.staff) && ps > Number(x.staff)) ? ';color:var(--bad);font-weight:600' : '') + '" onclick="gotoCompanyPersons(\'' + x.id + '\')" title="查看本公司从业人员（点击进入人员列表）">' + ps + ' 人</a>' +
           (Number(x.staff) ? '<br><span style="color:var(--sub);font-size:12px;white-space:nowrap">备案 ' + x.staff +
             (ps > Number(x.staff) ? ' · <span style="color:var(--bad);font-weight:600">超编 ' + (ps - Number(x.staff)) + '</span>'
                                   : ' · 未建档 ' + (Number(x.staff) - ps)) + '</span>' : '') +
           '</td><td style="white-space:nowrap">' + (x.licence || '-') + '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">' + (x.licenceExpire || '-') + '</td><td style="font-size:12px;color:var(--sub);white-space:nowrap">项目 ' + prs + ' · 人 ' + ps + ' · 车 ' + vs + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
-          '<td class="op"><a onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">' + (x.status === '生效' ? '停用' : '恢复') + '</a></td>');
+          '<td class="op"><a class="obtn" onclick="openRecForm(\'m-companies\',\'' + x.id + '\')">编辑</a><a class="obtn" onclick="toggleRec(\'m-companies\',\'' + x.id + '\')">' + (x.status === '生效' ? '停用' : '恢复') + '</a></td>');
       }).join('');
     } else if (type === 'sites') {
       tb.innerHTML = list.map(x => {
         const pr = (REF_CACHE.projects || []).find(p => p.id === x.project) || {};
         const wa = (REF_CACHE.workareas || [])[0] || {};
         return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (pr.name || x.project || '') +
-          '</td><td>' + (pr.area || '') + '</td><td>' + (x.fence || 0) + ' m</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '启用') + '</span></td>' + op(x.id));
+          '</td><td>' + (pr.area || '') + '</td><td>' + geoCell('sites', x) + '</td><td>' + (x.fence || 0) + ' m</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '启用') + '</span></td>' + op(x.id));
       }).join('');
     } else if (type === 'routes') {
+      const cpName = function(cp){ const c = (REF_CACHE.checkpoints || []).find(x => x.id === cp); return c ? c.name : cp; };
       tb.innerHTML = list.map(x => {
         const st = (REF_CACHE.storages || []).find(p => p.id === x.from) || {};
         const si = (REF_CACHE.sites || []).find(p => p.id === x.to) || {};
+        const cps = (x.checkPoints || []).map(cpName).filter(Boolean);
+        const cpTxt = cps.length ? '<br><span style="font-size:12px;color:var(--sub)">打卡点：' + cps.join('、') + '</span>' : '';
         return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (st.name || x.from || '') +
-          '</td><td>' + (si.name || x.to || '') + '</td><td>' + (x.via || '') + '</td><td>' + (x.km || 0) + ' km</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '启用') + '</span></td>' + op(x.id));
+          '</td><td>' + (si.name || x.to || '') + '</td><td class="wrap" style="line-height:1.5">' + (x.via || '') + cpTxt + '</td><td>' + (x.km || 0) + ' km</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '启用') + '</span></td>' + op(x.id));
       }).join('');
+    } else if (type === 'checkpoints') {
+      tb.innerHTML = list.map(x => row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (x.region || '-') +
+        '</td><td>' + geoCell('checkpoints', x) + '</td><td class="wrap" style="line-height:1.5;font-size:12px;color:var(--sub)">' + (x.remark || '-') +
+        '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '启用') + '</span></td>' + op(x.id))).join('');
     } else if (type === 'storages') {
       tb.innerHTML = list.map(x => row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td><span class="tag ' +
         (x.type === '销售库' ? 'ok' : x.type === '中间库' ? 'warn' : 'gray') + '">' + (x.type || '') + '</span></td><td>' + (x.addr || '') +
-        '</td><td>' + (x.area || 0) + ' ㎡</td><td>' + ((x.keepers || []).join(', ') || '-') + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
-        '<td class="op"><a onclick="openRecForm(\'m-storages\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-storages\',\'' + x.id + '\')">停用/恢复</a> · <a onclick="gotoStoragePersons(\'' + x.id + '\')">查看库房人员</a></td>')).join('');
+        '</td><td>' + (x.area || 0) + ' ㎡</td><td>' + ((x.keepers || []).join(', ') || '-') + '</td><td>' + geoCell('storages', x) + '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '生效') + '</span></td>' +
+        '<td class="op"><a class="obtn" onclick="openRecForm(\'m-storages\',\'' + x.id + '\')">编辑</a><a class="obtn" onclick="toggleRec(\'m-storages\',\'' + x.id + '\')">停用/恢复</a><a class="obtn" onclick="gotoStoragePersons(\'' + x.id + '\')">查看库房人员</a></td>')).join('');
     } else if (type === 'vehicles') {
       tb.innerHTML = list.map(x => {
         const co = (REF_CACHE.companies || []).find(c => c.id === x.company) || {};
         const pr = (REF_CACHE.projects || []).find(p => p.id === x.project) || {};
         return row('<td>' + x.id + '</td><td><b>' + (x.plate || '') + '</b><br><span style="color:var(--sub);font-size:12px">' + (x.model || '') +
           '</span></td><td>' + (x.load || 0) + ' kg</td><td>' + (co.name || x.company || '-') + '</td><td>' + (pr.name || '<span style="color:var(--sub)">全项目通用</span>') +
-          '</td><td>' + (x.transLicence || '-') + '</td><td>' + (x.transGoods || '-') + '</td><td>' + (x.annualExpire || '-') +
+          '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.transLicence || '-') + '">' + (x.transLicence || '-') + '</td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (x.transGoods || '-') + '">' + (x.transGoods || '-') + '</td><td>' + (x.annualExpire || '-') +
           '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '在用') + '</span></td>' + op(x.id));
       }).join('');
     } else if (type === 'persons') {
@@ -1534,9 +1751,9 @@
         if ((x.sites || []).length) rel.push('点位 ' + x.sites.join('/'));
         return row('<td>' + x.id + '</td><td><b>' + (x.name || '') + '</b></td><td>' + (x.role || '') +
           '</td><td>' + (co.name || x.company || '') + '</td><td>' + (x.phone || '') + '</td><td>' + (x.cert || '-') + '<br><span style="color:var(--sub);font-size:12px">有效期 ' + (x.certExpire || '-') + '</span>' +
-          '</td><td style="font-size:12px;color:var(--sub)">' + (rel.length ? rel.join(' · ') : '未关联') +
+          '</td><td class="wrap" style="font-size:12px;color:var(--sub);line-height:1.5">' + (rel.length ? rel.join(' · ') : '未关联') +
           '</td><td><span class="tag ' + (x.status === '停用' ? 'gray' : 'ok') + '">' + (x.status || '在岗') + '</span></td>' +
-          '<td class="op"><a onclick="openRecForm(\'m-persons\',\'' + x.id + '\')">编辑</a> · <a onclick="toggleRec(\'m-persons\',\'' + x.id + '\')">停用/恢复</a> · <a onclick="delMaster(\'persons\',\'' + x.id + '\',\'' + (x.name || x.id) + '\')">删除</a></td>');
+          '<td class="op"><a class="obtn" onclick="openRecForm(\'m-persons\',\'' + x.id + '\')">编辑</a><a class="obtn" onclick="toggleRec(\'m-persons\',\'' + x.id + '\')">停用/恢复</a><a class="obtn danger" onclick="delMaster(\'persons\',\'' + x.id + '\',\'' + (x.name || x.id) + '\')">删除</a></td>');
       }).join('');
     }
   }
@@ -1547,6 +1764,7 @@
     if (!sel) return;
     const cur = sel.value || '';
     const all = (SUB_CACHE['m-persons'] || []).filter(x =>
+      inScopeRec('persons', x) &&
       (!PERSON_FILT.company || (x.company || '') === PERSON_FILT.company) &&
       (!PERSON_FILT.storage || personInStorage(x, PERSON_FILT.storage)));
     const stat = {};
@@ -1573,11 +1791,136 @@
     return Object.values(g).reduce((a, b) => a + (Number(b) || 0), 0);
   }
 
+
+  /* ══ 地图选点：库房 / 作业点位的经纬度维护 ══════════════════════
+     用内嵌的三区行政边界 + 等距投影做一张离线可用的选点小地图，
+     点击即回填经纬度，并画出电子围栏半径；与大屏用同一套坐标口径。 */
+  const GEO_BOUND = (() => { try { return JSON.parse(document.getElementById('geoBound').textContent); } catch(e){ return []; } })();
+  let GEO = null;
+
+  /* Leaflet 真实地图选点：库房蓝方块 / 点位青圆 / 打卡点绿菱形 / 当前落点黄十字 */
+  const GEO_TILE = 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}';
+
+  function geoIcon(kind){
+    let svg;
+    if (kind === 'storage') svg = '<svg width="11" height="11" viewBox="0 0 11 11"><rect x="1" y="1" width="9" height="9" fill="rgba(110,160,255,.9)" stroke="#08111f" stroke-width="1"/></svg>';
+    else if (kind === 'checkpoint') svg = '<svg width="11" height="11" viewBox="0 0 11 11"><path d="M5.5 1 L10 5.5 L5.5 10 L1 5.5 Z" fill="rgba(88,214,142,.92)" stroke="#08111f" stroke-width="1"/></svg>';
+    else svg = '<svg width="11" height="11" viewBox="0 0 11 11"><circle cx="5.5" cy="5.5" r="3.4" fill="rgba(90,222,255,.9)" stroke="#08111f" stroke-width="1"/></svg>';
+    return L.divIcon({ className: 'gmk', html: '<div class="dot">' + svg + '</div>', iconSize: [0, 0], iconAnchor: [0, 0] });
+  }
+
+  function geoMount(box, el, opt){
+    GEO = Object.assign({ box, lng: null, lat: null, fence: 0, readonly: false, storages: [], sites: [], checkpoints: [] }, opt || {});
+    const map = L.map(el, { center: [29.656, 94.360], zoom: 11, minZoom: 9, maxZoom: 17, zoomControl: false, attributionControl: false });
+    L.tileLayer(GEO_TILE, { subdomains: ['1', '2', '3', '4'], maxZoom: 17 }).addTo(map);
+    (GEO_BOUND || []).forEach(b => {
+      (b.r || []).forEach(ring => {
+        if (!ring || ring.length < 3) return;
+        L.polygon(ring.map(([lg, la]) => [la, lg]), { fillColor: '#2a92ce', fillOpacity: .06, color: 'rgba(96,196,255,.42)', weight: 1.1, interactive: false }).addTo(map);
+      });
+    });
+    GEO.map = map;
+    GEO.refGroup = L.layerGroup().addTo(map);
+    GEO.curGroup = L.layerGroup().addTo(map);
+
+    if (!GEO.readonly){
+      map.on('click', e => {
+        GEO.lng = e.latlng.lng; GEO.lat = e.latlng.lat;
+        const e1 = document.getElementById('rf_lng'), e2 = document.getElementById('rf_lat');
+        if (e1) e1.value = GEO.lng.toFixed(6);
+        if (e2) e2.value = GEO.lat.toFixed(6);
+        geoRender();
+      });
+    }
+    setTimeout(() => map.invalidateSize(), 60);
+    geoRender();
+  }
+
+  function geoRender(){
+    const g = GEO;
+    if (!g || !g.map || !g.box.isConnected) return;
+    g.refGroup.clearLayers(); g.curGroup.clearLayers();
+    const pts = [];
+
+    (g.storages || []).forEach(s => {
+      if (!s.lng || !s.lat || s === g.self) return;
+      L.marker([Number(s.lat), Number(s.lng)], { icon: geoIcon('storage'), title: s.name }).addTo(g.refGroup);
+      pts.push([Number(s.lat), Number(s.lng)]);
+    });
+    (g.sites || []).forEach(s => {
+      if (!s.lng || !s.lat || s === g.self) return;
+      L.marker([Number(s.lat), Number(s.lng)], { icon: geoIcon('site'), title: s.name }).addTo(g.refGroup);
+      pts.push([Number(s.lat), Number(s.lng)]);
+    });
+    (g.checkpoints || []).forEach(s => {
+      if (!s.lng || !s.lat || s === g.self) return;
+      L.marker([Number(s.lat), Number(s.lng)], { icon: geoIcon('checkpoint'), title: s.name }).addTo(g.refGroup);
+      pts.push([Number(s.lat), Number(s.lng)]);
+    });
+
+    if (g.lng && g.lat){
+      const lat = Number(g.lat), lng = Number(g.lng);
+      if (Number(g.fence) > 0)
+        L.circle([lat, lng], { radius: Number(g.fence), color: 'rgba(255,190,77,.55)', weight: 1, dashArray: '4 3', fillColor: '#ffbe4d', fillOpacity: .10, interactive: false }).addTo(g.curGroup);
+      const curIcon = L.divIcon({ className: 'gmk', html: '<div class="dot"><svg width="22" height="22" viewBox="0 0 22 22"><line x1="3" y1="11" x2="19" y2="11" stroke="rgba(255,190,77,.85)" stroke-width="1"/><line x1="11" y1="3" x2="11" y2="19" stroke="rgba(255,190,77,.85)" stroke-width="1"/><circle cx="11" cy="11" r="4.2" fill="#ffbe4d" stroke="#08111f" stroke-width="1.4"/></svg></div>', iconSize: [0, 0], iconAnchor: [0, 0] });
+      L.marker([lat, lng], { icon: curIcon }).addTo(g.curGroup);
+      pts.push([lat, lng]);
+    }
+
+    if (g.lng && g.lat) g.map.fitBounds(L.latLngBounds([[Number(g.lat), Number(g.lng)]]).pad(0.22));
+
+    const rd = document.getElementById('geoRead');
+    if (rd) rd.innerHTML = (g.lng && g.lat)
+      ? Number(g.lng).toFixed(6) + ', ' + Number(g.lat).toFixed(6) + (g.fence ? ' · 围栏 ' + g.fence + ' m' : '')
+      : '未落点';
+  }
+
+  /* 列表里的「坐标」单元格 */
+  function geoCell(kind, x){
+    if (!x.lng || !x.lat)
+      return '<a class="op geo-miss" style="font-size:12px;white-space:nowrap" onclick="geoGoto(\'' + kind + '\',\'' + x.id + '\')">未录坐标 · 去补录</a>';
+    return '<a class="op geo-num" style="font-size:12px;line-height:1.45;white-space:nowrap" onclick="geoPreview(\'' + kind + '\',\'' + x.id + '\')" title="在地图上定位">' +
+      Number(x.lng).toFixed(6) + '<br>' + Number(x.lat).toFixed(6) + '</a>';
+  }
+
+  const KIND_SUB = { storages: 'm-storages', sites: 'm-sites', checkpoints: 'm-checkpoints' };
+  const KIND_LABEL = { storages: '库房维护', sites: '作业点位维护', checkpoints: '路线维护·打卡点' };
+
+  function geoGoto(kind, id){ openRecForm(KIND_SUB[kind] || 'm-sites', id); }
+
+  /* 只读定位弹层 */
+  async function geoPreview(kind, id){
+    const subKey = KIND_SUB[kind] || 'm-sites';
+    const refKey = { storages: 'storages', sites: 'sites', checkpoints: 'checkpoints' }[kind] || kind;
+    const selfList = await refList(refKey);
+    const rec = selfList.find(x => x.id === id) || (SUB_CACHE[subKey] || []).find(x => x.id === id) || {};
+    const storages = await refList('storages'), sites = await refList('sites'), cps = await refList('checkpoints');
+    const mask = document.createElement('div');
+    mask.className = 'rec-modal';
+    mask.innerHTML = '<div class="rm" style="width:min(760px,94vw)">' +
+      '<div class="rm-h"><b>' + (rec.name || id) + ' · 地图定位</b><button onclick="this.closest(\'.rec-modal\').remove()">✕</button></div>' +
+      '<div class="rm-b"><div class="geo-box ro" id="geoBox"><div class="geo-tip">只读定位 · 点击地图不会移动点位</div>' +
+      '<div id="geoMap"></div><div class="geo-read" id="geoRead"></div></div>' +
+      '<div style="font-size:12px;color:var(--sub);margin-top:8px">编号 ' + (rec.id || '') + ' · 蓝方块为库房，青点为作业点位，绿菱形为打卡点；如需调整坐标请到『' +
+      (KIND_LABEL[kind] || '作业点位维护') + '』编辑。</div></div>' +
+      '<div class="rm-f"><button class="btn ghost" onclick="this.closest(\'.rec-modal\').remove()">关闭</button></div></div>';
+    document.body.appendChild(mask);
+    mask.addEventListener('click', e => { if (e.target === mask) mask.remove(); });
+    geoMount(mask.querySelector('#geoBox'), mask.querySelector('#geoMap'), {
+      lng: rec.lng, lat: rec.lat, fence: rec.fence || 0, readonly: true,
+      storages: storages.filter(s => s.id !== rec.id || kind !== 'storages'),
+      sites: sites.filter(s => s.id !== rec.id || kind !== 'sites'),
+      checkpoints: cps.filter(s => s.id !== rec.id || kind !== 'checkpoints'),
+      self: rec
+    });
+  }
+
   async function openRecForm(subKey, id) {
     const cfg = SUB_CFG[subKey];
     const rec = id ? (SUB_CACHE[subKey] || []).find(x => x.id === id) || {} : {};
     const refs = {};
     for (const fd of cfg.fields) if (fd.ref) refs[fd.ref] = await refList(fd.ref);
+    if (cfg.fields.some(f => f.geo)) { refs.storages = await refList('storages'); refs.sites = await refList('sites'); refs.checkpoints = await refList('checkpoints'); }
 
     const rows = cfg.fields.map(fd => {
       const v = fd.get ? fd.get(rec) : (rec[fd.k] != null && rec[fd.k] !== '' ? rec[fd.k] : (fd.sel ? fd.sel[0] : ''));
@@ -1587,19 +1930,42 @@
       } else if (fd.ref && fd.multi) {
         const cur = Array.isArray(v) ? v : (v ? String(v).split(/[,，]/).map(x => x.trim()).filter(Boolean) : []);
         const opts = (refs[fd.ref] || []).map(o => '<option value="' + o.id + '"' + (cur.indexOf(o.id) >= 0 ? ' selected' : '') + '>' + (o.name || o.id) + (o.id ? '（' + o.id + '）' : '') + '</option>').join('');
+        const refLabel = {storages:'库房维护', sites:'作业点位维护', companies:'民爆公司维护', projects:'项目维护', persons:'人员维护', checkpoints:'打卡点维护'}[fd.ref] || '主数据';
         input = '<div style="flex:1;min-width:0"><select id="rf_' + fd.k + '" multiple size="5" style="width:100%;min-height:104px">' + opts + '</select>' +
-          '<div style="font-size:12px;color:#7a8ca3;margin-top:4px">按住 Ctrl / ⌘ 可多选；数据来自『' + (fd.ref === 'sites' ? '作业点位维护' : '库房维护') + '』</div></div>';
+          '<div style="font-size:12px;color:#7a8ca3;margin-top:4px">按住 Ctrl / ⌘ 可多选；数据来自『' + refLabel + '』</div></div>';
       } else if (fd.ref) {
         const opts = (refs[fd.ref] || []).map(o => '<option value="' + o.id + '"' + (o.id === v ? ' selected' : '') + '>' + (o.name || o.id) + '</option>').join('');
         input = '<select id="rf_' + fd.k + '"><option value="">请选择</option>' + opts + '</select>';
+      } else if (fd.cascade) {
+        const p = jurisPathOf(rec);
+        const mk = function(i, list, cur){
+          const opts = list.map(function(o){ return '<option' + (o === cur ? ' selected' : '') + '>' + o + '</option>'; }).join('');
+          return '<select id="rf_jurisdiction_' + i + '" onchange="jurisChain(' + i + ')" style="width:100%;min-width:0;padding:7px 20px 7px 8px;font-size:12px"><option value="">' + JURIS_LABEL[i - 1] + '</option>' + opts + '</select>';
+        };
+        input = '<div style="flex:1;min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">' +
+          mk(1, jL1(), p[0]) + mk(2, jL2(p[0]), p[1]) + mk(3, jL3(p[0], p[1]), p[2]) +
+          '</div>';
+      } else if (fd.geo) {
+        const lg = rec.lng == null || rec.lng === '' ? '' : Number(rec.lng).toFixed(6);
+        const la = rec.lat == null || rec.lat === '' ? '' : Number(rec.lat).toFixed(6);
+        input = '<div style="flex:1;min-width:0">' +
+          '<div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:8px">' +
+            '<div style="flex:1;min-width:0"><div style="font-size:11px;color:var(--sub);margin-bottom:3px">经度（东经）</div>' +
+              '<input id="rf_lng" class="geo-num" value="' + lg + '" placeholder="如 94.360255" style="width:100%"></div>' +
+            '<div style="flex:1;min-width:0"><div style="font-size:11px;color:var(--sub);margin-bottom:3px">纬度（北纬）</div>' +
+              '<input id="rf_lat" class="geo-num" value="' + la + '" placeholder="如 29.639266" style="width:100%"></div>' +
+          '</div>' +
+          '<div class="geo-box" id="geoBox"><div class="geo-tip">点击地图落点，自动回填经纬度</div><div id="geoMap"></div><div class="geo-read" id="geoRead"></div></div>' +
+          '<div style="font-size:12px;color:var(--sub);margin-top:6px">虚线圈为电子围栏半径；未录坐标的' + cfg.label + '不会出现在大屏地图，也不参与链路距离计算。可直接填数，也可点图取点。</div>' +
+        '</div>';
       } else if (fd.sel) {
         input = '<select id="rf_' + fd.k + '"><option value=""' + (v ? '' : ' selected') + '>请选择</option>' + fd.sel.map(o => '<option' + (o === v ? ' selected' : '') + '>' + o + '</option>').join('') + '</select>';
-      } else if (fd.arr || fd.k === 'checkPoints' || fd.k === 'keepers') {
+      } else if (fd.arr || fd.k === 'keepers') {
         input = '<input id="rf_' + fd.k + '" value="' + ((rec[fd.k] || []).join(',')) + '" placeholder="' + (fd.ph || '') + '">';
       } else {
         input = '<input id="rf_' + fd.k + '" value="' + (v == null ? '' : v) + '" placeholder="' + (fd.ph || '') + '">';
       }
-      return '<div class="rm-row"><label>' + fd.t + (fd.req ? ' <span style="color:var(--bad)">*</span>' : '') + '</label>' + input + '</div>';
+      return '<div class="rm-row"' + (fd.geo ? ' style="align-items:flex-start;padding:12px 0"' : '') + '><label' + (fd.cascade ? ' style="width:108px;flex:0 0 108px"' : (fd.geo ? ' style="padding-top:18px"' : '')) + '>' + fd.t + (fd.req ? ' <span style="color:var(--bad)">*</span>' : '') + '</label>' + input + '</div>';
     }).join('');
 
     let extra = '';
@@ -1638,6 +2004,21 @@
       }
     }
     mask.querySelector('[data-save]').onclick = () => saveRec(subKey, id, mask);
+    if (cfg.fields.some(f => f.geo)) {
+      geoMount(mask.querySelector('#geoBox'), mask.querySelector('#geoMap'), {
+        lng: rec.lng || null, lat: rec.lat || null, fence: Number(rec.fence || 0),
+        storages: refs.storages || [], sites: refs.sites || [], checkpoints: refs.checkpoints || [], self: rec
+      });
+      const fe = mask.querySelector('#rf_fence');
+      if (fe) fe.addEventListener('input', () => { GEO.fence = Number(fe.value || 0); geoRender(); });
+      ['rf_lng', 'rf_lat'].forEach(function(k){
+        const el = mask.querySelector('#' + k);
+        if (el) el.addEventListener('change', function(){
+          const l = Number(mask.querySelector('#rf_lng').value), a = Number(mask.querySelector('#rf_lat').value);
+          if (isFinite(l) && isFinite(a) && l > 0 && a > 0) { GEO.lng = l; GEO.lat = a; geoRender(); }
+        });
+      });
+    }
   }
 
   async function saveRec(subKey, id, mask) {
@@ -1645,18 +2026,30 @@
     const body = {};
     for (const fd of cfg.fields) {
       if (fd.ro) continue; /* 只读汇总字段（存量）不参与提交 */
+      if (fd.cascade) {
+        const path = [1, 2, 3].map(function(i){ const e = document.getElementById('rf_jurisdiction_' + i); return e ? (e.value || '') : ''; });
+        const miss = path.findIndex(function(v){ return !v; });
+        if (miss >= 0) {
+          const el = document.getElementById('rf_jurisdiction_' + (miss + 1));
+          if (el) el.focus();
+          return uiAlert('请选择「公安管辖」第 ' + (miss + 1) + ' 级：' + JURIS_LABEL[miss]);
+        }
+        body[fd.k] = path.join(' / ');
+        body[fd.k + 'Path'] = path;
+        continue;
+      }
       const el = document.getElementById('rf_' + fd.k);
       if (!el) continue;
       if (fd.multi) {
         const arr = Array.from(el.selectedOptions || []).map(o => o.value).filter(Boolean);
-        if (fd.req && !arr.length) { el.focus(); return alert('请选择：' + fd.t); }
+        if (fd.req && !arr.length) { el.focus(); return uiAlert('请选择：' + fd.t); }
         body[fd.k] = arr;
         continue;
       }
       let v = (el.value || '').trim();
-      if (fd.req && !v) { el.focus(); return alert('请填写：' + fd.t); }
+      if (fd.req && !v) { el.focus(); return uiAlert('请填写：' + fd.t); }
       if (fd.num) v = v === '' ? 0 : Number(v);
-      if (fd.arr || fd.k === 'checkPoints' || fd.k === 'keepers') v = v ? v.split(/[,，]/).map(x => x.trim()).filter(Boolean) : [];
+      if (fd.arr || fd.k === 'keepers') v = v ? v.split(/[,，]/).map(x => x.trim()).filter(Boolean) : [];
       if (v !== '' && v !== undefined) body[fd.k] = v;
     }
     /* 四大员里的涉证岗位：证书编号与有效期必须维护，否则小程序选人处会缺信息 */
@@ -1669,8 +2062,22 @@
         if (miss.length) {
           const el = document.getElementById('rf_' + (body.cert ? 'certExpire' : 'cert'));
           if (el) el.focus();
-          return alert('「' + body.role + '」为涉证岗位，请填写：' + miss.join('、') + '（错误会在作业环节被拦下）');
+          return uiAlert('「' + body.role + '」为涉证岗位，请填写：' + miss.join('、') + '（错误会在作业环节被拦下）');
         }
+      }
+    }
+    if (cfg.fields.some(f => f.geo)) {
+      const lgEl = document.getElementById('rf_lng'), laEl = document.getElementById('rf_lat');
+      const lgv = lgEl ? String(lgEl.value || '').trim() : '';
+      const lav = laEl ? String(laEl.value || '').trim() : '';
+      if ((lgv && !lav) || (!lgv && lav)) return uiAlert('经度与纬度需成对填写，缺一项无法上图');
+      if (lgv && lav) {
+        const nlg = Number(lgv), nla = Number(lav);
+        if (!isFinite(nlg) || !isFinite(nla)) return uiAlert('经纬度需为数字，如 94.360255 / 29.639266');
+        if (nlg < 93.0 || nlg > 105.0 || nla < 28.5 || nla > 30.5)
+          return uiAlert('坐标超出业务覆盖范围（东经 93.0~105.0，北纬 28.5~30.5），请在地图上重新取点');
+        body.lng = Number(nlg.toFixed(6));
+        body.lat = Number(nla.toFixed(6));
       }
     }
     if (id) body.id = id;
@@ -1681,15 +2088,15 @@
       const res = await fetch(API_BASE + '/master/' + cfg.type, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
       }).then(r => r.json());
-      if (res.code !== 200) return alert('保存失败：' + res.msg);
+      if (res.code !== 200) return uiAlert('保存失败：' + res.msg);
       mask.remove();
       REF_CACHE[cfg.type] = null;
       await loadSub(subKey);
       if (subKey === 'm-workareas' || subKey === 'm-sites' || subKey === 'm-projects') await loadWorkareas();
       let okMsg = (id ? '已更新' : '已新增') + cfg.label + '，已写入服务端并留痕（小程序端即时可见）';
       if (subKey === 'm-persons') okMsg += staffOverflowMsg(body.company);
-      alert(okMsg);
-    } catch (e) { alert('请求失败，请确认后端服务已启动：' + e); }
+      uiAlert(okMsg);
+    } catch (e) { uiAlert('请求失败，请确认后端服务已启动：' + e); }
   }
 
   /* 建档人数超出许可证备案人数时的告警文案（不阻断保存，保存后提示） */
@@ -1712,15 +2119,15 @@
     const pairs = { sites: ['启用', '停用'], storages: ['生效', '停用'], persons: ['在岗', '停用'], routes: ['启用', '停用'] };
     const p = pairs[cfg.type] || ['生效', '停用'];
     const next = rec.status === p[1] ? p[0] : p[1];
-    if (!confirm('确认把「' + (rec.name || id) + '」状态改为「' + next + '」？')) return;
+    if (!(await uiConfirm('确认把「' + (rec.name || id) + '」状态改为「' + next + '」？', '请确认状态变更'))) return;
     try {
       const res = await fetch(API_BASE + '/master/' + cfg.type, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: id, status: next, _operator: { id: 'ADM1', name: '治安管理员', role: '治安管理员' }, _remark: 'PC 端状态变更' })
       }).then(r => r.json());
-      if (res.code !== 200) return alert('操作失败：' + res.msg);
+      if (res.code !== 200) return uiAlert('操作失败：' + res.msg);
       await loadSub(subKey);
-    } catch (e) { alert('请求失败：' + e); }
+    } catch (e) { uiAlert('请求失败：' + e); }
   }
 
   // 初始加载
@@ -1740,8 +2147,8 @@
   function siteRowsHTML(arr, unassigned){
     if (!arr.length) return '<tr><td colspan="6" style="text-align:center;color:var(--sub);padding:14px">该工区下暂无作业点位，点「＋ 加点位」并选择本工区即可</td></tr>';
     return arr.map(function(s){
-      let op = '<a onclick="openRecForm(\'m-sites\',\'' + s.id + '\')">编辑</a> · <a onclick="delMaster(\'sites\',\'' + s.id + '\',\'' + (s.name || s.id) + '\')">删除</a>';
-      if (unassigned) op += ' · <a onclick="assignWorkarea(\'' + s.id + '\')">归入工区</a>';
+      let op = '<a class="obtn" onclick="openRecForm(\'m-sites\',\'' + s.id + '\')">编辑</a><a class="obtn danger" onclick="delMaster(\'sites\',\'' + s.id + '\',\'' + (s.name || s.id) + '\')">删除</a>';
+      if (unassigned) op += '<a class="obtn" onclick="assignWorkarea(\'' + s.id + '\')">归入工区</a>';
       return '<tr><td>' + s.id + '</td><td><b>' + (s.name || '') + '</b></td><td style="color:var(--sub)">' + waPrName(s.project) +
         '</td><td>' + (s.fence || 0) + ' m</td><td><span class="tag ' + (s.status === '停用' ? 'gray' : 'ok') + '">' + (s.status || '启用') +
         '</span></td><td class="op">' + op + '</td></tr>';
@@ -1764,7 +2171,8 @@
     const qEl = document.getElementById('q-wa');
     const q = ((qEl && qEl.value) || '').trim().toLowerCase();
     const pid = fillWaProjectFilter();
-    const allWa = REF_CACHE.workareas || [], allSites = REF_CACHE.sites || [];
+    const allWa = (REF_CACHE.workareas || []).filter(function(w){ return inScopeRec('workareas', w); });
+    const allSites = (REF_CACHE.sites || []).filter(function(s){ return inScopeRec('sites', s); });
     const was = pid ? allWa.filter(function(w){ return w.project === pid; }) : allWa;
     const sites = pid ? allSites.filter(function(s){ return s.project === pid; }) : allSites;
     const hit = function(o){ return !q || JSON.stringify(o || {}).toLowerCase().indexOf(q) >= 0; };
@@ -1779,12 +2187,13 @@
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">' +
           '<b style="font-size:14px">' + (w.name || w.id) + '</b><span class="tag">' + w.id + '</span>' +
           '<span style="color:var(--sub);font-size:12px">' + waPrName(w.project) + (w.district ? ' · ' + w.district : '') + ' · 点位 ' + kids.length + ' 个</span>' +
+          (jurisShort(w) ? '<span class="tag" title="' + (w.jurisdiction || '') + '">公安管辖：' + jurisShort(w) + '</span>' : '<span class="tag gray">公安管辖未设置</span>') +
           '<span style="flex:1"></span>' +
-          '<a onclick="addSiteToWa(\'' + w.id + '\')" class="lnk">＋ 加点位</a>' +
-          '<a onclick="openRecForm(\'m-workareas\',\'' + w.id + '\')" class="lnk">编辑工区</a>' +
-          '<a onclick="delMaster(\'workareas\',\'' + w.id + '\',\'' + (w.name || w.id) + '\')" class="lnk">删除工区</a>' +
+          '<a class="obtn" onclick="addSiteToWa(\'' + w.id + '\')">＋ 加点位</a>' +
+          '<a class="obtn" onclick="openRecForm(\'m-workareas\',\'' + w.id + '\')">编辑工区</a>' +
+          '<a class="obtn danger" onclick="delMaster(\'workareas\',\'' + w.id + '\',\'' + (w.name || w.id) + '\')">删除工区</a>' +
         '</div>' +
-        '<table class="tb"><thead><tr><th>点位编号</th><th>点位名称</th><th>所属项目</th><th>围栏半径</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
+        '<table class="tb" style="table-layout:fixed;width:100%"><thead><tr><th style="width:110px;white-space:nowrap">点位编号</th><th style="width:240px;white-space:nowrap">点位名称</th><th style="width:240px;white-space:nowrap">所属项目</th><th style="width:100px;white-space:nowrap">围栏半径</th><th style="width:80px;white-space:nowrap">状态</th><th style="width:140px;white-space:nowrap">操作</th></tr></thead><tbody>' +
         siteRowsHTML(kidView, false) + '</tbody></table></div>';
     });
     if (unassigned.length && (!q || unassigned.some(hit))) {
@@ -1792,7 +2201,7 @@
       html += '<div class="card" style="padding:10px 14px 4px;margin-bottom:10px;border-color:#f0c9a0">' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><b style="font-size:14px">未归属工区的点位</b>' +
         '<span style="color:var(--sub);font-size:12px">共 ' + unassigned.length + ' 个，点「归入工区」挂到对应工区下</span></div>' +
-        '<table class="tb"><thead><tr><th>点位编号</th><th>点位名称</th><th>所属项目</th><th>围栏半径</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
+        '<table class="tb" style="table-layout:fixed;width:100%"><thead><tr><th style="width:110px;white-space:nowrap">点位编号</th><th style="width:240px;white-space:nowrap">点位名称</th><th style="width:240px;white-space:nowrap">所属项目</th><th style="width:100px;white-space:nowrap">围栏半径</th><th style="width:80px;white-space:nowrap">状态</th><th style="width:140px;white-space:nowrap">操作</th></tr></thead><tbody>' +
         siteRowsHTML(unassigned, true) + '</tbody></table></div>';
     }
     if (!html) html = '<div class="card" style="padding:26px;text-align:center;color:var(--sub)">没有匹配的工区或点位</div>';
@@ -1823,38 +2232,38 @@
   }
   async function saveAssignWorkarea(siteId, btn){
     const sel = document.getElementById('asg-wa');
-    if (!sel || !sel.value) return alert('请选择工区');
+    if (!sel || !sel.value) return uiAlert('请选择工区');
     const site = (await refList('sites')).find(function(x){ return x.id === siteId; }) || { id: siteId };
     site.workarea = sel.value;
     site._operator = { id: 'ADM1', name: '治安管理员', role: '治安管理员' };
     site._remark = 'PC 端归入工区';
     try {
       const res = await fetch(API_BASE + '/master/sites', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(site) }).then(function(r){ return r.json(); });
-      if (res.code !== 200) return alert('保存失败：' + res.msg);
+      if (res.code !== 200) return uiAlert('保存失败：' + res.msg);
       REF_CACHE.sites = null; REF_CACHE.workareas = null;
       const m = btn ? btn.closest('.rec-modal') : null; if (m) m.remove();
       await loadWorkareas();
-      alert('已把点位 ' + siteId + ' 归入工区，服务端已留痕');
-    } catch (e) { alert('请求失败：' + e); }
+      uiAlert('已把点位 ' + siteId + ' 归入工区，服务端已留痕');
+    } catch (e) { uiAlert('请求失败：' + e); }
   }
 
   /* ===== 删除主数据（服务端留痕） ===== */
   async function delMaster(type, id, label){
     if (type === 'workareas') {
       const kids = (REF_CACHE.sites || []).filter(function(s){ return s.workarea === id; });
-      if (kids.length) return alert('该工区下还有 ' + kids.length + ' 个作业点位，请先把点位删除或改到其他工区后再删工区');
+      if (kids.length) return uiAlert('该工区下还有 ' + kids.length + ' 个作业点位，请先把点位删除或改到其他工区后再删工区');
     }
-    if (!confirm('确认删除「' + label + '」（' + id + '）？服务端会留痕，小程序 / 大屏同步消失。')) return;
+    if (!(await uiConfirm('确认删除「' + label + '」（' + id + '）？服务端会留痕，小程序 / 大屏同步消失。', '请确认删除', true))) return;
     try {
       const res = await fetch(API_BASE + '/master/' + type + '/' + encodeURIComponent(id), { method: 'DELETE' }).then(function(r){ return r.json(); });
-      if (res.code !== 200) return alert('删除失败：' + res.msg);
+      if (res.code !== 200) return uiAlert('删除失败：' + res.msg);
       REF_CACHE[type] = null;
       if (type === 'persons') { await loadSub('m-persons'); }
       if (type === 'sites' || type === 'workareas') { await loadWorkareas(); }
       if (type === 'projects') { await loadSub('m-projects'); await loadWorkareas(); }
       if (type === 'companies') { await loadSub('m-companies'); }
-      alert('已删除：' + label);
-    } catch (e) { alert('请求失败：' + e); }
+      uiAlert('已删除：' + label);
+    } catch (e) { uiAlert('请求失败：' + e); }
   }
 
   /* ===== 人员与库房的归属判定：关联库房 或 该库房的保管员 ===== */
@@ -1870,7 +2279,7 @@
     const cs = document.getElementById('flt-person-company');
     if (cs) {
       const cur = PERSON_FILT.company || cs.value || '';
-      cs.innerHTML = '<option value="">全部单位</option>' + (REF_CACHE.companies || []).map(function(c){
+      cs.innerHTML = '<option value="">全部单位</option>' + (REF_CACHE.companies || []).filter(function(c){ return inScopeRec('companies', c); }).map(function(c){
         return '<option value="' + c.id + '">' + (c.name || c.id) + '</option>';
       }).join('');
       cs.value = cur;
@@ -1879,7 +2288,7 @@
     if (ss) {
       const cur = PERSON_FILT.storage || ss.value || '';
       ss.innerHTML = '<option value="">全部库房</option>' + (REF_CACHE.storages || []).filter(function(st){
-        return st.name && st.name.indexOf('待补录') < 0;
+        return inScopeRec('storages', st) && st.name && st.name.indexOf('待补录') < 0;
       }).map(function(st){
         return '<option value="' + st.id + '">' + (st.name || st.id) + '</option>';
       }).join('');
@@ -2011,6 +2420,23 @@
     }
     return str.length > 16 ? str.slice(0, 16).replace('T', ' ') : str;
   }
+  /* 业务台账数据权限：业务人员只保留本公司、本业务环节的记录；公安管理员不限 */
+  function bizInScope(r){
+    const s = scope();
+    if (s.nodes && s.nodes.indexOf(r.c) < 0) return false;
+    if (!s.company) return true;
+    const planId = (r.x && (r.x.plan || r.x.outboundPlan)) || '';
+    const pl = (BIZ_DATA.plans || []).find(function(p){ return p.id === planId; });
+    const prj = pl ? pl.project : ((r.x && r.x.project) || '');
+    if (!prj) return true;
+    /* 项目→公司归属：优先用本页已加载的项目集合，避免未加载主数据时误判为不可见 */
+    const prjs = (BIZ_DATA.projects && BIZ_DATA.projects.length) ? BIZ_DATA.projects : (REF_CACHE.projects || []);
+    const pj = prjs.find(function(p){ return p.id === prj; });
+    const co = pj ? (pj.company || '') : '';
+    if (!co) return true;
+    return co === s.company;
+  }
+
   function renderBizLog(){
     const tb = document.getElementById('tb-bizlog'); if (!tb) return;
     const type = ((document.getElementById('bizType') || {}).value) || '';
@@ -2020,6 +2446,7 @@
     colls.forEach(function(c){
       (BIZ_DATA[c] || []).forEach(function(x){ rows.push({ c: c, x: x }); });
     });
+    rows = rows.filter(bizInScope);
     if (q) rows = rows.filter(function(r){ return JSON.stringify(r.x).toLowerCase().indexOf(q) >= 0; });
     rows.sort(function(a, b){ return String(bizTime(b.x)).localeCompare(String(bizTime(a.x))); });
     if (!rows.length) {
@@ -2039,6 +2466,25 @@
 
   /* 启动即按「公安管理员」应用菜单权限（顶栏下拉可切换） */
   try { applyRole('police'); } catch (e) { console.warn('applyRole init failed', e); }
+  if (location.hash) {
+    try {
+      const [h, qs] = location.hash.slice(1).split('?');
+      gotoPage(h);
+      const params = new URLSearchParams(qs || '');
+      const editId = params.get('edit');
+      if (editId && SUB_CFG[h]) { loadSub(h).then(() => openRecForm(h, editId)); }
+    } catch (e) { console.warn('hash nav failed', e); }
+  }
 </script>
+  <div class="ui-mask" id="uiMask" role="dialog" aria-modal="true" aria-labelledby="uiTitle">
+    <div class="ui-box">
+      <div class="ui-h" id="uiTitle"></div>
+      <div class="ui-body" id="uiMsg"></div>
+      <div class="ui-f">
+        <button class="btn ghost" type="button" id="uiCancel">取消</button>
+        <button class="btn" type="button" id="uiOk">确定</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

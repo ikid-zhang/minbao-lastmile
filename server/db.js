@@ -15,8 +15,8 @@ const DEFAULT_STORE = {
   },
   // 2. 主数据
   companies: [
-    { id: 'C1', name: '宏泰民爆工程有限公司', addr: '乐山市市中区民爆产业园 8 号', legal: '刘宏', staff: 86, licence: 'PB作许字[2024]08号', licenceExpire: '2028-06-30', status: '生效' },
-    { id: 'C2', name: '宏安爆破有限责任公司', addr: '乐山市沙湾区工农路 21 号', legal: '吴安', staff: 52, licence: 'PB作许字[2023]21号', licenceExpire: '2027-03-31', status: '生效' }
+    { id: 'C1', name: '宏泰民爆工程有限公司', addr: '林芝市巴宜区八一镇民爆产业园 8 号', legal: '刘宏', staff: 86, licence: 'PB作许字[2024]08号', licenceExpire: '2028-06-30', status: '生效' },
+    { id: 'C2', name: '宏安爆破有限责任公司', addr: '林芝市巴宜区城郊工农路 21 号', legal: '吴安', staff: 52, licence: 'PB作许字[2023]21号', licenceExpire: '2027-03-31', status: '生效' }
   ],
   persons: [
     { id: 'P1',  name: '陈志远', role: '项目负责人', company: 'C1', idno: '510102198501010011', phone: '13800001201', cert: 'GA-PM-2024-011', certExpire: '2028-01-31', status: '在岗', remark: '青龙山隧道群负责人' },
@@ -35,8 +35,8 @@ const DEFAULT_STORE = {
   ],
   storages: [
     {
-      id: 'S1', name: '城西销售库', type: '销售库', company: 'C1', addr: '市中区城西路 66 号', builtAt: '2015-06-18', area: 3200, dailyUse: 900,
-      keepers: ['P4', 'P9'], fence: 200, staff: 12, supplyUnit: '宏泰民爆工程有限公司（C1）', lng: 103.725890, lat: 29.562340, status: '生效',
+      id: 'S1', name: '城西销售库', type: '销售库', company: 'C1', addr: '巴宜区城西东路 66 号', builtAt: '2015-06-18', area: 3200, dailyUse: 900,
+      keepers: ['P4', 'P9'], fence: 200, staff: 12, supplyUnit: '宏泰民爆工程有限公司（C1）', lng: 94.300000, lat: 29.650000, status: '生效',
       stock: {
         zy: { '2号岩石乳化炸药': 2400, '膨化硝铵炸药': 800 },
         lg: { '8#工业电雷管': 20000, '数码电子雷管': 6000 },
@@ -46,7 +46,7 @@ const DEFAULT_STORE = {
     },
     {
       id: 'S2', name: '青龙山使用库', type: '使用库', company: 'C1', addr: '青龙山工区 2 号便道旁', builtAt: '2024-11-02', area: 450, dailyUse: 260,
-      keepers: ['P3'], fence: 150, staff: 5, supplyUnit: '宏泰民爆工程有限公司（C1）', lng: 103.812400, lat: 29.610500, status: '生效',
+      keepers: ['P3'], fence: 150, staff: 5, supplyUnit: '宏泰民爆工程有限公司（C1）', lng: 94.420000, lat: 29.690000, status: '生效',
       stock: {
         zy: { '2号岩石乳化炸药': 60 },
         lg: { '8#工业电雷管': 400 },
@@ -56,9 +56,9 @@ const DEFAULT_STORE = {
     }
   ],
   vehicles: [
-    { id: 'V1', plate: '川L·10295', model: '厢式危险品运输车', load: 2000, company: 'C1', transLicence: '川交运许[2024]0118号', transGoods: '炸药、雷管', annualExpire: '2026-12-31', status: '在用', remark: '主力运输车' },
-    { id: 'V2', plate: '川L·20847', model: '厢式危险品运输车', load: 1500, company: 'C1', transLicence: '川交运许[2024]0119号', transGoods: '炸药、雷管', annualExpire: '2027-05-31', status: '在用', remark: '常备车辆' },
-    { id: 'V3', plate: '川L·33201', model: '小型危险品运输车', load: 600, company: 'C1', transLicence: '川交运许[2025]0043号', transGoods: '雷管', annualExpire: '2026-11-30', status: '在用', remark: '小额配送' }
+    { id: 'V1', plate: '藏B·10295', model: '厢式危险品运输车', load: 2000, company: 'C1', transLicence: '藏交运许[2024]0118号', transGoods: '炸药、雷管', annualExpire: '2026-12-31', status: '在用', remark: '主力运输车' },
+    { id: 'V2', plate: '藏B·20847', model: '厢式危险品运输车', load: 1500, company: 'C1', transLicence: '藏交运许[2024]0119号', transGoods: '炸药、雷管', annualExpire: '2027-05-31', status: '在用', remark: '常备车辆' },
+    { id: 'V3', plate: '藏B·33201', model: '小型危险品运输车', load: 600, company: 'C1', transLicence: '藏交运许[2025]0043号', transGoods: '雷管', annualExpire: '2026-11-30', status: '在用', remark: '小额配送' }
   ],
   drivers: [
     { id: 'D1', name: '王强', idno: '510102198104155678', cert: '从业资格证 JZ-3301', phone: '13900005678', status: '在岗' },
@@ -73,22 +73,28 @@ const DEFAULT_STORE = {
     { id: 'PR2', name: '龙泉矿山台阶爆破项目', company: 'C2', workarea: 'WA2', area: '龙泉矿区 B 区', type: '露天台阶', valid: '2026-06-01 ~ 2027-05-31' }
   ],
   sites: [
-    { id: 'Z1', name: '青龙山隧道进口作业点', project: 'PR1', lng: 103.821000, lat: 29.615000, fence: 300, hist: 12, status: '启用' },
-    { id: 'Z2', name: '青龙山隧道出口作业点', project: 'PR1', lng: 103.835000, lat: 29.621000, fence: 300, hist: 8, status: '启用' },
-    { id: 'Z3', name: '龙泉矿区 B2 台阶作业点', project: 'PR2', lng: 103.910000, lat: 29.489000, fence: 500, hist: 21, status: '启用' }
+    { id: 'Z1', name: '青龙山隧道进口作业点', project: 'PR1', lng: 94.430000, lat: 29.696000, fence: 300, hist: 12, status: '启用' },
+    { id: 'Z2', name: '青龙山隧道出口作业点', project: 'PR1', lng: 94.452000, lat: 29.705000, fence: 300, hist: 8, status: '启用' },
+    { id: 'Z3', name: '龙泉矿区 B2 台阶作业点', project: 'PR2', lng: 94.560000, lat: 29.560000, fence: 500, hist: 21, status: '启用' }
+  ],
+  checkpoints: [
+    { id: 'CP1', name: '青龙山专线入口', lng: 94.360000, lat: 29.675000, region: '青龙山工区', remark: '出城上专线首检点', status: '启用' },
+    { id: 'CP2', name: '隧道施工便道口', lng: 94.425000, lat: 29.694000, region: '青龙山工区', remark: '进隧道群便道前核验点', status: '启用' },
+    { id: 'CP3', name: '龙泉矿区大门', lng: 94.420000, lat: 29.575000, region: '龙泉工区', remark: '矿区大门值守点', status: '启用' },
+    { id: 'CP4', name: '矿区 3 号岔路口', lng: 94.550000, lat: 29.566000, region: '龙泉工区', remark: '通往 B2 台阶岔路口', status: '启用' }
   ],
   routes: [
     {
       id: 'R1', name: '城西销售库 → 青龙山隧道群', from: 'S1', to: 'Z1', via: 'G318 国道 → 青龙山专线', km: 42,
-      checkPoints: ['青龙山专线入口', '隧道施工便道口'], status: '启用'
+      checkPoints: ['CP1', 'CP2'], status: '启用'
     },
     {
       id: 'R2', name: '城西销售库 → 龙泉矿区', from: 'S1', to: 'Z3', via: 'G318 国道 → 龙泉矿区专用道', km: 68,
-      checkPoints: ['龙泉矿区大门', '矿区 3 号岔路口'], status: '启用'
+      checkPoints: ['CP3', 'CP4'], status: '启用'
     },
     {
       id: 'R3', name: '青龙山使用库 → 青龙山隧道出口', from: 'S2', to: 'Z2', via: '青龙山施工便道', km: 9,
-      checkPoints: ['隧道施工便道口'], status: '启用'
+      checkPoints: ['CP2'], status: '启用'
     }
   ],
   // 3. 业务单据集合
@@ -124,7 +130,7 @@ let sqlite = null;
 try { sqlite = require('node:sqlite'); } catch (e) { sqlite = null; }
 
 const ARRAY_COLLS = [
-  'companies','persons','storages','vehicles','drivers','workareas','projects','sites','routes',
+  'companies','persons','storages','vehicles','drivers','workareas','projects','sites','routes','checkpoints',
   'plans','outbounds','transports','receives','blastings','destroys','returns','verifies','checks','rectifies',
   'accidents','nodeLogs','masterLogs'
 ];
@@ -224,7 +230,23 @@ function loadDB() {
   // 补齐 DEFAULT_STORE 里存在但库里还没有的集合，避免业务代码读到 undefined
   for (const k of Object.keys(DEFAULT_STORE)) {
     if (out[k] === undefined) out[k] = JSON.parse(JSON.stringify(DEFAULT_STORE[k]));
+    // 集合为空数组时回填内置种子（新集合首次上线 / 历史库尚未落该集合），不覆盖已有数据
+    if (Array.isArray(out[k]) && out[k].length === 0 && Array.isArray(DEFAULT_STORE[k]) && DEFAULT_STORE[k].length) {
+      out[k] = JSON.parse(JSON.stringify(DEFAULT_STORE[k]));
+    }
   }
+  // 历史兼容：早期路线 checkPoints 存的是打卡点名称，统一归一化为打卡点 id（按名称匹配）
+  try {
+    const cps = out.checkpoints || [];
+    const byName = Object.fromEntries(cps.map(c => [c.name, c.id]));
+    (out.routes || []).forEach(r => {
+      if (!Array.isArray(r.checkPoints)) return;
+      r.checkPoints = r.checkPoints.map(cp => {
+        if (cps.some(c => c.id === cp)) return cp;
+        return byName[cp] || cp;
+      });
+    });
+  } catch (e) { /* 归一化失败不阻断启动 */ }
   return out;
 }
 
@@ -567,5 +589,5 @@ function deleteDoc(coll, id) {
 
 module.exports = {
   loadDB, saveDB, resetDB, logNodeAction, logMasterAction, upsertDoc, deleteDoc,
-  isSqliteReady, SQLITE_FILE, DDL_FILE
+  isSqliteReady, SQLITE_FILE, DDL_FILE, DEFAULT_STORE,
 };

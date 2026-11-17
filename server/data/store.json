@@ -3,7 +3,7 @@
     {
       "id": "C1",
       "name": "宏泰民爆工程有限公司",
-      "addr": "乐山市市中区民爆产业园 8 号",
+      "addr": "林芝市巴宜区八一镇民爆产业园 8 号",
       "legal": "刘宏",
       "staff": 86,
       "licence": "PB作许字[2024]08号",
@@ -13,7 +13,7 @@
     {
       "id": "C2",
       "name": "宏安爆破有限责任公司",
-      "addr": "乐山市沙湾区工农路 21 号",
+      "addr": "林芝市巴宜区城郊工农路 21 号",
       "legal": "吴安",
       "staff": 52,
       "licence": "PB作许字[2023]21号",
@@ -46,38 +46,6 @@
       "remark": "青龙山隧道群负责人"
     },
     {
-      "id": "P10",
-      "name": "何志强",
-      "role": "押运员",
-      "company": "C1",
-      "phone": "13800001210",
-      "cert": "GA-YY-2027-102",
-      "certExpire": "2030-06-30",
-      "status": "在岗",
-      "_remark": "PC 端维护修正",
-      "project": "PR1",
-      "storages": [],
-      "sites": [
-        "SI2396",
-        "Z1"
-      ]
-    },
-    {
-      "id": "P11",
-      "name": "邓海军",
-      "role": "押运员",
-      "company": "C2",
-      "project": "PR2",
-      "sites": [
-        "Z4"
-      ],
-      "phone": "138****1211",
-      "cert": "GA-YY-2026-118",
-      "certExpire": "2030-09-30",
-      "status": "在岗",
-      "_remark": "PC 端新增：宏安公司龙泉项目押运员，服务 B3 点位"
-    },
-    {
       "id": "P2",
       "name": "李建国",
       "role": "安全监理",
@@ -87,39 +55,31 @@
       "cert": "GA-JL-2023-052",
       "certExpire": "2027-08-31",
       "status": "在岗",
-      "remark": "专职安全监理",
-      "storages": [],
-      "sites": [
-        "Z1"
-      ],
-      "_remark": "PC 端维护修正",
-      "project": "PR1"
+      "remark": "专职安全监理"
     },
     {
       "id": "P3",
       "name": "赵铁柱",
       "role": "安全员",
       "company": "C1",
+      "storages": [
+        "S2"
+      ],
       "idno": "510102198907120013",
       "phone": "13800001203",
       "cert": "GA-AQ-2024-103",
       "certExpire": "2027-12-31",
       "status": "在岗",
-      "remark": "现场安全员",
-      "sites": [
-        "Z1",
-        "Z2",
-        "SI2396"
-      ],
-      "_remark": "PC 端维护修正",
-      "storages": [],
-      "project": null
+      "remark": "现场安全员"
     },
     {
       "id": "P4",
       "name": "钱有德",
       "role": "保管员",
       "company": "C1",
+      "storages": [
+        "S1"
+      ],
       "idno": "510102197811200014",
       "phone": "13800001204",
       "cert": "GA-BG-2022-077",
@@ -180,41 +140,15 @@
       "name": "吴秀英",
       "role": "保管员",
       "company": "C1",
+      "storages": [
+        "S1"
+      ],
       "idno": "510102198308100019",
       "phone": "13800001209",
       "cert": "GA-BG-2023-031",
       "certExpire": "2027-09-30",
       "status": "在岗",
       "remark": "城西销售库复核保管员"
-    },
-    {
-      "name": "张安全员",
-      "role": "安全员",
-      "company": "C1",
-      "project": "PR1",
-      "storages": [
-        "S1"
-      ],
-      "sites": [
-        "SI2396",
-        "Z1"
-      ],
-      "status": "在岗",
-      "_remark": "PC 端新增建档",
-      "id": "PE2105"
-    },
-    {
-      "name": "张三",
-      "role": "安全监理",
-      "company": "C1",
-      "project": "PR1",
-      "storages": [],
-      "sites": [
-        "SI2396"
-      ],
-      "status": "在岗",
-      "_remark": "PC 端新增建档",
-      "id": "PE8946"
     },
     {
       "id": "POL1",
@@ -256,7 +190,7 @@
       "name": "城西销售库",
       "type": "销售库",
       "company": "C1",
-      "addr": "市中区城西路 66 号",
+      "addr": "巴宜区城西东路 66 号",
       "builtAt": "2015-06-18",
       "area": 3200,
       "dailyUse": 900,
@@ -267,16 +201,16 @@
       "fence": 200,
       "staff": 12,
       "supplyUnit": "宏泰民爆工程有限公司（C1）",
-      "lng": 103.72589,
-      "lat": 29.56234,
+      "lng": 94.3,
+      "lat": 29.65,
       "status": "生效",
       "stock": {
         "zy": {
-          "2号岩石乳化炸药": 2210,
+          "2号岩石乳化炸药": 2400,
           "膨化硝铵炸药": 800
         },
         "lg": {
-          "8#工业电雷管": 19780,
+          "8#工业电雷管": 20000,
           "数码电子雷管": 6000
         },
         "db": {
@@ -287,8 +221,7 @@
         "zy": 500,
         "lg": 5000,
         "db": 2000
-      },
-      "_remark": "恢复验证前库存"
+      }
     },
     {
       "id": "S2",
@@ -305,15 +238,15 @@
       "fence": 150,
       "staff": 5,
       "supplyUnit": "宏泰民爆工程有限公司（C1）",
-      "lng": 103.8124,
-      "lat": 29.6105,
+      "lng": 94.42,
+      "lat": 29.69,
       "status": "生效",
       "stock": {
         "zy": {
-          "2号岩石乳化炸药": 88
+          "2号岩石乳化炸药": 60
         },
         "lg": {
-          "8#工业电雷管": 430
+          "8#工业电雷管": 400
         },
         "db": {}
       },
@@ -321,52 +254,29 @@
         "zy": 20,
         "lg": 100,
         "db": 0
-      },
-      "_remark": "存量变更（出库扣减 / 退库入库）"
-    },
-    {
-      "id": "S3",
-      "stock": {
-        "zy": {},
-        "lg": {},
-        "db": {}
-      },
-      "name": "待补录库房（S3）",
-      "status": "生效"
-    },
-    {
-      "id": "S4",
-      "stock": {
-        "zy": {},
-        "lg": {},
-        "db": {}
-      },
-      "name": "待补录库房（S4）",
-      "status": "生效"
+      }
     }
   ],
   "vehicles": [
     {
       "id": "V1",
-      "plate": "川L·10295",
+      "plate": "藏B·10295",
       "model": "厢式危险品运输车",
       "load": 2000,
       "company": "C1",
-      "transLicence": "川交运许[2024]0118号",
+      "transLicence": "藏交运许[2024]0118号",
       "transGoods": "炸药、雷管",
       "annualExpire": "2026-12-31",
       "status": "在用",
-      "remark": "主力运输车",
-      "project": "PR1",
-      "_remark": "PC 端维护修正"
+      "remark": "主力运输车"
     },
     {
       "id": "V2",
-      "plate": "川L·20847",
+      "plate": "藏B·20847",
       "model": "厢式危险品运输车",
       "load": 1500,
       "company": "C1",
-      "transLicence": "川交运许[2024]0119号",
+      "transLicence": "藏交运许[2024]0119号",
       "transGoods": "炸药、雷管",
       "annualExpire": "2027-05-31",
       "status": "在用",
@@ -374,28 +284,15 @@
     },
     {
       "id": "V3",
-      "plate": "川L·33201",
+      "plate": "藏B·33201",
       "model": "小型危险品运输车",
       "load": 600,
       "company": "C1",
-      "transLicence": "川交运许[2025]0043号",
+      "transLicence": "藏交运许[2025]0043号",
       "transGoods": "雷管",
       "annualExpire": "2026-11-30",
       "status": "在用",
       "remark": "小额配送"
-    },
-    {
-      "id": "V4",
-      "plate": "川L·40617",
-      "model": "厢式危险品运输车",
-      "load": 3000,
-      "company": "C2",
-      "project": "PR2",
-      "transLicence": "川交运许[2026]0087号",
-      "transGoods": "炸药、雷管、导爆索",
-      "annualExpire": "2028-03-31",
-      "status": "在用",
-      "_remark": "PC 端新增：宏安公司龙泉项目专用运输车"
     }
   ],
   "drivers": [
@@ -422,20 +319,14 @@
       "name": "青龙山工区",
       "police": "POL2",
       "unit": "工区警务室",
-      "scope": "青龙山隧道群 K3+200 ~ K5+800",
-      "project": "PR1",
-      "district": "市中区",
-      "_remark": "PC 端补全工区归属项目"
+      "scope": "青龙山隧道群 K3+200 ~ K5+800"
     },
     {
       "id": "WA2",
       "name": "龙泉工区",
       "police": "POL1",
       "unit": "城关派出所",
-      "scope": "龙泉矿区 B 区及周边 5km",
-      "project": "PR2",
-      "district": "市中区",
-      "_remark": "PC 端补全工区归属项目"
+      "scope": "龙泉矿区 B 区及周边 5km"
     }
   ],
   "projects": [
@@ -460,60 +351,34 @@
   ],
   "sites": [
     {
-      "name": "测试第5个点位",
-      "project": "PR1",
-      "fence": 0,
-      "hist": 0,
-      "status": "启用",
-      "_remark": "PC 端按所属项目归入工区",
-      "id": "SI2396",
-      "workarea": "WA1"
-    },
-    {
       "id": "Z1",
       "name": "青龙山隧道进口作业点",
       "project": "PR1",
-      "lng": 103.821,
-      "lat": 29.615,
+      "lng": 94.43,
+      "lat": 29.696,
       "fence": 300,
       "hist": 12,
-      "status": "启用",
-      "workarea": "WA1",
-      "_remark": "PC 端按所属项目归入工区"
+      "status": "启用"
     },
     {
       "id": "Z2",
       "name": "青龙山隧道出口作业点",
       "project": "PR1",
-      "lng": 103.835,
-      "lat": 29.621,
+      "lng": 94.452,
+      "lat": 29.705,
       "fence": 300,
       "hist": 8,
-      "status": "启用",
-      "workarea": "WA1",
-      "_remark": "PC 端按所属项目归入工区"
+      "status": "启用"
     },
     {
       "id": "Z3",
       "name": "龙泉矿区 B2 台阶作业点",
       "project": "PR2",
-      "lng": 103.91,
-      "lat": 29.489,
+      "lng": 94.56,
+      "lat": 29.56,
       "fence": 500,
       "hist": 21,
-      "status": "启用",
-      "workarea": "WA2",
-      "_remark": "PC 端按所属项目归入工区"
-    },
-    {
-      "id": "Z4",
-      "name": "龙泉矿区 B3 台阶作业点",
-      "project": "PR2",
-      "fence": 400,
-      "hist": 0,
-      "status": "启用",
-      "_remark": "PC 端按所属项目归入工区",
-      "workarea": "WA2"
+      "status": "启用"
     }
   ],
   "routes": [
@@ -525,8 +390,8 @@
       "via": "G318 国道 → 青龙山专线",
       "km": 42,
       "checkPoints": [
-        "青龙山专线入口",
-        "隧道施工便道口"
+        "CP1",
+        "CP2"
       ],
       "status": "启用"
     },
@@ -538,8 +403,8 @@
       "via": "G318 国道 → 龙泉矿区专用道",
       "km": 68,
       "checkPoints": [
-        "龙泉矿区大门",
-        "矿区 3 号岔路口"
+        "CP3",
+        "CP4"
       ],
       "status": "启用"
     },
@@ -551,47 +416,47 @@
       "via": "青龙山施工便道",
       "km": 9,
       "checkPoints": [
-        "隧道施工便道口"
+        "CP2"
       ],
+      "status": "启用"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "CP1",
+      "name": "青龙山专线入口",
+      "lng": 94.36,
+      "lat": 29.675,
+      "region": "青龙山工区",
+      "remark": "出城上专线首检点",
       "status": "启用"
     },
     {
-      "id": "R4",
-      "name": "青龙山中间库 → 青龙山隧道进口",
-      "from": "S2",
-      "to": "Z1",
-      "via": "青龙山工区便道 → 隧道进口便道",
-      "km": 6,
-      "checkPoints": [
-        "中间库道闸",
-        "隧道进口便道口"
-      ],
-      "status": "启用",
-      "_remark": "PC 端维护修正"
+      "id": "CP2",
+      "name": "隧道施工便道口",
+      "lng": 94.425,
+      "lat": 29.694,
+      "region": "青龙山工区",
+      "remark": "进隧道群便道前核验点",
+      "status": "启用"
     },
     {
-      "id": "R5",
-      "name": "城西销售库 → 龙泉矿区 B3 台阶",
-      "from": "S1",
-      "to": "Z4",
-      "via": "G318 国道 → 龙泉矿区专用道 → B 区支线",
-      "km": 70,
-      "checkPoints": [
-        "龙泉矿区大门",
-        "B 区支线口"
-      ],
-      "status": "启用",
-      "_remark": "PC 端新增：B3 台阶路线"
+      "id": "CP3",
+      "name": "龙泉矿区大门",
+      "lng": 94.42,
+      "lat": 29.575,
+      "region": "龙泉工区",
+      "remark": "矿区大门值守点",
+      "status": "启用"
     },
     {
-      "name": "青龙山使用库-到第五作业点",
-      "from": "S2",
-      "to": "SI2396",
-      "km": 40,
-      "checkPoints": [],
-      "status": "启用",
-      "_remark": "PC 端维护修正",
-      "id": "RO9352"
+      "id": "CP4",
+      "name": "矿区 3 号岔路口",
+      "lng": 94.55,
+      "lat": 29.566,
+      "region": "龙泉工区",
+      "remark": "通往 B2 台阶岔路口",
+      "status": "启用"
     }
   ],
   "plans": [
@@ -600,20 +465,22 @@
       "planNo": "BBJH20261113011",
       "project": "PR1",
       "workarea": "WA1",
-      "site": "SI2396",
+      "site": "Z1",
       "sitePlans": [
         {
-          "site": "SI2396",
+          "site": "Z1",
           "items": [
             {
               "goods": "zy",
               "spec": "2号岩石乳化炸药",
-              "qty": 100
+              "qty": 100,
+              "batch": "ZY-2026-B210"
             },
             {
               "goods": "lg",
               "spec": "8#工业电雷管",
-              "qty": 100
+              "qty": 100,
+              "batch": "ZY-2026-B211"
             }
           ]
         }
@@ -636,9 +503,9 @@
       "planEnd": "2026-11-14 16:31:00",
       "officer": "PE2105",
       "supervisor": "PE8946",
-      "applicant": "P7",
+      "applicant": "P1",
       "surveyor": "P7",
-      "createdAt": "2026-11-13 12:41:00",
+      "createdAt": "2026-11-13 12:40:30",
       "status": "待核验",
       "auditStatus": "通过",
       "tier": "抽查",
@@ -646,46 +513,15 @@
       "remark": "",
       "projectId": "PR1",
       "workareaId": "WA1",
-      "siteId": "SI2396",
+      "siteId": "Z1",
       "surveyorId": "P7",
-      "applicantId": "P7",
-      "regRegulatorId": null,
+      "applicantId": "P1",
       "planKg": 100.1,
       "outStorage": "S2",
-      "regRemark": "",
-      "regSign": {
-        "by": "P8",
-        "time": 1794548051847
-      },
-      "auditArea": "WA1",
+      "regRemark": "同意",
       "vehicle": "V1",
       "escort": "P5",
-      "route": "RO9352",
-      "transPlan": {
-        "vehicle": "V1",
-        "escort": "P5",
-        "route": "RO9352",
-        "load": 2000,
-        "totalKg": 100,
-        "arrangedAt": 1794548810272,
-        "by": "P1"
-      },
-      "auditPolice": "POL2",
-      "auditBy": "POL2",
-      "auditTime": 1794548958474,
-      "auditRemark": "",
-      "outTime": 1794549001008,
-      "escortChange": {
-        "no": "BBBG49386579",
-        "from": "P10",
-        "to": "P5",
-        "reason": "生病",
-        "time": 1794549386579,
-        "done": true
-      },
-      "departTime": 1794549508813,
-      "arriveTime": 1794549525563,
-      "blastTime": 1794549600000
+      "route": "R1"
     },
     {
       "id": "PL11",
@@ -700,12 +536,14 @@
             {
               "goods": "zy",
               "spec": "2号岩石乳化炸药",
-              "qty": 50
+              "qty": 50,
+              "batch": "ZY-2026-B210"
             },
             {
               "goods": "lg",
               "spec": "8#工业电雷管",
-              "qty": 50
+              "qty": 50,
+              "batch": "ZY-2026-B211"
             }
           ]
         }
@@ -727,70 +565,48 @@
       "planStart": "2026-11-14 17:43:00",
       "planEnd": "2026-11-14 18:43:00",
       "officer": "PE2105",
-      "supervisor": "P2",
-      "applicant": "P7",
+      "supervisor": "PE8946",
+      "applicant": "P1",
       "surveyor": "P7",
-      "createdAt": "2026-11-13 13:44:40",
+      "createdAt": "2026-11-13 12:50:30",
       "status": "待核验",
       "auditStatus": "通过",
       "tier": "抽查",
       "exceptionFlag": false,
       "remark": "",
-      "regRemark": "",
-      "regSign": {
-        "by": "P8",
-        "time": 1794548689687
-      },
       "projectId": "PR1",
       "workareaId": "WA1",
       "siteId": "Z1",
       "surveyorId": "P7",
-      "applicantId": "P7",
-      "regRegulatorId": null,
+      "applicantId": "P1",
       "planKg": 50.05,
       "outStorage": "S2",
-      "auditArea": "WA1",
+      "regRemark": "同意",
       "vehicle": "V1",
-      "escort": "P10",
-      "route": "R4",
-      "transPlan": {
-        "vehicle": "V1",
-        "escort": "P10",
-        "route": "R4",
-        "load": 2000,
-        "totalKg": 50,
-        "arrangedAt": 1794548947408,
-        "by": "P1"
-      },
-      "auditPolice": "POL2",
-      "auditBy": "POL2",
-      "auditTime": 1794548960890,
-      "auditRemark": "",
-      "outTime": 1794549001008,
-      "departTime": 1794549508813,
-      "arriveTime": 1794549629030,
-      "blastTime": 1794549780000,
-      "returnConfirmTime": 1794552797132
+      "escort": "P5",
+      "route": "R1"
     },
     {
       "id": "PL9",
       "planNo": "BBJH20261113010",
       "project": "PR1",
       "workarea": "WA1",
-      "site": "SI2396",
+      "site": "Z1",
       "sitePlans": [
         {
-          "site": "SI2396",
+          "site": "Z1",
           "items": [
             {
               "goods": "zy",
               "spec": "2号岩石乳化炸药",
-              "qty": 100
+              "qty": 100,
+              "batch": "ZY-2026-B210"
             },
             {
               "goods": "lg",
               "spec": "8#工业电雷管",
-              "qty": 100
+              "qty": 100,
+              "batch": "ZY-2026-B211"
             }
           ]
         }
@@ -823,56 +639,30 @@
       "remark": "",
       "projectId": "PR1",
       "workareaId": "WA1",
-      "siteId": "SI2396",
+      "siteId": "Z1",
       "surveyorId": "P7",
       "applicantId": "P7",
-      "regRegulatorId": null,
       "planKg": 100.1,
       "outStorage": "S2",
       "regRemark": "同意",
-      "regSign": {
-        "by": "P8",
-        "time": 1794544876075
-      },
-      "auditArea": "WA1",
       "vehicle": "V1",
       "escort": "P5",
-      "route": "RO9352",
-      "transPlan": {
-        "vehicle": "V1",
-        "escort": "P5",
-        "route": "RO9352",
-        "load": 2000,
-        "totalKg": 100,
-        "arrangedAt": 1794545345979,
-        "by": "P1"
-      },
-      "auditPolice": "POL2",
-      "auditBy": "POL2",
-      "auditTime": 1794547305589,
-      "auditRemark": "",
-      "outTime": 1794547382073,
-      "escortChange": {
-        "no": "BBBG47651144",
-        "from": "P10",
-        "to": "P5",
-        "reason": "生病",
-        "time": 1794547651144,
-        "done": true
-      }
+      "route": "R1"
     }
   ],
   "outbounds": [
     {
       "id": "OB6",
-      "outNo": "BBCK20261113007",
-      "plan": "PL9",
-      "storage": "S2",
-      "keeper": "P4",
+      "outNo": "BBCK20261113901",
+      "storageId": "S2",
+      "planIds": [
+        "PL9"
+      ],
+      "totalKg": 100.1,
       "plans": [
         {
           "plan": "PL9",
-          "site": "SI2396",
+          "site": "Z1",
           "items": [
             {
               "goods": "zy",
@@ -891,43 +681,38 @@
       ],
       "items": [
         {
-          "goods": "zy",
+          "goodsType": "zy",
           "spec": "2号岩石乳化炸药",
-          "qty": 100,
-          "batch": "ZY-2026-B210"
+          "qty": 100
         },
         {
-          "goods": "lg",
+          "goodsType": "lg",
           "spec": "8#工业电雷管",
-          "qty": 100,
-          "batch": "ZY-2026-B211"
+          "qty": 100
         }
       ],
-      "outTime": 1794547360957,
+      "registrantId": "P4",
+      "regSignUrl": "mockRegSign.png",
+      "regTime": "2026-11-14 13:50:00",
+      "reviewerId": "P9",
+      "revSignUrl": "mockRevSign.png",
+      "revTime": "2026-11-14 13:58:00",
       "status": "待签收",
-      "signed": false,
-      "signs": [
-        {
-          "by": "P4",
-          "time": 1794547360957
-        },
-        {
-          "by": "P9",
-          "time": 1794547382073
-        }
-      ],
-      "effTime": 1794547382073
+      "createdAt": "2026-11-14 13:50:00"
     },
     {
       "id": "OB7",
-      "outNo": "BBCK20261113008",
-      "plan": "PL10",
-      "storage": "S2",
-      "keeper": "P4",
+      "outNo": "BBCK20261113902",
+      "storageId": "S2",
+      "planIds": [
+        "PL10",
+        "PL11"
+      ],
+      "totalKg": 150.15,
       "plans": [
         {
           "plan": "PL10",
-          "site": "SI2396",
+          "site": "Z1",
           "items": [
             {
               "goods": "zy",
@@ -951,373 +736,253 @@
               "goods": "zy",
               "spec": "2号岩石乳化炸药",
               "qty": 50,
-              "batch": "ZY-2026-B213"
+              "batch": "ZY-2026-B210"
             },
             {
               "goods": "lg",
               "spec": "8#工业电雷管",
               "qty": 50,
-              "batch": "ZY-2026-B214"
+              "batch": "ZY-2026-B211"
             }
           ]
         }
       ],
       "items": [
         {
-          "goods": "zy",
+          "goodsType": "zy",
           "spec": "2号岩石乳化炸药",
-          "qty": 100,
-          "batch": "ZY-2026-B210"
+          "qty": 150
         },
         {
-          "goods": "lg",
+          "goodsType": "lg",
           "spec": "8#工业电雷管",
-          "qty": 100,
-          "batch": "ZY-2026-B211"
-        },
-        {
-          "goods": "zy",
-          "spec": "2号岩石乳化炸药",
-          "qty": 50,
-          "batch": "ZY-2026-B213"
-        },
-        {
-          "goods": "lg",
-          "spec": "8#工业电雷管",
-          "qty": 50,
-          "batch": "ZY-2026-B214"
+          "qty": 150
         }
       ],
-      "outTime": 1794548981875,
-      "status": "已到达",
-      "signed": true,
-      "signs": [
-        {
-          "by": "P4",
-          "time": 1794548981875
-        },
-        {
-          "by": "P9",
-          "time": 1794549001008
-        }
-      ],
-      "effTime": 1794549001008,
-      "signTime": 1794549499614
+      "registrantId": "P4",
+      "regSignUrl": "mockRegSign.png",
+      "regTime": "2026-11-14 14:10:00",
+      "reviewerId": "P9",
+      "revSignUrl": "mockRevSign.png",
+      "revTime": "2026-11-14 14:18:00",
+      "status": "待发车",
+      "createdAt": "2026-11-14 14:10:00"
     }
   ],
   "transports": [
     {
       "id": "TR11",
-      "no": "BBYS20261113012",
+      "outboundId": "OB7",
       "outbound": "OB7",
-      "direction": "RETURN",
       "plan": "PL11",
-      "ret": "RT9",
-      "escort": "P5",
-      "driver": "D1",
-      "vehicle": "V1",
-      "route": {
-        "from": "青龙山隧道进口作业点",
-        "to": "青龙山使用库",
-        "via": "原路返回（同一路线反向）"
-      },
-      "departTime": null,
-      "arriveTime": 1794550046215,
+      "vehicleId": "V1",
+      "vehiclePlate": "川L·10295",
+      "vehicleLoad": 2000,
+      "driverId": "D1",
+      "escortId": "P5",
+      "routeId": "R1",
+      "totalKg": 50.05,
       "status": "已到达",
-      "progress": 100,
-      "tracks": 13,
-      "suggestArrive": 1794550046215,
-      "suggestSource": "GEOFENCE"
+      "departTime": "2026-11-14 17:00:00",
+      "createdAt": "2026-11-14 16:50:00"
     },
     {
       "id": "TR5",
-      "no": "BBYS20261113006",
+      "outboundId": "OB7",
       "outbound": "OB7",
-      "direction": "GO",
       "plan": "PL10",
-      "plans": [
-        "PL10",
-        "PL11"
-      ],
-      "stops": [
-        {
-          "plan": "PL10",
-          "site": "SI2396",
-          "arriveTime": 1794549525563,
-          "done": true,
-          "suggestArrive": 1794549525563,
-          "suggestSource": "GEOFENCE"
-        },
-        {
-          "plan": "PL11",
-          "site": "Z1",
-          "arriveTime": 1794549629030,
-          "done": true,
-          "suggestArrive": 1794549629030,
-          "suggestSource": "GEOFENCE"
-        }
-      ],
-      "escort": "P5",
-      "driver": "D1",
-      "vehicle": "V1",
-      "route": {
-        "from": "青龙山使用库",
-        "to": "测试第5个点位 → 青龙山隧道进口作业点",
-        "via": "青龙山使用库-到第五作业点 → 青龙山中间库 → 青龙山隧道进口",
-        "segs": [
-          {
-            "idx": 1,
-            "route": "RO9352",
-            "name": "青龙山使用库-到第五作业点",
-            "km": 40,
-            "plan": "BBJH20261113011",
-            "site": "SI2396"
-          },
-          {
-            "idx": 2,
-            "route": "R4",
-            "name": "青龙山中间库 → 青龙山隧道进口",
-            "km": 6,
-            "plan": "BBJH20261113012",
-            "site": "Z1"
-          }
-        ]
-      },
-      "cps": [
-        {
-          "name": "青龙山专线入口",
-          "time": null,
-          "geo": null,
-          "photos": 0
-        },
-        {
-          "name": "隧道施工便道口",
-          "time": null,
-          "geo": null,
-          "photos": 0
-        }
-      ],
-      "departTime": 1794549508813,
-      "arriveTime": 1794549629030,
+      "vehicleId": "V1",
+      "vehiclePlate": "川L·10295",
+      "vehicleLoad": 2000,
+      "driverId": "D1",
+      "escortId": "P5",
+      "routeId": "R1",
+      "totalKg": 100.1,
       "status": "已到达",
-      "progress": 100,
-      "tracks": 1,
-      "suggestArrive": null,
-      "suggestSource": null
+      "departTime": "2026-11-14 14:30:00",
+      "createdAt": "2026-11-14 14:20:00"
     },
     {
       "id": "TR6",
-      "no": "BBYS20261113007",
+      "outboundId": "OB7",
       "outbound": "OB7",
-      "direction": "RETURN",
       "plan": "PL11",
-      "ret": "RT10",
-      "escort": "P5",
-      "driver": "D1",
-      "vehicle": "V1",
-      "route": {
-        "from": "青龙山隧道进口作业点",
-        "to": "青龙山使用库",
-        "via": "原路返回（同一路线反向）"
-      },
-      "departTime": null,
-      "arriveTime": 1794552763011,
+      "vehicleId": "V1",
+      "vehiclePlate": "川L·10295",
+      "vehicleLoad": 2000,
+      "driverId": "D1",
+      "escortId": "P5",
+      "routeId": "R1",
+      "totalKg": 50.05,
       "status": "已到达",
-      "progress": 100,
-      "tracks": 13,
-      "suggestArrive": 1794552748066,
-      "suggestSource": "GEOFENCE"
+      "departTime": "2026-11-14 17:05:00",
+      "createdAt": "2026-11-14 16:55:00"
     }
   ],
   "receives": [
     {
       "id": "RC7",
-      "transport": "TR5",
+      "planId": "PL10",
       "plan": "PL10",
-      "receiver": "P3",
-      "arriveTime": 1794549525563,
-      "arriveSource": "GEOFENCE",
-      "toStorage": null,
+      "transportId": "TR5",
+      "safetyOfficerId": "P3",
+      "arriveTime": "2026-11-14 15:00:00",
+      "arriveTimeSource": "MANUAL",
       "items": [
         {
-          "goods": "zy",
+          "goodsType": "zy",
           "spec": "2号岩石乳化炸药",
-          "sent": 100,
-          "got": 100,
-          "diff": 0
+          "unit": "kg",
+          "planQty": 100
         },
         {
-          "goods": "lg",
+          "goodsType": "lg",
           "spec": "8#工业电雷管",
-          "sent": 100,
-          "got": 100,
-          "diff": 0
+          "unit": "发",
+          "planQty": 100
         }
       ],
-      "diffFlag": false,
-      "photos": 1,
-      "sign": true,
-      "time": 1794549550597
+      "diffFlag": 0,
+      "diffRemark": "",
+      "signUrl": "mockSafetySign.png",
+      "createdAt": "2026-11-14 15:00:00"
     },
     {
       "id": "RC8",
-      "transport": "TR5",
+      "planId": "PL11",
       "plan": "PL11",
-      "receiver": "P3",
-      "arriveTime": 1794549629030,
-      "arriveSource": "GEOFENCE",
-      "toStorage": null,
+      "transportId": "TR11",
+      "safetyOfficerId": "P3",
+      "arriveTime": "2026-11-14 17:30:00",
+      "arriveTimeSource": "MANUAL",
       "items": [
         {
-          "goods": "zy",
+          "goodsType": "zy",
           "spec": "2号岩石乳化炸药",
-          "sent": 50,
-          "got": 50,
-          "diff": 0
+          "unit": "kg",
+          "planQty": 50
         },
         {
-          "goods": "lg",
+          "goodsType": "lg",
           "spec": "8#工业电雷管",
-          "sent": 50,
-          "got": 50,
-          "diff": 0
+          "unit": "发",
+          "planQty": 50
         }
       ],
-      "diffFlag": false,
-      "photos": 1,
-      "sign": true,
-      "time": 1794549644531
+      "diffFlag": 0,
+      "diffRemark": "",
+      "signUrl": "mockSafetySign.png",
+      "createdAt": "2026-11-14 17:30:00"
     }
   ],
   "blastings": [
     {
       "id": "BL10",
+      "planId": "PL11",
       "plan": "PL11",
-      "submitTime": 1794549843767,
-      "blastTime": 1794549780000,
-      "method": "毫秒延时爆破",
-      "weather": "晴",
-      "fromStorage": "S2",
-      "used": [
+      "supervisorId": "P2",
+      "blastTime": "2026-11-14 18:10:00",
+      "blastResult": "NORMAL_RETURN",
+      "usedItems": [
         {
-          "goods": "zy",
+          "goodsType": "zy",
           "spec": "2号岩石乳化炸药",
-          "qty": 42
+          "unit": "kg",
+          "planQty": 50
         },
         {
-          "goods": "lg",
+          "goodsType": "lg",
           "spec": "8#工业电雷管",
-          "qty": 50
+          "unit": "发",
+          "planQty": 50
         }
       ],
-      "result": "NORMAL_RETURN",
-      "blind": false,
-      "loss": [],
-      "effect": "效果好",
-      "remark": "",
-      "supervisor": "P2",
-      "checkers": [
+      "coVerifierIds": [
         "P3",
-        "P6",
-        "P7",
-        "PE2105"
+        "P6"
       ],
-      "supSign": true
+      "supervisorSignUrl": "mockSupervisorSign.png",
+      "blindFlag": 0,
+      "createdAt": "2026-11-14 18:10:00"
     },
     {
       "id": "BL9",
+      "planId": "PL10",
       "plan": "PL10",
-      "submitTime": 1794549766767,
-      "blastTime": 1794549600000,
-      "method": "毫秒延时爆破",
-      "weather": "晴",
-      "fromStorage": "S2",
-      "used": [
+      "supervisorId": "P2",
+      "blastTime": "2026-11-14 15:40:00",
+      "blastResult": "NORMAL_NO_RETURN",
+      "usedItems": [
         {
-          "goods": "zy",
+          "goodsType": "zy",
           "spec": "2号岩石乳化炸药",
-          "qty": 100
+          "unit": "kg",
+          "planQty": 100
         },
         {
-          "goods": "lg",
+          "goodsType": "lg",
           "spec": "8#工业电雷管",
-          "qty": 100
+          "unit": "发",
+          "planQty": 100
         }
       ],
-      "result": "NORMAL_NO_RETURN",
-      "blind": false,
-      "loss": [],
-      "effect": "效果好",
-      "remark": "",
-      "supervisor": "P2",
-      "checkers": [
+      "coVerifierIds": [
         "P3",
-        "P6",
-        "P7",
-        "PE2105"
+        "P6"
       ],
-      "supSign": true
+      "supervisorSignUrl": "mockSupervisorSign.png",
+      "blindFlag": 0,
+      "createdAt": "2026-11-14 15:40:00"
     }
   ],
   "destroys": [],
   "returns": [
     {
       "id": "RT10",
-      "retNo": "BBTK20261113011",
-      "outbound": "OB7",
+      "returnNo": "BBTK20261113910",
+      "planId": "PL11",
       "plan": "PL11",
+      "outboundId": "OB7",
+      "targetStorageId": "S2",
       "items": [
         {
-          "goods": "zy",
+          "goodsType": "zy",
           "spec": "2号岩石乳化炸药",
-          "qty": 8,
-          "batch": ""
+          "returnQty": 5
+        },
+        {
+          "goodsType": "lg",
+          "spec": "8#工业电雷管",
+          "returnQty": 3
         }
       ],
-      "status": "已入库",
-      "keeper": "P4",
-      "keeperConfirmTime": 1794552797132,
-      "transport": "TR6",
-      "origin": "S2",
-      "target": "S2",
-      "targetName": "青龙山使用库",
-      "useStorage": true,
-      "submitTime": 1794552699376,
-      "supervisor": "P2",
-      "escortScan": {
-        "by": "P5",
-        "time": 1794552732225
-      },
-      "inPhotos": 1,
-      "inPhotoTime": 1794552797132
+      "supervisorId": "P2",
+      "escortId": "P5",
+      "escortConfirmed": true,
+      "keeperConfirmed": true,
+      "status": "已核销入库",
+      "createdAt": "2026-11-14 18:20:00"
     },
     {
       "id": "RT9",
-      "retNo": "BBTK20261113010",
-      "outbound": "OB7",
+      "returnNo": "BBTK20261113909",
+      "planId": "PL11",
       "plan": "PL11",
+      "outboundId": "OB7",
+      "targetStorageId": "S2",
       "items": [
         {
-          "goods": "zy",
+          "goodsType": "zy",
           "spec": "2号岩石乳化炸药",
-          "qty": 8,
-          "batch": ""
+          "returnQty": 2
         }
       ],
+      "supervisorId": "P2",
+      "escortId": "P5",
+      "escortConfirmed": true,
+      "keeperConfirmed": false,
       "status": "待入库确认",
-      "keeper": null,
-      "keeperConfirmTime": null,
-      "transport": "TR11",
-      "origin": "S2",
-      "target": "S2",
-      "targetName": "青龙山使用库",
-      "useStorage": true,
-      "submitTime": 1794549849966,
-      "supervisor": "P2",
-      "escortScan": {
-        "by": "P5",
-        "time": 1794549899625
-      }
+      "createdAt": "2026-11-14 18:15:00"
     }
   ],
   "verifies": [],
@@ -1327,1355 +992,195 @@
   "nodeLogs": [
     {
       "id": "LG1",
-      "plan": "PTQR1",
-      "planNo": "BBJH20261113900",
-      "node": "运输",
-      "action": "押运员扫码绑定出库单 BBCK20261113901（本人接管本次押运）",
-      "who": "孙立冬",
-      "time": 1794548187826
-    },
-    {
-      "id": "LG2",
-      "plan": "PTQR1",
-      "planNo": "BBJH20261113900",
-      "node": "运输",
-      "action": "押运员扫码绑定出库单 BBCK20261113901（本人接管本次押运）",
-      "who": "孙立冬",
-      "time": 1794548215963
-    },
-    {
-      "id": "LG28",
       "plan": "PL9",
       "planNo": "BBJH20261113010",
       "node": "计划",
       "action": "测量技术员现场测量上报：测试第5个点位 100kg",
       "who": "张明",
-      "time": 1794542650271
+      "time": 1794814286007
     },
     {
-      "id": "LG29",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "计划",
-      "action": "作业点安全监管 郑安 手签放行",
-      "who": "郑安",
-      "time": 1794542662905
-    },
-    {
-      "id": "LG3",
-      "plan": "PTQR1",
-      "planNo": "BBJH20261113900",
-      "node": "运输",
-      "action": "押运员扫码绑定出库单 BBCK20261113901（本人接管本次押运）",
-      "who": "孙立冬",
-      "time": 1794548248994
-    },
-    {
-      "id": "LG30",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "计划",
-      "action": "测量技术员现场测量上报：测试第5个点位 100kg",
-      "who": "张明",
-      "time": 1794544230735
-    },
-    {
-      "id": "LG31",
+      "id": "LG10",
       "plan": "PL10",
       "planNo": "BBJH20261113011",
-      "node": "计划",
-      "action": "测量技术员现场测量上报：测试第5个点位 100kg",
-      "who": "张明",
-      "time": 1794544860308
-    },
-    {
-      "id": "LG32",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "计划",
-      "action": "作业点安全监管 郑安 手签放行",
-      "who": "郑安",
-      "time": 1794544876075
-    },
-    {
-      "id": "LG33",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "计划",
-      "action": "审核提交（出库库房 青龙山使用库 · 公安责任区 青龙山工区）",
-      "who": "张明",
-      "time": 1794545345979
-    },
-    {
-      "id": "LG34",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "计划",
-      "action": "项目负责人核实通过并安排运输：川L·10295（载重 2000kg）+ 押运员 何志强 + 路线 青龙山使用库-到第五作业点（0km），计划合计 100kg",
-      "who": "陈志远",
-      "time": 1794545345979
-    },
-    {
-      "id": "LG35",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "计划",
-      "action": "民警审核通过",
-      "who": "刘峰",
-      "time": 1794547305589
-    },
-    {
-      "id": "LG36",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "出库",
-      "action": "出库登记 BBCK20261113007（登记库管员 钱有德 已签名），待复核",
-      "who": "钱有德",
-      "time": 1794547360957
-    },
-    {
-      "id": "LG37",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "出库",
-      "action": "复核库管员 吴秀英 签名确认，出库单生效（双人双锁），库存已扣减",
-      "who": "吴秀英",
-      "time": 1794547382073
-    },
-    {
-      "id": "LG38",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
       "node": "运输",
-      "action": "押运员扫码绑定出库单 BBCK20261113007（本人接管本次押运）",
+      "action": "押运员扫码签收，绑定车辆及路线，载重校验通过",
       "who": "孙立冬",
-      "time": 1794547576219
+      "time": 1794819686007
     },
     {
-      "id": "LG39",
-      "plan": "PL9",
-      "planNo": "BBJH20261113010",
-      "node": "运输",
-      "action": "变更押运员手续 BBBG47651144：何志强 → 孙立冬，原因：生病",
-      "who": "孙立冬",
-      "time": 1794547651144
-    },
-    {
-      "id": "LG4",
-      "plan": "PTQR1",
-      "planNo": "BBJH20261113900",
-      "node": "运输",
-      "action": "押运员扫码绑定出库单 BBCK20261113901（本人接管本次押运）",
-      "who": "孙立冬",
-      "time": 1794548278010
-    },
-    {
-      "id": "LG40",
+      "id": "LG11",
       "plan": "PL10",
       "planNo": "BBJH20261113011",
-      "node": "计划",
-      "action": "作业点安全监管 郑安 手签放行",
-      "who": "郑安",
-      "time": 1794548051847
+      "node": "运输",
+      "action": "押运车辆正式启程发车，记录发车时间与定位",
+      "who": "孙立冬",
+      "time": 1794820286007
     },
     {
-      "id": "LG41",
+      "id": "LG12",
+      "plan": "PL10",
+      "planNo": "BBJH20261113011",
+      "node": "到场",
+      "action": "现场安全员确认到场并逐项核量完成，账实相符",
+      "who": "赵铁柱",
+      "time": 1794820886007
+    },
+    {
+      "id": "LG13",
+      "plan": "PL10",
+      "planNo": "BBJH20261113011",
+      "node": "爆破",
+      "action": "爆破登记（正常无返库），监理已手签",
+      "who": "李建国",
+      "time": 1794821486007
+    },
+    {
+      "id": "LG14",
       "plan": "PL11",
       "planNo": "BBJH20261113012",
       "node": "计划",
       "action": "测量技术员现场测量上报：青龙山隧道进口作业点 50kg",
       "who": "张明",
-      "time": 1794548680536
+      "time": 1794822086007
     },
     {
-      "id": "LG42",
+      "id": "LG15",
       "plan": "PL11",
       "planNo": "BBJH20261113012",
+      "node": "出库",
+      "action": "双人复核通过，库存已成功扣除",
+      "who": "吴秀英",
+      "time": 1794822686007
+    },
+    {
+      "id": "LG16",
+      "plan": "PL11",
+      "planNo": "BBJH20261113012",
+      "node": "运输",
+      "action": "押运员扫码签收，绑定车辆及路线",
+      "who": "孙立冬",
+      "time": 1794823286007
+    },
+    {
+      "id": "LG17",
+      "plan": "PL11",
+      "planNo": "BBJH20261113012",
+      "node": "到场",
+      "action": "现场安全员确认到场并逐项核量完成，账实相符",
+      "who": "赵铁柱",
+      "time": 1794823886007
+    },
+    {
+      "id": "LG18",
+      "plan": "PL11",
+      "planNo": "BBJH20261113012",
+      "node": "爆破",
+      "action": "爆破登记（正常有返库），监理已手签",
+      "who": "李建国",
+      "time": 1794824486007
+    },
+    {
+      "id": "LG19",
+      "plan": "PL11",
+      "planNo": "BBJH20261113012",
+      "node": "退库",
+      "action": "安全监理发起剩余物退库申请",
+      "who": "李建国",
+      "time": 1794825086007
+    },
+    {
+      "id": "LG2",
+      "plan": "PL9",
+      "planNo": "BBJH20261113010",
       "node": "计划",
       "action": "作业点安全监管 郑安 手签放行",
       "who": "郑安",
-      "time": 1794548689687
+      "time": 1794814886007
     },
     {
-      "id": "LG43",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "计划",
-      "action": "审核提交（出库库房 青龙山使用库 · 公安责任区 青龙山工区）",
-      "who": "张明",
-      "time": 1794548810272
+      "id": "LG20",
+      "plan": "PL11",
+      "planNo": "BBJH20261113012",
+      "node": "退库",
+      "action": "押运员扫码确认退库品项及数量，启动反向押送",
+      "who": "孙立冬",
+      "time": 1794825686007
     },
     {
-      "id": "LG44",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
+      "id": "LG3",
+      "plan": "PL9",
+      "planNo": "BBJH20261113010",
       "node": "计划",
-      "action": "项目负责人核实通过并安排运输：川L·10295（载重 2000kg）+ 押运员 何志强 + 路线 青龙山使用库-到第五作业点（40km），计划合计 100kg",
+      "action": "项目负责人核实通过并安排运输",
       "who": "陈志远",
-      "time": 1794548810272
+      "time": 1794815486007
     },
     {
-      "id": "LG45",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "计划",
-      "action": "审核提交（出库库房 青龙山使用库 · 公安责任区 青龙山工区）",
-      "who": "张明",
-      "time": 1794548947408
-    },
-    {
-      "id": "LG46",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "计划",
-      "action": "项目负责人核实通过并安排运输：川L·10295（载重 2000kg）+ 押运员 何志强 + 路线 青龙山中间库 → 青龙山隧道进口（6km），计划合计 50kg",
-      "who": "陈志远",
-      "time": 1794548947408
-    },
-    {
-      "id": "LG47",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "计划",
-      "action": "民警审核通过",
-      "who": "刘峰",
-      "time": 1794548958474
-    },
-    {
-      "id": "LG48",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "计划",
-      "action": "民警审核通过",
-      "who": "刘峰",
-      "time": 1794548960890
-    },
-    {
-      "id": "LG49",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
+      "id": "LG4",
+      "plan": "PL9",
+      "planNo": "BBJH20261113010",
       "node": "出库",
-      "action": "出库登记 BBCK20261113008（多点合并 · 登记库管员 钱有德 已签名），待复核",
+      "action": "第一库管员填报出库并签名，出库单置待复核",
       "who": "钱有德",
-      "time": 1794548981875
+      "time": 1794816086007
     },
     {
       "id": "LG5",
-      "plan": "PT2",
-      "planNo": "BBJH20261113950",
+      "plan": "PL9",
+      "planNo": "BBJH20261113010",
       "node": "出库",
-      "action": "复核库管员 吴秀英 签名确认，出库单生效（双人双锁），库存已扣减",
+      "action": "第二库管员复核通过，库存扣减完成",
       "who": "吴秀英",
-      "time": 1794552890289
+      "time": 1794816686007
     },
     {
-      "id": "LG50",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "出库",
-      "action": "出库登记 BBCK20261113008（多点合并 · 登记库管员 钱有德 已签名），待复核",
-      "who": "钱有德",
-      "time": 1794548981875
+      "id": "LG6",
+      "plan": "PL10",
+      "planNo": "BBJH20261113011",
+      "node": "计划",
+      "action": "测量技术员现场测量上报：测试第5个点位 100kg",
+      "who": "张明",
+      "time": 1794817286007
     },
     {
-      "id": "LG51",
+      "id": "LG7",
+      "plan": "PL10",
+      "planNo": "BBJH20261113011",
+      "node": "计划",
+      "action": "作业点安全监管 郑安 手签放行",
+      "who": "郑安",
+      "time": 1794817886007
+    },
+    {
+      "id": "LG8",
+      "plan": "PL10",
+      "planNo": "BBJH20261113011",
+      "node": "计划",
+      "action": "项目负责人审核提交计划，绑定出库库房与责任区",
+      "who": "陈志远",
+      "time": 1794818486007
+    },
+    {
+      "id": "LG9",
       "plan": "PL10",
       "planNo": "BBJH20261113011",
       "node": "出库",
-      "action": "复核库管员 吴秀英 签名确认，出库单生效（双人双锁），库存已扣减",
+      "action": "双人复核通过，库存已成功扣除",
       "who": "吴秀英",
-      "time": 1794549001009
-    },
-    {
-      "id": "LG52",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "出库",
-      "action": "复核库管员 吴秀英 签名确认，出库单生效（双人双锁），库存已扣减",
-      "who": "吴秀英",
-      "time": 1794549001009
-    },
-    {
-      "id": "LG53",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "运输",
-      "action": "押运员扫码绑定出库单 BBCK20261113008（本人接管本次押运）",
-      "who": "孙立冬",
-      "time": 1794549363084
-    },
-    {
-      "id": "LG54",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "运输",
-      "action": "变更押运员手续 BBBG49386579：何志强 → 孙立冬，原因：生病",
-      "who": "孙立冬",
-      "time": 1794549386579
-    },
-    {
-      "id": "LG55",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "运输",
-      "action": "押运扫码签收 BBYS20261113006（2 个卸货点 · 人车绑定，设 2 个沿途打卡点）",
-      "who": "孙立冬",
-      "time": 1794549499614
-    },
-    {
-      "id": "LG56",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "运输",
-      "action": "卸货顺序确认：测试第5个点位 → 青龙山隧道进口作业点（押运员可调整，调整留痕）",
-      "who": "孙立冬",
-      "time": 1794549499614
-    },
-    {
-      "id": "LG57",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "运输",
-      "action": "发车打点（服务端时间+定位双写）",
-      "who": "孙立冬",
-      "time": 1794549508813
-    },
-    {
-      "id": "LG58",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "运输",
-      "action": "到达卸货点「测试第5个点位」（第 1/2 站），生成建议到达时间",
-      "who": "孙立冬",
-      "time": 1794549525563
-    },
-    {
-      "id": "LG59",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "到场",
-      "action": "核量接收完成，数量一致（第 1/2 站，押运继续前往下一卸货点）",
-      "who": "赵铁柱",
-      "time": 1794549550598
-    },
-    {
-      "id": "LG60",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "运输",
-      "action": "到达卸货点「青龙山隧道进口作业点」（第 2/2 站），生成建议到达时间",
-      "who": "孙立冬",
-      "time": 1794549629030
-    },
-    {
-      "id": "LG61",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "到场",
-      "action": "核量接收完成，数量一致（第 2/2 站，整趟完成）",
-      "who": "赵铁柱",
-      "time": 1794549644531
-    },
-    {
-      "id": "LG62",
-      "plan": "PL10",
-      "planNo": "BBJH20261113011",
-      "node": "爆破",
-      "action": "爆破登记（正常无返库），监理核验人员：赵铁柱、周大河、张明、张安全员 · 监理已手签",
-      "who": "李建国",
-      "time": 1794549766767
-    },
-    {
-      "id": "LG63",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "爆破",
-      "action": "爆破登记（正常有返库），监理核验人员：赵铁柱、周大河、张明、张安全员 · 监理已手签",
-      "who": "李建国",
-      "time": 1794549843768
-    },
-    {
-      "id": "LG64",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "退库单 BBTK20261113010 生成（炸药 8kg），原路原库退回 青龙山使用库",
-      "who": "李建国",
-      "time": 1794549849966
-    },
-    {
-      "id": "LG65",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "押运员扫码接单 BBTK20261113010（反向押送 青龙山隧道进口作业点 → 青龙山使用库）",
-      "who": "孙立冬",
-      "time": 1794549899625
-    },
-    {
-      "id": "LG66",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "押运员扫码确认退库单 BBTK20261113010（退库量/驾驶员/押运员核对无误），反向押送发车",
-      "who": "孙立冬",
-      "time": 1794550037108
-    },
-    {
-      "id": "LG67",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "退库物品到库，待库管员核销",
-      "who": "系统",
-      "time": 1794550046215
-    },
-    {
-      "id": "LG68",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "退库单 BBTK20261113011 生成（炸药 8kg），原路原库退回 青龙山使用库",
-      "who": "李建国",
-      "time": 1794552699376
-    },
-    {
-      "id": "LG69",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "押运员扫码接单 BBTK20261113011（反向押送 青龙山隧道进口作业点 → 青龙山使用库）",
-      "who": "孙立冬",
-      "time": 1794552732225
-    },
-    {
-      "id": "LG70",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "押运员扫码确认退库单 BBTK20261113011（退库量/驾驶员/押运员核对无误），反向押送发车",
-      "who": "孙立冬",
-      "time": 1794552738961
-    },
-    {
-      "id": "LG71",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "退库物品到库，待库管员核销",
-      "who": "系统",
-      "time": 1794552763011
-    },
-    {
-      "id": "LG72",
-      "plan": "PL11",
-      "planNo": "BBJH20261113012",
-      "node": "退库",
-      "action": "退库核销入库完成，库存回加至「青龙山使用库」（使用库）+炸药8kg，入库照片 1 张",
-      "who": "钱有德",
-      "time": 1794552797133
+      "time": 1794819086007
     }
   ],
   "masterLogs": [
     {
-      "id": "ML_1794544192106_711",
-      "dataType": "persons",
-      "dataId": "PE2105",
-      "action": "新增建档",
+      "id": "ML_INIT",
+      "dataType": "system",
+      "dataId": "SYS_01",
+      "action": "系统初始化",
       "operatorId": "ADM1",
       "operatorName": "治安管理员",
-      "opTime": "2026-11-13 04:29:52",
-      "remark": "PC 端新增建档",
-      "diff": null
-    },
-    {
-      "id": "ML_1794545063536_58",
-      "dataType": "vehicles",
-      "dataId": "V1",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 04:44:23",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "id": "V1",
-          "plate": "川L·10295",
-          "model": "厢式危险品运输车",
-          "load": 2000,
-          "company": "C1",
-          "transLicence": "川交运许[2024]0118号",
-          "transGoods": "炸药、雷管",
-          "annualExpire": "2026-12-31",
-          "status": "在用",
-          "remark": "主力运输车",
-          "project": null
-        },
-        "after": {
-          "id": "V1",
-          "plate": "川L·10295",
-          "model": "厢式危险品运输车",
-          "load": 2000,
-          "company": "C1",
-          "transLicence": "川交运许[2024]0118号",
-          "transGoods": "炸药、雷管",
-          "annualExpire": "2026-12-31",
-          "status": "在用",
-          "remark": "主力运输车",
-          "project": "PR1",
-          "_remark": "PC 端维护修正"
-        }
-      }
-    },
-    {
-      "id": "ML_1794545124735_399",
-      "dataType": "persons",
-      "dataId": "P10",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 04:45:24",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "id": "P10",
-          "name": "何志强",
-          "role": "押运员",
-          "company": "C1",
-          "phone": "13800001210",
-          "cert": "GA-YY-2027-102",
-          "certExpire": "2030-06-30",
-          "status": "在岗",
-          "_remark": "PC 端新增：押运员"
-        },
-        "after": {
-          "id": "P10",
-          "name": "何志强",
-          "role": "押运员",
-          "company": "C1",
-          "phone": "13800001210",
-          "cert": "GA-YY-2027-102",
-          "certExpire": "2030-06-30",
-          "status": "在岗",
-          "_remark": "PC 端维护修正",
-          "project": "PR1",
-          "storages": [],
-          "sites": []
-        }
-      }
-    },
-    {
-      "id": "ML_1794545162133_421",
-      "dataType": "persons",
-      "dataId": "P10",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 04:46:02",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "id": "P10",
-          "name": "何志强",
-          "role": "押运员",
-          "company": "C1",
-          "phone": "13800001210",
-          "cert": "GA-YY-2027-102",
-          "certExpire": "2030-06-30",
-          "status": "在岗",
-          "_remark": "PC 端维护修正",
-          "project": "PR1",
-          "storages": [],
-          "sites": []
-        },
-        "after": {
-          "id": "P10",
-          "name": "何志强",
-          "role": "押运员",
-          "company": "C1",
-          "phone": "13800001210",
-          "cert": "GA-YY-2027-102",
-          "certExpire": "2030-06-30",
-          "status": "在岗",
-          "_remark": "PC 端维护修正",
-          "project": "PR1",
-          "storages": [],
-          "sites": [
-            "SI2396"
-          ]
-        }
-      }
-    },
-    {
-      "id": "ML_1794545299352_403",
-      "dataType": "routes",
-      "dataId": "RO9352",
-      "action": "新增建档",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 04:48:19",
-      "remark": "PC 端新增建档",
-      "diff": null
-    },
-    {
-      "id": "ML_1794545335291_134",
-      "dataType": "routes",
-      "dataId": "RO9352",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 04:48:55",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "name": "青龙山使用库-到第五作业点",
-          "from": "S2",
-          "to": "SI2396",
-          "km": 0,
-          "checkPoints": [],
-          "status": "启用",
-          "_remark": "PC 端新增建档",
-          "id": "RO9352"
-        },
-        "after": {
-          "name": "青龙山使用库-到第五作业点",
-          "from": "S2",
-          "to": "SI2396",
-          "km": 40,
-          "checkPoints": [],
-          "status": "启用",
-          "_remark": "PC 端维护修正",
-          "id": "RO9352"
-        }
-      }
-    },
-    {
-      "id": "ML_1794548540827_847",
-      "dataType": "persons",
-      "dataId": "P2",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 05:42:20",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "id": "P2",
-          "name": "李建国",
-          "role": "安全监理",
-          "company": "C1",
-          "idno": "510102198203050012",
-          "phone": "13800001202",
-          "cert": "GA-JL-2023-052",
-          "certExpire": "2027-08-31",
-          "status": "在岗",
-          "remark": "专职安全监理"
-        },
-        "after": {
-          "id": "P2",
-          "name": "李建国",
-          "role": "安全监理",
-          "company": "C1",
-          "idno": "510102198203050012",
-          "phone": "13800001202",
-          "cert": "GA-JL-2023-052",
-          "certExpire": "2027-08-31",
-          "status": "在岗",
-          "remark": "专职安全监理",
-          "storages": [],
-          "sites": [
-            "Z1"
-          ],
-          "_remark": "PC 端维护修正"
-        }
-      }
-    },
-    {
-      "id": "ML_1794548543194_798",
-      "dataType": "persons",
-      "dataId": "P2",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 05:42:23",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "id": "P2",
-          "name": "李建国",
-          "role": "安全监理",
-          "company": "C1",
-          "idno": "510102198203050012",
-          "phone": "13800001202",
-          "cert": "GA-JL-2023-052",
-          "certExpire": "2027-08-31",
-          "status": "在岗",
-          "remark": "专职安全监理",
-          "storages": [],
-          "sites": [
-            "Z1"
-          ],
-          "_remark": "PC 端维护修正"
-        },
-        "after": {
-          "id": "P2",
-          "name": "李建国",
-          "role": "安全监理",
-          "company": "C1",
-          "idno": "510102198203050012",
-          "phone": "13800001202",
-          "cert": "GA-JL-2023-052",
-          "certExpire": "2027-08-31",
-          "status": "在岗",
-          "remark": "专职安全监理",
-          "storages": [],
-          "sites": [
-            "Z1"
-          ],
-          "_remark": "PC 端维护修正"
-        }
-      }
-    },
-    {
-      "id": "ML_1794548617195_92",
-      "dataType": "persons",
-      "dataId": "P2",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 05:43:37",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "id": "P2",
-          "name": "李建国",
-          "role": "安全监理",
-          "company": "C1",
-          "idno": "510102198203050012",
-          "phone": "13800001202",
-          "cert": "GA-JL-2023-052",
-          "certExpire": "2027-08-31",
-          "status": "在岗",
-          "remark": "专职安全监理",
-          "storages": [],
-          "sites": [
-            "Z1"
-          ],
-          "_remark": "PC 端维护修正"
-        },
-        "after": {
-          "id": "P2",
-          "name": "李建国",
-          "role": "安全监理",
-          "company": "C1",
-          "idno": "510102198203050012",
-          "phone": "13800001202",
-          "cert": "GA-JL-2023-052",
-          "certExpire": "2027-08-31",
-          "status": "在岗",
-          "remark": "专职安全监理",
-          "storages": [],
-          "sites": [
-            "Z1"
-          ],
-          "_remark": "PC 端维护修正",
-          "project": "PR1"
-        }
-      }
-    },
-    {
-      "id": "ML_1794548865181_616",
-      "dataType": "routes",
-      "dataId": "R4",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 05:47:45",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "id": "R4",
-          "name": "青龙山中间库 → 青龙山隧道进口",
-          "from": "S3",
-          "to": "Z1",
-          "via": "青龙山工区便道 → 隧道进口便道",
-          "km": 6,
-          "checkPoints": [
-            "中间库道闸",
-            "隧道进口便道口"
-          ],
-          "status": "启用",
-          "_remark": "PC 端维护修正"
-        },
-        "after": {
-          "id": "R4",
-          "name": "青龙山中间库 → 青龙山隧道进口",
-          "from": "S2",
-          "to": "Z1",
-          "via": "青龙山工区便道 → 隧道进口便道",
-          "km": 6,
-          "checkPoints": [
-            "中间库道闸",
-            "隧道进口便道口"
-          ],
-          "status": "启用",
-          "_remark": "PC 端维护修正"
-        }
-      }
-    },
-    {
-      "id": "ML_1794548918362_112",
-      "dataType": "persons",
-      "dataId": "P10",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 05:48:38",
-      "remark": "PC 端维护修正",
-      "diff": {
-        "before": {
-          "id": "P10",
-          "name": "何志强",
-          "role": "押运员",
-          "company": "C1",
-          "phone": "13800001210",
-          "cert": "GA-YY-2027-102",
-          "certExpire": "2030-06-30",
-          "status": "在岗",
-          "_remark": "PC 端维护修正",
-          "project": "PR1",
-          "storages": [],
-          "sites": [
-            "SI2396"
-          ]
-        },
-        "after": {
-          "id": "P10",
-          "name": "何志强",
-          "role": "押运员",
-          "company": "C1",
-          "phone": "13800001210",
-          "cert": "GA-YY-2027-102",
-          "certExpire": "2030-06-30",
-          "status": "在岗",
-          "_remark": "PC 端维护修正",
-          "project": "PR1",
-          "storages": [],
-          "sites": [
-            "SI2396",
-            "Z1"
-          ]
-        }
-      }
-    },
-    {
-      "id": "ML_1794552797191_873",
-      "dataType": "storages",
-      "dataId": "S2",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 06:53:17",
-      "remark": "存量变更（出库扣减 / 退库入库）",
-      "diff": {
-        "before": {
-          "id": "S2",
-          "name": "青龙山使用库",
-          "type": "使用库",
-          "company": "C1",
-          "addr": "青龙山工区 2 号便道旁",
-          "builtAt": "2024-11-02",
-          "area": 450,
-          "dailyUse": 260,
-          "keepers": [
-            "P3"
-          ],
-          "fence": 150,
-          "staff": 5,
-          "supplyUnit": "宏泰民爆工程有限公司（C1）",
-          "lng": 103.8124,
-          "lat": 29.6105,
-          "status": "生效",
-          "stock": {
-            "zy": {
-              "2号岩石乳化炸药": 80
-            },
-            "lg": {
-              "8#工业电雷管": 430
-            },
-            "db": {}
-          },
-          "safe": {
-            "zy": 20,
-            "lg": 100,
-            "db": 0
-          }
-        },
-        "after": {
-          "id": "S2",
-          "name": "青龙山使用库",
-          "type": "使用库",
-          "company": "C1",
-          "addr": "青龙山工区 2 号便道旁",
-          "builtAt": "2024-11-02",
-          "area": 450,
-          "dailyUse": 260,
-          "keepers": [
-            "P3"
-          ],
-          "fence": 150,
-          "staff": 5,
-          "supplyUnit": "宏泰民爆工程有限公司（C1）",
-          "lng": 103.8124,
-          "lat": 29.6105,
-          "status": "生效",
-          "stock": {
-            "zy": {
-              "2号岩石乳化炸药": 88
-            },
-            "lg": {
-              "8#工业电雷管": 430
-            },
-            "db": {}
-          },
-          "safe": {
-            "zy": 20,
-            "lg": 100,
-            "db": 0
-          },
-          "_remark": "存量变更（出库扣减 / 退库入库）"
-        }
-      }
-    },
-    {
-      "id": "ML_1794552886102_505",
-      "dataType": "storages",
-      "dataId": "S1",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 06:54:46",
-      "remark": "存量变更（出库扣减 / 退库入库）",
-      "diff": {
-        "before": {
-          "id": "S1",
-          "name": "城西销售库",
-          "type": "销售库",
-          "company": "C1",
-          "addr": "市中区城西路 66 号",
-          "builtAt": "2015-06-18",
-          "area": 3200,
-          "dailyUse": 900,
-          "keepers": [
-            "P4",
-            "P9"
-          ],
-          "fence": 200,
-          "staff": 12,
-          "supplyUnit": "宏泰民爆工程有限公司（C1）",
-          "lng": 103.72589,
-          "lat": 29.56234,
-          "status": "生效",
-          "stock": {
-            "zy": {
-              "2号岩石乳化炸药": 2210,
-              "膨化硝铵炸药": 800
-            },
-            "lg": {
-              "8#工业电雷管": 19780,
-              "数码电子雷管": 6000
-            },
-            "db": {
-              "普通导爆索": 12000
-            }
-          },
-          "safe": {
-            "zy": 500,
-            "lg": 5000,
-            "db": 2000
-          }
-        },
-        "after": {
-          "id": "S1",
-          "name": "城西销售库",
-          "type": "销售库",
-          "company": "C1",
-          "addr": "市中区城西路 66 号",
-          "builtAt": "2015-06-18",
-          "area": 3200,
-          "dailyUse": 900,
-          "keepers": [
-            "P4",
-            "P9"
-          ],
-          "fence": 200,
-          "staff": 12,
-          "supplyUnit": "宏泰民爆工程有限公司（C1）",
-          "lng": 103.72589,
-          "lat": 29.56234,
-          "status": "生效",
-          "stock": {
-            "zy": {
-              "2号岩石乳化炸药": 2200,
-              "膨化硝铵炸药": 800
-            },
-            "lg": {
-              "8#工业电雷管": 19780,
-              "数码电子雷管": 6000
-            },
-            "db": {
-              "普通导爆索": 12000
-            }
-          },
-          "safe": {
-            "zy": 500,
-            "lg": 5000,
-            "db": 2000
-          },
-          "_remark": "存量变更（出库扣减 / 退库入库）"
-        }
-      }
-    },
-    {
-      "id": "ML_1794552919638_83",
-      "dataType": "storages",
-      "dataId": "S1",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 06:55:19",
-      "remark": "恢复验证前库存",
-      "diff": {
-        "before": {
-          "id": "S1",
-          "name": "城西销售库",
-          "type": "销售库",
-          "company": "C1",
-          "addr": "市中区城西路 66 号",
-          "builtAt": "2015-06-18",
-          "area": 3200,
-          "dailyUse": 900,
-          "keepers": [
-            "P4",
-            "P9"
-          ],
-          "fence": 200,
-          "staff": 12,
-          "supplyUnit": "宏泰民爆工程有限公司（C1）",
-          "lng": 103.72589,
-          "lat": 29.56234,
-          "status": "生效",
-          "stock": {
-            "zy": {
-              "2号岩石乳化炸药": 2200,
-              "膨化硝铵炸药": 800
-            },
-            "lg": {
-              "8#工业电雷管": 19780,
-              "数码电子雷管": 6000
-            },
-            "db": {
-              "普通导爆索": 12000
-            }
-          },
-          "safe": {
-            "zy": 500,
-            "lg": 5000,
-            "db": 2000
-          },
-          "_remark": "存量变更（出库扣减 / 退库入库）"
-        },
-        "after": {
-          "id": "S1",
-          "name": "城西销售库",
-          "type": "销售库",
-          "company": "C1",
-          "addr": "市中区城西路 66 号",
-          "builtAt": "2015-06-18",
-          "area": 3200,
-          "dailyUse": 900,
-          "keepers": [
-            "P4",
-            "P9"
-          ],
-          "fence": 200,
-          "staff": 12,
-          "supplyUnit": "宏泰民爆工程有限公司（C1）",
-          "lng": 103.72589,
-          "lat": 29.56234,
-          "status": "生效",
-          "stock": {
-            "zy": {
-              "2号岩石乳化炸药": 2210,
-              "膨化硝铵炸药": 800
-            },
-            "lg": {
-              "8#工业电雷管": 19780,
-              "数码电子雷管": 6000
-            },
-            "db": {
-              "普通导爆索": 12000
-            }
-          },
-          "safe": {
-            "zy": 500,
-            "lg": 5000,
-            "db": 2000
-          },
-          "_remark": "恢复验证前库存"
-        }
-      }
-    },
-    {
-      "id": "ML_1794554918865_99",
-      "dataType": "sites",
-      "dataId": "ZZTEST",
-      "action": "新增建档",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:28:38",
-      "remark": "新增登记",
-      "diff": null
-    },
-    {
-      "id": "ML_1794554918926_745",
-      "dataType": "sites",
-      "dataId": "ZZTEST",
-      "action": "删除档案",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:28:38",
-      "remark": "删除测试点位 已删除",
-      "diff": {
-        "before": {
-          "id": "ZZTEST",
-          "name": "删除测试点位",
-          "status": "启用"
-        },
-        "after": null
-      }
-    },
-    {
-      "id": "ML_1794555183166_826",
-      "dataType": "sites",
-      "dataId": "SI2396",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:33:03",
-      "remark": "PC 端按所属项目归入工区",
-      "diff": {
-        "before": {
-          "name": "测试第5个点位",
-          "project": "PR1",
-          "fence": 0,
-          "hist": 0,
-          "status": "启用",
-          "_remark": "PC 端新增建档",
-          "id": "SI2396"
-        },
-        "after": {
-          "name": "测试第5个点位",
-          "project": "PR1",
-          "fence": 0,
-          "hist": 0,
-          "status": "启用",
-          "_remark": "PC 端按所属项目归入工区",
-          "id": "SI2396",
-          "workarea": "WA1"
-        }
-      }
-    },
-    {
-      "id": "ML_1794555185509_605",
-      "dataType": "sites",
-      "dataId": "Z1",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:33:05",
-      "remark": "PC 端按所属项目归入工区",
-      "diff": {
-        "before": {
-          "id": "Z1",
-          "name": "青龙山隧道进口作业点",
-          "project": "PR1",
-          "lng": 103.821,
-          "lat": 29.615,
-          "fence": 300,
-          "hist": 12,
-          "status": "启用"
-        },
-        "after": {
-          "id": "Z1",
-          "name": "青龙山隧道进口作业点",
-          "project": "PR1",
-          "lng": 103.821,
-          "lat": 29.615,
-          "fence": 300,
-          "hist": 12,
-          "status": "启用",
-          "workarea": "WA1",
-          "_remark": "PC 端按所属项目归入工区"
-        }
-      }
-    },
-    {
-      "id": "ML_1794555185573_832",
-      "dataType": "sites",
-      "dataId": "Z2",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:33:05",
-      "remark": "PC 端按所属项目归入工区",
-      "diff": {
-        "before": {
-          "id": "Z2",
-          "name": "青龙山隧道出口作业点",
-          "project": "PR1",
-          "lng": 103.835,
-          "lat": 29.621,
-          "fence": 300,
-          "hist": 8,
-          "status": "启用"
-        },
-        "after": {
-          "id": "Z2",
-          "name": "青龙山隧道出口作业点",
-          "project": "PR1",
-          "lng": 103.835,
-          "lat": 29.621,
-          "fence": 300,
-          "hist": 8,
-          "status": "启用",
-          "workarea": "WA1",
-          "_remark": "PC 端按所属项目归入工区"
-        }
-      }
-    },
-    {
-      "id": "ML_1794555185674_161",
-      "dataType": "sites",
-      "dataId": "Z3",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:33:05",
-      "remark": "PC 端按所属项目归入工区",
-      "diff": {
-        "before": {
-          "id": "Z3",
-          "name": "龙泉矿区 B2 台阶作业点",
-          "project": "PR2",
-          "lng": 103.91,
-          "lat": 29.489,
-          "fence": 500,
-          "hist": 21,
-          "status": "启用"
-        },
-        "after": {
-          "id": "Z3",
-          "name": "龙泉矿区 B2 台阶作业点",
-          "project": "PR2",
-          "lng": 103.91,
-          "lat": 29.489,
-          "fence": 500,
-          "hist": 21,
-          "status": "启用",
-          "workarea": "WA2",
-          "_remark": "PC 端按所属项目归入工区"
-        }
-      }
-    },
-    {
-      "id": "ML_1794555185842_69",
-      "dataType": "sites",
-      "dataId": "Z4",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:33:05",
-      "remark": "PC 端按所属项目归入工区",
-      "diff": {
-        "before": {
-          "id": "Z4",
-          "name": "龙泉矿区 B3 台阶作业点",
-          "project": "PR2",
-          "fence": 400,
-          "hist": 0,
-          "status": "启用",
-          "_remark": "验证完成，恢复启用"
-        },
-        "after": {
-          "id": "Z4",
-          "name": "龙泉矿区 B3 台阶作业点",
-          "project": "PR2",
-          "fence": 400,
-          "hist": 0,
-          "status": "启用",
-          "_remark": "PC 端按所属项目归入工区",
-          "workarea": "WA2"
-        }
-      }
-    },
-    {
-      "id": "ML_1794555185983_101",
-      "dataType": "workareas",
-      "dataId": "WA1",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:33:05",
-      "remark": "PC 端补全工区归属项目",
-      "diff": {
-        "before": {
-          "id": "WA1",
-          "name": "青龙山工区",
-          "police": "POL2",
-          "unit": "工区警务室",
-          "scope": "青龙山隧道群 K3+200 ~ K5+800"
-        },
-        "after": {
-          "id": "WA1",
-          "name": "青龙山工区",
-          "police": "POL2",
-          "unit": "工区警务室",
-          "scope": "青龙山隧道群 K3+200 ~ K5+800",
-          "project": "PR1",
-          "district": "市中区",
-          "_remark": "PC 端补全工区归属项目"
-        }
-      }
-    },
-    {
-      "id": "ML_1794555186049_627",
-      "dataType": "workareas",
-      "dataId": "WA2",
-      "action": "编辑修正",
-      "operatorId": "ADM1",
-      "operatorName": "治安管理员",
-      "opTime": "2026-11-13 07:33:06",
-      "remark": "PC 端补全工区归属项目",
-      "diff": {
-        "before": {
-          "id": "WA2",
-          "name": "龙泉工区",
-          "police": "POL1",
-          "unit": "城关派出所",
-          "scope": "龙泉矿区 B 区及周边 5km"
-        },
-        "after": {
-          "id": "WA2",
-          "name": "龙泉工区",
-          "police": "POL1",
-          "unit": "城关派出所",
-          "scope": "龙泉矿区 B 区及周边 5km",
-          "project": "PR2",
-          "district": "市中区",
-          "_remark": "PC 端补全工区归属项目"
-        }
-      }
+      "opTime": "2026-11-16 10:12:03",
+      "remark": "数据库已初始化（SQLite / minbao.db），业务流水就绪"
     }
   ],
   "settings": {
